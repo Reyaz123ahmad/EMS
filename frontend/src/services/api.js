@@ -84,8 +84,12 @@ api.interceptors.response.use(
           { refreshToken }
         );
 
-        const { accessToken, refreshToken: newRefreshToken } = response.data.data;
-        localStorage.setItem('accessToken', accessToken);
+        const payload = response.data?.data || response.data;
+        const { accessToken, refreshToken: newRefreshToken } = payload;
+
+        if (accessToken) {
+          localStorage.setItem('accessToken', accessToken);
+        }
         if (newRefreshToken) {
           localStorage.setItem('refreshToken', newRefreshToken);
         }
@@ -100,7 +104,9 @@ api.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;

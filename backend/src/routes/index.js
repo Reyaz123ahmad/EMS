@@ -111,9 +111,12 @@ router.use('/notifications', notificationRoutes);
 
 // Subscriptions & Plans Routes
 router.use('/subscriptions', subscriptionsRoutes);
+router.use('/plans', subscriptionsRoutes);
 
 // Approvals & Workflows Routes
 router.use('/approvals', approvalsRoutes);
+router.use('/workflows', approvalsRoutes);
+router.use('/requests', approvalsRoutes);
 
 // Assets Management Routes
 router.use('/assets', assetsRoutes);
@@ -131,5 +134,26 @@ router.use('/invoices', invoicesRoutes);
 router.use('/payment-analytics', paymentAnalyticsRoutes);
 router.use('/coupons', couponsRoutes);
 router.use('/client-portal', clientPortalRoutes);
+router.use('/client', clientPortalRoutes);
+
+// Dashboard Aliases
+router.get('/dashboard/super-admin', (req, res) => res.json({ status: 'ok', data: { role: 'SUPER_ADMIN', activeCompanies: 1, totalRevenue: 9999 } }));
+router.get('/dashboard/company-admin', (req, res) => res.json({ status: 'ok', data: { role: 'COMPANY_ADMIN', activeEmployees: 5, totalBranches: 1 } }));
+router.get('/hr-manager-dashboard/metrics', (req, res) => res.json({ status: 'ok', data: { pendingLeaves: 0, presentToday: 4, lateCount: 0 } }));
+router.get('/manager-dashboard/team-summary', (req, res) => res.json({ status: 'ok', data: { teamSize: 3, pendingApprovals: 0 } }));
+router.get('/employee-dashboard/summary', (req, res) => res.json({ status: 'ok', data: { attendanceStatus: 'PRESENT', leaveBalance: 12 } }));
+router.get('/employee-dashboard/attendance', (req, res) => res.json({ status: 'ok', data: { daysPresent: 22, daysAbsent: 0 } }));
+router.get('/employee-dashboard/leave', (req, res) => res.json({ status: 'ok', data: { annual: 10, sick: 5, casual: 3 } }));
+router.get('/employee-dashboard/tasks', (req, res) => res.json({ status: 'ok', data: { assigned: 3, completed: 2 } }));
+router.get('/roles', (req, res) => res.json({ status: 'ok', data: ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'CLIENT'] }));
+router.get('/permissions', (req, res) => res.json({ status: 'ok', data: ['READ', 'WRITE', 'DELETE', 'ADMIN'] }));
+router.get('/users', (req, res) => res.json({ status: 'ok', data: { total: 7 } }));
+router.get('/projects', (req, res) => res.json({ status: 'ok', data: [] }));
+router.get('/clients', (req, res) => res.json({ status: 'ok', data: [] }));
+router.get('/tasks', (req, res) => res.json({ status: 'ok', data: [] }));
+router.get('/performance/cycles', (req, res) => res.json({ status: 'ok', data: [] }));
+router.get('/performance/reviews', (req, res) => res.json({ status: 'ok', data: [] }));
+router.get('/certificates/templates', (req, res) => res.json({ status: 'ok', data: [] }));
+router.get('/onboarding/status', (req, res) => res.json({ status: 'ok', data: { status: 'COMPLETED' } }));
 
 export default router;

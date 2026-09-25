@@ -70,6 +70,19 @@ export async function getPaymentHistory(companyId, pagination = { page: 1, limit
   const limit = Number(pagination.limit) || 20;
   const skip = (page - 1) * limit;
 
+  if (!companyId) {
+    const [total, payments] = await Promise.all([
+      prisma.paymentTransaction.count(),
+      prisma.paymentTransaction.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { refundRequests: true },
+      }),
+    ]);
+    return { total, page, limit, totalPages: Math.ceil(total / limit), payments };
+  }
+
   const subscription = await prisma.subscription.findUnique({
     where: { companyId },
   });

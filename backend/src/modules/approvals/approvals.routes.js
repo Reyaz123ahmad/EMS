@@ -13,6 +13,7 @@ const router = Router();
 router.use(authenticate);
 
 // Workflows
+router.get('/', approvalsController.getWorkflows);
 router.get('/workflows', approvalsController.getWorkflows);
 router.post('/workflows', validate(createWorkflowSchema), approvalsController.createWorkflow);
 router.get('/workflows/type/:entityType', approvalsController.getWorkflowByEntityType);

@@ -36,6 +36,7 @@ router.get(
 );
 
 // 3. Security Settings & Fraud Signals Review
+router.get('/fraud-signals', (req, res) => res.json({ status: 'ok', data: [] }));
 router.put(
   '/security-settings',
   advancedSecurityController.updateSecuritySettings

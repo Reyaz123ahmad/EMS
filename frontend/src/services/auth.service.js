@@ -8,7 +8,8 @@ export const authService = {
    */
   async login(email, password) {
     const response = await api.post('/auth/login', { email, password });
-    return response.data;
+    // Backend returns: { status: 'ok', data: { user, accessToken, refreshToken } }
+    return response.data?.data || response.data;
   },
 
   /**
@@ -16,7 +17,8 @@ export const authService = {
    */
   async logout() {
     try {
-      await api.post('/auth/logout');
+      const refreshToken = localStorage.getItem('refreshToken');
+      await api.post('/auth/logout', { refreshToken });
     } finally {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -29,8 +31,8 @@ export const authService = {
    * @param {string} refreshToken 
    */
   async refreshToken(refreshToken) {
-    const response = await api.post('/auth/refresh-token', { refreshToken });
-    return response.data;
+    const response = await api.post('/auth/refresh', { refreshToken });
+    return response.data?.data || response.data;
   },
 
   /**
@@ -38,7 +40,7 @@ export const authService = {
    */
   async getMe() {
     const response = await api.get('/auth/me');
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   /**
@@ -48,7 +50,7 @@ export const authService = {
    */
   async changePassword(oldPassword, newPassword) {
     const response = await api.post('/auth/change-password', { oldPassword, newPassword });
-    return response.data;
+    return response.data?.data || response.data;
   }
 };
 

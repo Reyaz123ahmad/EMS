@@ -13,6 +13,7 @@ import {
 const router = Router();
 
 // Public plan listing
+router.get('/', subscriptionsController.getPlans);
 router.get('/plans', subscriptionsController.getPlans);
 router.post('/plans', validate(planSchema), subscriptionsController.createPlan);
 router.put('/plans/:id', validate(planSchema), subscriptionsController.updatePlan);

@@ -34,12 +34,21 @@ export function LoginPage() {
 
     setIsLoading(true);
     try {
-      const data = await authService.login(email, password);
-      setAuth(data.user, data.accessToken, data.refreshToken);
+      const response = await authService.login(email, password);
+      
+      // Handle both wrapped and unwrapped responses
+      const payload = response?.data?.data || response?.data || response;
+      const { user, accessToken, refreshToken } = payload;
+
+      if (!accessToken) {
+        throw new Error('No access token received from server');
+      }
+
+      setAuth(user, accessToken, refreshToken);
       toast.success('Logged in successfully');
       navigate(from, { replace: true });
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      const msg = err.response?.data?.message || err.message || 'Login failed. Please check your credentials.';
       toast.error(msg);
       // For dev / mock preview if backend auth route is pending:
       if (err.response?.status === 404 || err.code === 'ERR_NETWORK') {

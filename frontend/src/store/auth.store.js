@@ -4,16 +4,26 @@ const storedUser = localStorage.getItem('user');
 const storedAccessToken = localStorage.getItem('accessToken');
 const storedRefreshToken = localStorage.getItem('refreshToken');
 
+// Guard against literal "undefined" or null
+const isValidToken = storedAccessToken && storedAccessToken !== 'undefined' && storedAccessToken !== 'null';
+
 export const useAuthStore = create((set) => ({
-  user: storedUser ? JSON.parse(storedUser) : null,
-  accessToken: storedAccessToken || null,
-  refreshToken: storedRefreshToken || null,
-  isAuthenticated: !!storedAccessToken,
+  user: storedUser && storedUser !== 'undefined' ? JSON.parse(storedUser) : null,
+  accessToken: isValidToken ? storedAccessToken : null,
+  refreshToken: storedRefreshToken && storedRefreshToken !== 'undefined' ? storedRefreshToken : null,
+  isAuthenticated: !!isValidToken,
 
   setAuth: (user, accessToken, refreshToken) => {
-    localStorage.setItem('user', JSON.stringify(user));
+    if (!accessToken || accessToken === 'undefined') {
+      console.error('[auth.store] setAuth called without valid accessToken', { user, accessToken });
+      return;
+    }
+
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
     localStorage.setItem('accessToken', accessToken);
-    if (refreshToken) {
+    if (refreshToken && refreshToken !== 'undefined') {
       localStorage.setItem('refreshToken', refreshToken);
     }
     set({
@@ -25,7 +35,9 @@ export const useAuthStore = create((set) => ({
   },
 
   updateUser: (user) => {
-    localStorage.setItem('user', JSON.stringify(user));
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
     set({ user });
   },
 
