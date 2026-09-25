@@ -1222,7 +1222,36 @@ model EmployeeDocument {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 
+  // Aadhaar-specific fields
+  aadhaarNumber       String?
+  aadhaarVerified     Boolean  @default(false)
+  uidaiTransactionId  String?
+  otpVerifiedAt       DateTime?
+  verificationMethod  String?  // "UIDAI_OTP", "DEMO", "MANUAL", "AUTO"
+
   @@map("employee_documents")
+}
+
+model AadhaarVerification {
+  id                String   @id @default(uuid())
+  employeeId        String
+  companyId         String
+  aadhaarNumber     String   // Masked: XXXX-XXXX-1234
+  transactionId     String   @unique
+  provider          String   // setu, signzy, karza, demo
+  status            String   @default("OTP_SENT")  // OTP_SENT, VERIFIED, DEMO_VERIFIED, FAILED, EXPIRED
+  aadhaarData       Json?
+  attempts          Int      @default(0)
+  maxAttempts       Int      @default(5)
+  expiresAt         DateTime
+  verifiedAt        DateTime?
+  usedAt            DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([employeeId, status])
+  @@index([transactionId])
+  @@map("aadhaar_verifications")
 }
 
 model CertificateTemplate {

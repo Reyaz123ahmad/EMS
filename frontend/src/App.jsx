@@ -67,6 +67,7 @@ import DesignationDetailPage from './pages/organization/DesignationDetailPage.js
 // Document Management Pages
 import DocumentListPage from './pages/documents/DocumentListPage.jsx';
 import DocumentUploadPage from './pages/documents/DocumentUploadPage.jsx';
+import AadhaarUploadPage from './pages/documents/AadhaarUploadPage.jsx';
 import DocumentDetailPage from './pages/documents/DocumentDetailPage.jsx';
 
 // Reports Module Pages
@@ -299,6 +300,7 @@ export default function App() {
         {/* Document Management Routes */}
         <Route path="/documents" element={<DocumentListPage />} />
         <Route path="/documents/upload" element={<DocumentUploadPage />} />
+        <Route path="/documents/aadhaar/upload" element={<AadhaarUploadPage />} />
         <Route path="/documents/:id" element={<DocumentDetailPage />} />
 
         {/* Reports & Analytics Routes */}

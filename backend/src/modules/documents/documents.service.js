@@ -44,6 +44,24 @@ export const documentsService = {
   },
 
   async uploadDocument(data) {
+    // Check if document is Aadhaar
+    if (data.documentTypeId) {
+      const docType = await prisma.documentType.findUnique({
+        where: { id: data.documentTypeId }
+      });
+      if (docType && /aadhaar/i.test(docType.name)) {
+        const err = new Error('Aadhaar must be uploaded via Aadhaar verification flow. Use /documents/aadhaar/upload');
+        err.statusCode = 400;
+        throw err;
+      }
+    }
+
+    if (data.type && /aadhaar/i.test(data.type)) {
+      const err = new Error('Aadhaar must be uploaded via Aadhaar verification flow. Use /documents/aadhaar/upload');
+      err.statusCode = 400;
+      throw err;
+    }
+
     return prisma.employeeDocument.create({
       data: {
         employeeId: data.employeeId,
@@ -54,7 +72,8 @@ export const documentsService = {
         fileSize: data.fileSize ? parseInt(data.fileSize, 10) : null,
         mimeType: data.mimeType || 'application/pdf',
         format: data.format || 'PDF',
-        status: 'PENDING'
+        status: 'PENDING',
+        verificationMethod: 'MANUAL'
       },
       include: {
         documentType: true,

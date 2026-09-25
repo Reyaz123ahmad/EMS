@@ -1,0 +1,114 @@
+{
+  "info": {
+    "name": "EMS - Aadhaar Verification & Feature Flag API",
+    "description": "Enterprise Aadhaar OTP Verification, Feature Flags, and Document Uploads Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Get Aadhaar Verification Mode",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/v1/documents/aadhaar/mode",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "documents", "aadhaar", "mode"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Send Aadhaar OTP / Request Demo Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"aadhaarNumber\": \"582910384728\",\n  \"name\": \"Ramesh Kumar\",\n  \"consent\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/documents/aadhaar/send-otp",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "documents", "aadhaar", "send-otp"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Verify Aadhaar OTP",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}", "type": "text" },
+          { "key": "Content-Type", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"{{transaction_id}}\",\n  \"otp\": \"123456\",\n  \"aadhaarNumber\": \"582910384728\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/documents/aadhaar/verify-otp",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "documents", "aadhaar", "verify-otp"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Upload Aadhaar Document File",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}", "type": "text" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "transactionId", "value": "{{transaction_id}}", "type": "text" },
+            { "key": "file", "type": "file", "src": "aadhaar.pdf" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/documents/aadhaar/upload",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "documents", "aadhaar", "upload"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Standard Document Upload (Blocks Aadhaar)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{jwt_token}}", "type": "text" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "documentTypeId", "value": "{{document_type_id}}", "type": "text" },
+            { "key": "file", "type": "file", "src": "passport.pdf" }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/documents/upload",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "documents", "upload"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000" },
+    { "key": "jwt_token", "value": "" },
+    { "key": "transaction_id", "value": "" },
+    { "key": "document_type_id", "value": "" }
+  ]
+}

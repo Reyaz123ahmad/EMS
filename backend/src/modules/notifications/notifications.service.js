@@ -192,6 +192,89 @@ export const sendApprovalNotification = async ({ approverId, type, data = {} }) 
   });
 };
 
+export const sendAadhaarOTPSentNotification = async ({ employeeId, transactionId }) => {
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    select: { userId: true, firstName: true, lastName: true }
+  });
+  if (!employee?.userId) return null;
+
+  return await createNotification({
+    userId: employee.userId,
+    title: 'Aadhaar OTP Sent',
+    body: `UIDAI has sent a verification OTP for transaction ${transactionId}. Valid for 10 minutes.`,
+    type: NOTIFICATION_TYPES.DOCUMENT,
+    priority: NOTIFICATION_PRIORITY.HIGH,
+    metadata: { transactionId, employeeId }
+  });
+};
+
+export const sendAadhaarVerifiedNotification = async ({ employeeId, hrUserId, transactionId, maskedAadhaar }) => {
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    select: { userId: true, firstName: true, lastName: true, employeeCode: true }
+  });
+
+  const empName = employee ? `${employee.firstName} ${employee.lastName}` : 'Employee';
+
+  // Notify employee
+  if (employee?.userId) {
+    await createNotification({
+      userId: employee.userId,
+      title: 'Aadhaar Verified Successfully',
+      body: `Your Aadhaar card (${maskedAadhaar || 'XXXX-XXXX-1234'}) has been verified via UIDAI.`,
+      type: NOTIFICATION_TYPES.DOCUMENT,
+      priority: NOTIFICATION_PRIORITY.MEDIUM,
+      metadata: { transactionId, employeeId }
+    });
+  }
+
+  // Notify HR if specified
+  if (hrUserId) {
+    await createNotification({
+      userId: hrUserId,
+      title: 'Aadhaar Verification Completed',
+      body: `${empName} (${employee?.employeeCode || 'N/A'}) has verified Aadhaar via UIDAI OTP.`,
+      type: NOTIFICATION_TYPES.DOCUMENT,
+      priority: NOTIFICATION_PRIORITY.MEDIUM,
+      metadata: { transactionId, employeeId }
+    });
+  }
+};
+
+export const sendAadhaarDemoUploadNotification = async ({ employeeId, hrUserId, maskedAadhaar }) => {
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    select: { userId: true, firstName: true, lastName: true, employeeCode: true }
+  });
+
+  const empName = employee ? `${employee.firstName} ${employee.lastName}` : 'Employee';
+
+  // Notify employee
+  if (employee?.userId) {
+    await createNotification({
+      userId: employee.userId,
+      title: 'Aadhaar Uploaded (Demo Mode)',
+      body: `Your Aadhaar card (${maskedAadhaar || 'XXXX-XXXX-1234'}) has been uploaded and is pending HR review.`,
+      type: NOTIFICATION_TYPES.DOCUMENT,
+      priority: NOTIFICATION_PRIORITY.LOW,
+      metadata: { employeeId }
+    });
+  }
+
+  // Notify HR
+  if (hrUserId) {
+    await createNotification({
+      userId: hrUserId,
+      title: 'Aadhaar Document Uploaded (Demo)',
+      body: `${empName} has uploaded an Aadhaar document in demo mode. Manual review required.`,
+      type: NOTIFICATION_TYPES.DOCUMENT,
+      priority: NOTIFICATION_PRIORITY.MEDIUM,
+      metadata: { employeeId }
+    });
+  }
+};
+
 export default {
   createNotification,
   createBulkNotifications,
@@ -204,5 +287,8 @@ export default {
   sendLeaveNotification,
   sendPayrollNotification,
   sendSecurityNotification,
-  sendApprovalNotification
+  sendApprovalNotification,
+  sendAadhaarOTPSentNotification,
+  sendAadhaarVerifiedNotification,
+  sendAadhaarDemoUploadNotification
 };

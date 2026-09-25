@@ -75,6 +75,40 @@ export function useDocumentStats() {
   });
 }
 
+// ================= Aadhaar React Query Hooks =================
+
+export function useAadhaarMode() {
+  return useQuery({
+    queryKey: ['aadhaar-mode'],
+    queryFn: () => documentService.getAadhaarMode(),
+    staleTime: 5 * 60 * 1000
+  });
+}
+
+export function useSendAadhaarOTP() {
+  return useMutation({
+    mutationFn: (data) => documentService.sendAadhaarOTP(data)
+  });
+}
+
+export function useVerifyAadhaarOTP() {
+  return useMutation({
+    mutationFn: (data) => documentService.verifyAadhaarOTP(data)
+  });
+}
+
+export function useUploadAadhaar() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (formData) => documentService.uploadAadhaar(formData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['document-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['aadhaar-verifications'] });
+    }
+  });
+}
+
 export default {
   useDocuments,
   useDocument,
@@ -83,5 +117,9 @@ export default {
   useRejectDocument,
   useDeleteDocument,
   useDownloadDocument,
-  useDocumentStats
+  useDocumentStats,
+  useAadhaarMode,
+  useSendAadhaarOTP,
+  useVerifyAadhaarOTP,
+  useUploadAadhaar
 };

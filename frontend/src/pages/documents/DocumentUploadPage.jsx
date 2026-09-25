@@ -107,10 +107,18 @@ export function DocumentUploadPage() {
               <label className="block text-xs font-semibold text-slate-400 mb-1">Document Type *</label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === 'AADHAAR') {
+                    navigate('/documents/aadhaar/upload');
+                    return;
+                  }
+                  setFormData({ ...formData, type: val });
+                }}
                 className="w-full h-11 px-3 rounded-lg bg-slate-950/60 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
               >
                 <option value="NATIONAL_ID">National ID / Passport</option>
+                <option value="AADHAAR">Aadhaar Card (Special Verification Flow →)</option>
                 <option value="TAX_FORM">Tax Document (W-4 / W-2)</option>
                 <option value="CONTRACT">Employment Contract</option>
                 <option value="RESUME">Resume / CV</option>

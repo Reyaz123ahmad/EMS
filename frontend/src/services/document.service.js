@@ -43,6 +43,32 @@ export const documentService = {
   async getDocumentStats() {
     const response = await api.get('/documents/stats');
     return response.data;
+  },
+
+  // ================= Aadhaar Integration Methods =================
+
+  async getAadhaarMode() {
+    const response = await api.get('/documents/aadhaar/mode');
+    return response.data;
+  },
+
+  async sendAadhaarOTP(data) {
+    const response = await api.post('/documents/aadhaar/send-otp', data);
+    return response.data;
+  },
+
+  async verifyAadhaarOTP(data) {
+    const response = await api.post('/documents/aadhaar/verify-otp', data);
+    return response.data;
+  },
+
+  async uploadAadhaar(formData) {
+    const response = await api.post('/documents/aadhaar/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
   }
 };
 
