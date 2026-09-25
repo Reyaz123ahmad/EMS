@@ -6,6 +6,8 @@ import logger from '../config/logger.js';
 /**
  * Helper to safely instantiate a RedisStore with automatic fallback
  */
+const memStore = new Map();
+
 const createSafeRedisStore = (prefix) => {
   if (redis) {
     try {
@@ -14,8 +16,19 @@ const createSafeRedisStore = (prefix) => {
           try {
             return await redis.call(...args);
           } catch (err) {
-            logger.warn({ err: err.message, prefix }, 'Redis rate-limit error, falling back dynamically');
-            throw err;
+            logger.warn({ err: err.message, prefix }, 'Redis rate-limit error, falling back dynamically to memory');
+            // Safe fallback return so express-rate-limit continues without 500 error
+            const [cmd, key, ...rest] = args;
+            const now = Date.now();
+            const fullKey = `${prefix}${key || 'ip'}`;
+            const entry = memStore.get(fullKey) || { count: 0, resetTime: now + 900000 };
+            if (now > entry.resetTime) {
+              entry.count = 0;
+              entry.resetTime = now + 900000;
+            }
+            entry.count += 1;
+            memStore.set(fullKey, entry);
+            return [entry.count, entry.resetTime - now];
           }
         },
         prefix
@@ -24,7 +37,7 @@ const createSafeRedisStore = (prefix) => {
       logger.warn({ err: err.message }, `Failed to initialize RedisStore for prefix ${prefix}`);
     }
   }
-  return undefined; // Falls back to default in-memory store
+  return undefined;
 };
 
 /**

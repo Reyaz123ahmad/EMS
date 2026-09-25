@@ -42,6 +42,22 @@ export const attendanceService = {
   },
 
   /**
+   * Get checkout readiness status (remaining time, required hours, auto-extension)
+   */
+  async getCheckoutStatus(params = {}) {
+    const response = await api.get('/attendance/checkout-status', { params });
+    return response.data;
+  },
+
+  /**
+   * Get break limits and availability status (lunch, short break quotas)
+   */
+  async getBreakStatus(params = {}) {
+    const response = await api.get('/attendance/break-status', { params });
+    return response.data;
+  },
+
+  /**
    * List attendance logs with filters and pagination
    */
   async getAttendanceLogs(params = {}) {

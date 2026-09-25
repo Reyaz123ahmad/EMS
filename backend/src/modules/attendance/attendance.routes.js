@@ -46,8 +46,21 @@ router.post(
 // Realtime Employee Status
 router.get(
   '/today',
-  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN'),
+  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
   attendanceController.getTodayStatus
+);
+
+// Advanced Checkout & Break Polling
+router.get(
+  '/checkout-status',
+  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
+  attendanceController.getCheckoutStatus
+);
+
+router.get(
+  '/break-status',
+  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
+  attendanceController.getBreakStatus
 );
 
 // Management Logs, Reports & Dashboards

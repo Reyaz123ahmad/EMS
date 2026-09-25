@@ -60,6 +60,39 @@ export const DEFAULT_SETTINGS = {
       checkIn: true,
       checkOut: true,
     },
+    holidayCheck: {
+      enabled: true,
+      blockAttendanceOnHoliday: true,
+      markHolidayAutomatically: true,
+    },
+    shiftCheck: {
+      enabled: true,
+      requireShiftAssignment: true,
+      blockAttendanceWithoutShift: true,
+    },
+    lateRules: {
+      enabled: true,
+      graceMinutes: 15,
+      autoExtendCheckout: true,
+      extendByLateMinutes: true,
+    },
+    checkoutRules: {
+      enabled: true,
+      requireFullHours: true,
+      disableButtonUntilFullTime: true,
+      workingHours: 8,
+    },
+    breakRules: {
+      enabled: true,
+      maxBreaksPerDay: 3,
+      maxBreakMinutesPerDay: 60,
+      breakTypes: ['LUNCH', 'SHORT'],
+      lunchDurationMinutes: 30,
+      shortDurationMinutes: 10,
+      trackReturnTime: true,
+      extendCheckoutOnLateReturn: true,
+      disableButtonOnLimit: true,
+    },
   },
   security: {
     securityLevel: 'standard', // basic, standard, high, military

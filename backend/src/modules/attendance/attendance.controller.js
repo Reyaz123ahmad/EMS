@@ -170,6 +170,36 @@ export const attendanceController = {
   },
 
   /**
+   * GET /attendance/checkout-status
+   */
+  async getCheckoutStatus(req, res, next) {
+    try {
+      const employeeId = req.user?.employee?.id || req.query.employeeId || req.user?.id;
+      const companyId = req.user?.companyId || req.query.companyId;
+
+      const result = await attendanceService.canCheckout(employeeId, companyId);
+      res.status(200).json({ status: 'ok', data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * GET /attendance/break-status
+   */
+  async getBreakStatus(req, res, next) {
+    try {
+      const employeeId = req.user?.employee?.id || req.query.employeeId || req.user?.id;
+      const companyId = req.user?.companyId || req.query.companyId;
+
+      const result = await attendanceService.checkBreakLimit(employeeId, companyId);
+      res.status(200).json({ status: 'ok', data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * GET /attendance/logs
    */
   async listLogs(req, res, next) {

@@ -1,0 +1,172 @@
+{
+  "info": {
+    "name": "EMS Advanced Attendance Rules Suite",
+    "description": "Collection verifying Holiday Guard, Shift Assignment, Shift Timings, Auto-Extended Checkout, and Break Quota Limits.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login as Admin / Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@mindstocs.com\",\n  \"password\": \"Test@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Advanced Attendance Status & Rules",
+      "item": [
+        {
+          "name": "Get Today Status (With Holiday & Shift Info)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/today",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "attendance", "today"]
+            }
+          }
+        },
+        {
+          "name": "Get Checkout Readiness Status (Polling Endpoint)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/checkout-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "attendance", "checkout-status"]
+            }
+          }
+        },
+        {
+          "name": "Get Break Status (Lunch & Short Break Quotas)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/break-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "attendance", "break-status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Attendance Operations (Rules Enforced)",
+      "item": [
+        {
+          "name": "Multi-Layer Check-In (Late Calculation & Adjusted Checkout)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"card\",\n  \"cardNumber\": \"CARD-TEST-001\",\n  \"location\": {\n    \"lat\": 28.6139,\n    \"lng\": 77.2090,\n    \"accuracy\": 10\n  },\n  \"deviceInfo\": {\n    \"deviceId\": \"test-postman-device\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/check-in",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "attendance", "check-in"]
+            }
+          }
+        },
+        {
+          "name": "Start Break (Type & Duration Limit Validation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"breakType\": \"SHORT\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/break-start",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "attendance", "break-start"]
+            }
+          }
+        },
+        {
+          "name": "End Break (Late Return Detection & Checkout Extension)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/break-end",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "attendance", "break-end"]
+            }
+          }
+        },
+        {
+          "name": "Check Out (Full Working Hours Enforcement)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"card\",\n  \"cardNumber\": \"CARD-TEST-001\",\n  \"location\": {\n    \"lat\": 28.6139,\n    \"lng\": 77.2090,\n    \"accuracy\": 10\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/attendance/check-out",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "attendance", "check-out"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

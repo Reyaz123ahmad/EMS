@@ -22,6 +22,10 @@ import ManagerDashboard from './pages/dashboard/ManagerDashboard.jsx';
 import EmployeeDashboard from './pages/dashboard/EmployeeDashboard.jsx';
 import ClientDashboard from './pages/dashboard/ClientDashboard.jsx';
 
+// AI Subsystem
+import AIHubPage from './pages/ai/AIHubPage.jsx';
+import AIChatbotWidget from './components/ai/AIChatbotWidget.jsx';
+
 // Notifications
 import NotificationsPage from './pages/notifications/NotificationsPage.jsx';
 
@@ -200,6 +204,7 @@ import ProtectedRoute from './components/shared/ProtectedRoute.jsx';
 
 export default function App() {
   return (
+    <>
     <Routes>
       {/* Public Home Page & QR Verification */}
       <Route path="/" element={<HomePage />} />
@@ -421,10 +426,14 @@ export default function App() {
         <Route path="/client-portal/comments" element={<ClientCommentsPage />} />
         <Route path="/client-portal/invoices" element={<ClientInvoicesPage />} />
         <Route path="/client-portal/payments" element={<ClientPaymentsPage />} />
+        {/* AI Hub Route */}
+        <Route path="/ai/hub" element={<AIHubPage />} />
       </Route>
 
       {/* Catch-all fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <AIChatbotWidget />
+    </>
   );
 }

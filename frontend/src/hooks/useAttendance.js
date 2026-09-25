@@ -9,12 +9,30 @@ export function useTodayStatus(params = {}) {
   });
 }
 
+export function useCheckoutStatus(params = {}) {
+  return useQuery({
+    queryKey: ['attendance', 'checkout-status', params],
+    queryFn: () => attendanceService.getCheckoutStatus(params),
+    refetchInterval: 30000 // auto-refresh status every 30s
+  });
+}
+
+export function useBreakStatus(params = {}) {
+  return useQuery({
+    queryKey: ['attendance', 'break-status', params],
+    queryFn: () => attendanceService.getBreakStatus(params),
+    refetchInterval: 30000 // auto-refresh status every 30s
+  });
+}
+
 export function useCheckIn() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data) => attendanceService.checkIn(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
       queryClient.invalidateQueries({ queryKey: ['attendance', 'logs'] });
       queryClient.invalidateQueries({ queryKey: ['attendance', 'stats'] });
     }
@@ -27,6 +45,8 @@ export function useCheckOut() {
     mutationFn: (data) => attendanceService.checkOut(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
       queryClient.invalidateQueries({ queryKey: ['attendance', 'logs'] });
       queryClient.invalidateQueries({ queryKey: ['attendance', 'stats'] });
     }
@@ -39,6 +59,8 @@ export function useStartBreak() {
     mutationFn: (data) => attendanceService.startBreak(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
     }
   });
 }
@@ -49,6 +71,8 @@ export function useEndBreak() {
     mutationFn: (data) => attendanceService.endBreak(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
     }
   });
 }

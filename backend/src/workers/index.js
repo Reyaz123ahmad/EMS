@@ -4,7 +4,10 @@ import { pushWorker } from './push.worker.js';
 import { payrollWorker } from './payroll.worker.js';
 import { attendanceWorker } from './attendance.worker.js';
 import { reportWorker } from './report.worker.js';
+import { createAIWorker, closeAIWorker } from './ai.worker.js';
 import logger from '../config/logger.js';
+
+let activeAIWorker = null;
 
 export const allWorkers = [
   emailWorker,
@@ -19,13 +22,18 @@ export const allWorkers = [
  * Start/Resume all workers
  */
 export function startAllWorkers() {
-  logger.info(`Starting ${allWorkers.length} BullMQ background workers...`);
+  logger.info(`Starting BullMQ background workers...`);
   allWorkers.forEach((w) => {
-    if (w.isPaused()) {
+    if (w && typeof w.isPaused === 'function' && w.isPaused()) {
       w.resume();
     }
   });
-  logger.info('All BullMQ workers active and listening for jobs.');
+
+  if (!activeAIWorker) {
+    activeAIWorker = createAIWorker();
+  }
+
+  logger.info('All BullMQ workers (including AI Worker) active and listening for jobs.');
 }
 
 /**
@@ -33,7 +41,11 @@ export function startAllWorkers() {
  */
 export async function closeAllWorkers() {
   logger.info('Closing all BullMQ workers...');
-  await Promise.all(allWorkers.map((w) => w.close()));
+  await Promise.all(allWorkers.map((w) => (w && typeof w.close === 'function' ? w.close() : Promise.resolve())));
+  if (activeAIWorker) {
+    await closeAIWorker();
+    activeAIWorker = null;
+  }
   logger.info('All BullMQ workers closed successfully.');
 }
 
@@ -43,7 +55,8 @@ export {
   pushWorker,
   payrollWorker,
   attendanceWorker,
-  reportWorker
+  reportWorker,
+  activeAIWorker as aiWorker
 };
 
 export default {

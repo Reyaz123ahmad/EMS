@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScanFace, CreditCard, Fingerprint, Lock, Sparkles } from 'lucide-react';
+import { ScanFace, CreditCard, Fingerprint, Lock, Sparkles, AlertCircle } from 'lucide-react';
 
 const MODES = [
   {
@@ -32,7 +32,12 @@ export const ModeSelector = ({
   selectedMode = 'face',
   enabledModes = { face: true, card: true, finger: true },
   onSelect,
+  isHoliday = false,
+  noShiftAssigned = false,
+  holidayName = ''
 }) => {
+  const isBlocked = isHoliday || noShiftAssigned;
+
   return (
     <div className="w-full space-y-3">
       <div className="flex items-center justify-between">
@@ -44,9 +49,20 @@ export const ModeSelector = ({
         </span>
       </div>
 
+      {isBlocked && (
+        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-2 text-xs text-amber-300">
+          <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
+          <span>
+            {isHoliday
+              ? `Biometric check-in is disabled today due to ${holidayName || 'Holiday'}.`
+              : 'Biometric check-in is disabled because no active shift is assigned. Please contact HR.'}
+          </span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {MODES.map((mode) => {
-          const isEnabled = enabledModes[mode.id] ?? true;
+          const isEnabled = !isBlocked && (enabledModes[mode.id] ?? true);
           const isSelected = selectedMode === mode.id;
           const Icon = mode.icon;
 
@@ -57,10 +73,10 @@ export const ModeSelector = ({
               disabled={!isEnabled}
               onClick={() => isEnabled && onSelect && onSelect(mode.id)}
               className={`relative flex flex-col items-start rounded-2xl border p-4 text-left transition-all duration-200 ${
-                isSelected
+                isSelected && isEnabled
                   ? 'border-indigo-500 bg-indigo-950/40 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500'
                   : isEnabled
-                  ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900/90'
+                  ? 'border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900/90 cursor-pointer'
                   : 'border-slate-800/40 bg-slate-950/40 opacity-40 cursor-not-allowed'
               }`}
             >
@@ -72,7 +88,7 @@ export const ModeSelector = ({
                 </div>
                 {!isEnabled ? (
                   <span className="flex items-center gap-1 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-400">
-                    <Lock className="h-3 w-3" /> Plan Upgrade
+                    <Lock className="h-3 w-3" /> Locked
                   </span>
                 ) : (
                   <span className="rounded-full bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 text-[10px] font-medium text-indigo-300">
@@ -86,7 +102,7 @@ export const ModeSelector = ({
                 <p className="mt-1 text-xs text-slate-400 leading-relaxed">{mode.description}</p>
               </div>
 
-              {isSelected && (
+              {isSelected && isEnabled && (
                 <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-indigo-400 animate-ping" />
               )}
             </button>
@@ -96,3 +112,5 @@ export const ModeSelector = ({
     </div>
   );
 };
+
+export default ModeSelector;

@@ -8,7 +8,9 @@ import {
   AlertCircle,
   RefreshCw,
   CheckCircle2,
-  XCircle,
+  Calendar,
+  Tag,
+  AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuthStore } from '../../store/auth.store';
@@ -28,6 +30,8 @@ import { LivenessCheck } from '../../components/attendance/LivenessCheck';
 import { FaceMatch } from '../../components/attendance/FaceMatch';
 import { GeoLocation } from '../../components/attendance/GeoLocation';
 import { BreakTimer } from '../../components/attendance/BreakTimer';
+import { CheckoutStatus } from '../../components/attendance/CheckoutStatus';
+import { BreakStatus } from '../../components/attendance/BreakStatus';
 import QRScanModal from '../../components/attendance/QRScanModal';
 import { QrCode } from 'lucide-react';
 
@@ -62,6 +66,12 @@ export const AttendancePage = () => {
   const [remarks, setRemarks] = useState('');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
+  // Consolidated holiday & shift metadata
+  const holiday = statusResponse?.data?.holiday || todayStatus?.holiday;
+  const shift = statusResponse?.data?.shift || todayStatus?.shift;
+  const isHoliday = Boolean(holiday?.isHoliday);
+  const hasShift = Boolean(shift?.hasShift ?? true);
+
   // Sync today's status from backend
   useEffect(() => {
     if (statusResponse?.data) {
@@ -82,6 +92,14 @@ export const AttendancePage = () => {
   };
 
   const startPunchFlow = (actionType) => {
+    if (isHoliday) {
+      toast.error(`Today is a public holiday: ${holiday?.holiday?.name || 'Holiday'}. Attendance not required.`);
+      return;
+    }
+    if (!hasShift && actionType === 'CHECK_IN') {
+      toast.error('No shift assigned. Contact HR to assign a shift.');
+      return;
+    }
     setActiveAction(actionType);
     setWizardStep(1);
     setPhoto(null);
@@ -92,23 +110,22 @@ export const AttendancePage = () => {
   const handleCameraCapture = (capturedPhoto) => {
     setPhoto(capturedPhoto);
     if (capturedPhoto) {
-      // If face mode, proceed to liveness check
       if (activeMode === 'face') {
         setWizardStep(2);
       } else {
-        setWizardStep(4); // Skip face layers for card/finger
+        setWizardStep(4);
       }
     }
   };
 
   const handleLivenessComplete = (res) => {
     setLivenessResult(res);
-    setWizardStep(3); // Go to Face Match
+    setWizardStep(3);
   };
 
   const handleFaceMatchResult = (res) => {
     setFaceMatchResult(res);
-    setWizardStep(4); // Go to Geo Location
+    setWizardStep(4);
   };
 
   const handleLocationValid = (valid) => {
@@ -157,11 +174,11 @@ export const AttendancePage = () => {
       refetchStatus();
       resetWizard();
     } catch (err) {
-      toast.error(err.message || 'Attendance verification rejected');
+      toast.error(err.response?.data?.message || err.message || 'Attendance verification rejected');
     }
   };
 
-  const handleStartBreak = async (breakType = 'TEA_BREAK') => {
+  const handleStartBreak = async (breakType = 'SHORT') => {
     try {
       const payload = {
         breakType,
@@ -174,7 +191,7 @@ export const AttendancePage = () => {
       toast.success(res.message || 'Break started. Timer running.');
       refetchStatus();
     } catch (err) {
-      toast.error(err.message || 'Failed to initiate break');
+      toast.error(err.response?.data?.message || err.message || 'Failed to initiate break');
     }
   };
 
@@ -187,10 +204,14 @@ export const AttendancePage = () => {
         },
       };
       const res = await endBreakMutation.mutateAsync(payload);
-      toast.success(res.message || 'Break ended. Shift resumed.');
+      if (res.warning) {
+        toast.warning(res.warning);
+      } else {
+        toast.success(res.message || 'Break ended. Shift resumed.');
+      }
       refetchStatus();
     } catch (err) {
-      toast.error(err.message || 'Failed to end break');
+      toast.error(err.response?.data?.message || err.message || 'Failed to end break');
     }
   };
 
@@ -207,24 +228,59 @@ export const AttendancePage = () => {
             Attendance Verification
           </h1>
           <p className="mt-1 text-xs text-slate-400">
-            Multi-layer defense: Optical Liveness, 128-D Cosine Face Match, Haversine Geofence & Device Integrity
+            Enterprise Shift Rules: Holiday Guard, Auto Checkout Extension, and Break Quota Controls
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => refetchStatus()}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-all"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-all cursor-pointer"
         >
           <RefreshCw className={`h-3.5 w-3.5 ${isLoadingStatus ? 'animate-spin text-indigo-400' : ''}`} />
           Sync State
         </button>
       </div>
 
+      {/* Holiday Banner Alert */}
+      {isHoliday && (
+        <div className="p-4 bg-gradient-to-r from-purple-950/80 via-indigo-950/60 to-purple-950/80 border border-purple-500/40 rounded-2xl flex items-center justify-between shadow-lg">
+          <div className="flex items-center space-x-3">
+            <Sparkles className="h-6 w-6 text-purple-400 animate-bounce" />
+            <div>
+              <h3 className="text-base font-bold text-white">
+                Today is a Company Holiday: {holiday?.holiday?.name || 'Festival Holiday'}
+              </h3>
+              <p className="text-xs text-purple-200/80">
+                Attendance is not mandatory today. Standard shift check-ins are temporarily locked.
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full">
+            {holiday?.holiday?.type || 'HOLIDAY'}
+          </span>
+        </div>
+      )}
+
+      {/* No Shift Assignment Warning */}
+      {!hasShift && !isHoliday && (
+        <div className="p-4 bg-amber-950/60 border border-amber-500/40 rounded-2xl flex items-center justify-between shadow-lg">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="h-6 w-6 text-amber-400" />
+            <div>
+              <h3 className="text-base font-bold text-amber-200">No Shift Assigned</h3>
+              <p className="text-xs text-amber-300/80">
+                You do not have an active shift assignment for today. Please contact your HR Manager.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Active Break Banner */}
       {isOnBreak && (
         <BreakTimer
-          activeBreak={activeBreak}
+          activeBreak={activeBreak || todayStatus?.breaks?.find((b) => !b.breakEndAt)}
           onEndBreak={handleEndBreak}
           isEnding={endBreakMutation.isPending}
         />
@@ -238,24 +294,29 @@ export const AttendancePage = () => {
           <AttendanceCard
             attendance={todayStatus?.attendance}
             breaks={todayStatus?.breaks || breaks}
+            holiday={holiday}
+            shift={shift}
           />
 
-          {/* Action Trigger Buttons (If not actively in wizard) */}
+          {/* Action Trigger / Working Hours Control */}
           {!activeAction && (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
-              <div className="mb-4">
-                <ModeSelector
-                  selectedMode={activeMode}
-                  onSelect={(mode) => setActiveMode(mode)}
-                />
-              </div>
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl space-y-6">
+              <ModeSelector
+                selectedMode={activeMode}
+                onSelect={(mode) => setActiveMode(mode)}
+                isHoliday={isHoliday}
+                noShiftAssigned={!hasShift}
+                holidayName={holiday?.holiday?.name}
+              />
 
-              <div className="mt-6 space-y-3">
+              {/* Action Buttons based on status */}
+              <div className="space-y-4">
                 {activeMode === 'card' ? (
                   <button
                     type="button"
+                    disabled={isHoliday || !hasShift}
                     onClick={() => setIsQRModalOpen(true)}
-                    className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 px-6 py-4 text-base font-bold text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                    className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 px-6 py-4 text-base font-bold text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <QrCode className="h-5 w-5" />
                     Open QR Card Scanner Terminal
@@ -263,43 +324,28 @@ export const AttendancePage = () => {
                 ) : !isCheckedIn ? (
                   <button
                     type="button"
+                    disabled={isHoliday || !hasShift}
                     onClick={() => startPunchFlow('CHECK_IN')}
-                    className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-6 py-4 text-base font-bold text-white shadow-xl shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all"
+                    className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-6 py-4 text-base font-bold text-white shadow-xl shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <LogIn className="h-5 w-5" />
                     Initiate Check-In (Multi-Layer Verification)
                   </button>
                 ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <button
-                      type="button"
-                      disabled={isOnBreak}
-                      onClick={() => handleStartBreak('TEA_BREAK')}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-300 hover:bg-amber-500/20 transition-all disabled:opacity-40"
-                    >
-                      <Coffee className="h-4 w-4" />
-                      Take Short Break
-                    </button>
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    {/* Live Break Controls with Lunch / Short Quota */}
+                    <BreakStatus
+                      employeeId={user?.employeeId || user?.id}
+                      onStartBreak={(type) => handleStartBreak(type)}
+                      isStartingBreak={startBreakMutation.isPending}
+                    />
 
-                    <button
-                      type="button"
-                      disabled={isOnBreak}
-                      onClick={() => handleStartBreak('LUNCH_BREAK')}
-                      className="flex items-center justify-center gap-2 rounded-xl border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm font-bold text-orange-300 hover:bg-orange-500/20 transition-all disabled:opacity-40"
-                    >
-                      <Coffee className="h-4 w-4" />
-                      Lunch Break
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={isOnBreak}
-                      onClick={() => startPunchFlow('CHECK_OUT')}
-                      className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-rose-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-40"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Check Out Shift
-                    </button>
+                    {/* Full Working Hours & Auto Checkout Extension */}
+                    <CheckoutStatus
+                      employeeId={user?.employeeId || user?.id}
+                      onCheckoutClick={() => startPunchFlow('CHECK_OUT')}
+                      isCheckingOut={checkOutMutation.isPending}
+                    />
                   </div>
                 )}
               </div>
@@ -333,7 +379,7 @@ export const AttendancePage = () => {
                 <button
                   type="button"
                   onClick={resetWizard}
-                  className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700"
+                  className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-slate-700 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -399,7 +445,7 @@ export const AttendancePage = () => {
                       <button
                         type="button"
                         onClick={() => setWizardStep(1)}
-                        className="text-xs text-slate-400 hover:text-white"
+                        className="text-xs text-slate-400 hover:text-white cursor-pointer"
                       >
                         ← Start Over
                       </button>
@@ -413,7 +459,7 @@ export const AttendancePage = () => {
                           checkOutMutation.isPending
                         }
                         onClick={submitPunch}
-                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-xl shadow-indigo-500/25 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-xl shadow-indigo-500/25 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                       >
                         <ShieldCheck className="h-4 w-4" />
                         {checkInMutation.isPending || checkOutMutation.isPending
@@ -479,25 +525,28 @@ export const AttendancePage = () => {
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800 pb-3">
-              Office Shift Guidelines
+            <h4 className="text-sm font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800 pb-3 flex items-center justify-between">
+              <span>Shift Timing Rules</span>
+              <span className="text-xs font-normal text-indigo-400">{shift?.shift?.name || 'Assigned Shift'}</span>
             </h4>
             <div className="mt-4 space-y-2.5 text-xs text-slate-400">
               <div className="flex justify-between py-1 border-b border-slate-800/60">
-                <span>Standard Shift:</span>
-                <span className="font-semibold text-slate-200">09:00 AM - 06:00 PM</span>
+                <span>Shift Schedule:</span>
+                <span className="font-semibold text-slate-200">
+                  {shift?.shift?.startTime || '09:00'} - {shift?.shift?.endTime || '18:00'}
+                </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800/60">
                 <span>Grace Window:</span>
-                <span className="font-semibold text-emerald-400">15 Minutes</span>
+                <span className="font-semibold text-emerald-400">{shift?.shift?.graceMinutes ?? 15} Minutes</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800/60">
-                <span>Half-Day Threshold:</span>
-                <span className="font-semibold text-amber-400">240 Minutes</span>
+                <span>Working Hours:</span>
+                <span className="font-semibold text-indigo-400">{shift?.shift?.workingHours || 8} Hours (Full Time)</span>
               </div>
               <div className="flex justify-between py-1">
-                <span>Full-Day Requirement:</span>
-                <span className="font-semibold text-indigo-400">480 Minutes</span>
+                <span>Late Checkout Extension:</span>
+                <span className="font-semibold text-amber-400">Enabled (Automatic)</span>
               </div>
             </div>
           </div>
@@ -518,4 +567,5 @@ export const AttendancePage = () => {
     </div>
   );
 };
+
 export default AttendancePage;

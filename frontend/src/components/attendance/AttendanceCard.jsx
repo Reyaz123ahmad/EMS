@@ -1,7 +1,7 @@
 import React from 'react';
-import { Clock, LogIn, LogOut, Coffee, Calendar, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Clock, LogIn, LogOut, Coffee, Calendar, ShieldCheck, CheckCircle2, AlertCircle, Sparkles, Tag } from 'lucide-react';
 
-export const AttendanceCard = ({ attendance, breaks = [] }) => {
+export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift = null }) => {
   const formatTime = (isoString) => {
     if (!isoString) return '--:--';
     return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -9,6 +9,8 @@ export const AttendanceCard = ({ attendance, breaks = [] }) => {
 
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'HOLIDAY':
+        return { label: 'Holiday', bg: 'bg-purple-500/10 text-purple-400 border-purple-500/30' };
       case 'PRESENT':
         return { label: 'Present', bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' };
       case 'LATE':
@@ -30,8 +32,31 @@ export const AttendanceCard = ({ attendance, breaks = [] }) => {
     ? 'In Progress'
     : '0h 0m';
 
+  const assignedShift = shift?.shift || shift || {
+    name: attendance?.shiftName || 'Standard Shift',
+    startTime: attendance?.shiftStartTime || '09:00',
+    endTime: attendance?.shiftEndTime || '18:00',
+    workingHours: 8
+  };
+
   return (
     <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 p-6 shadow-xl backdrop-blur-xl">
+      {/* Holiday Banner */}
+      {holiday?.isHoliday && (
+        <div className="mb-5 p-3.5 bg-gradient-to-r from-purple-950/80 to-indigo-950/80 border border-purple-500/30 rounded-xl flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <Sparkles className="h-5 w-5 text-purple-400 animate-pulse" />
+            <div>
+              <p className="text-sm font-bold text-purple-200">Public Holiday: {holiday.holiday?.name}</p>
+              <p className="text-xs text-purple-300/80">Attendance is optional today. Relax and enjoy!</p>
+            </div>
+          </div>
+          <span className="text-xs bg-purple-500/20 text-purple-300 font-semibold px-2.5 py-1 rounded-full border border-purple-500/40">
+            {holiday.holiday?.type || 'HOLIDAY'}
+          </span>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
           <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -41,6 +66,11 @@ export const AttendanceCard = ({ attendance, breaks = [] }) => {
           <h3 className="mt-1 text-xl font-bold text-white">
             {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
           </h3>
+          {assignedShift && (
+            <p className="mt-0.5 text-xs text-indigo-400 flex items-center gap-1.5 font-medium">
+              <Tag className="h-3 w-3" /> Shift: {assignedShift.name} ({assignedShift.startTime} - {assignedShift.endTime})
+            </p>
+          )}
         </div>
 
         <div className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1 text-xs font-semibold ${badge.bg}`}>
@@ -80,7 +110,9 @@ export const AttendanceCard = ({ attendance, breaks = [] }) => {
             {formatTime(attendance?.checkOutAt)}
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
-            {attendance?.overtimeMinutes > 0 ? (
+            {attendance?.adjustedCheckOutTime && !attendance?.checkOutAt ? (
+              <span className="text-indigo-300">Expected: {formatTime(attendance.adjustedCheckOutTime)}</span>
+            ) : attendance?.overtimeMinutes > 0 ? (
               <span className="text-indigo-400 font-medium">+{attendance.overtimeMinutes}m Overtime</span>
             ) : (
               attendance?.checkOutAt ? 'Completed' : 'Pending'
@@ -98,7 +130,7 @@ export const AttendanceCard = ({ attendance, breaks = [] }) => {
             {workedHours}
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
-            Net shift duration
+            Target: {assignedShift.workingHours || 8}h
           </div>
         </div>
 
@@ -141,3 +173,6 @@ export const AttendanceCard = ({ attendance, breaks = [] }) => {
     </div>
   );
 };
+
+export default AttendanceCard;
+

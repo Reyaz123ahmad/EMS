@@ -25,4 +25,7 @@ export function requireRole(...allowedRoles) {
 }
 
 
+export const authorize = requireRole;
+
 export default requireRole;
+

@@ -542,7 +542,33 @@ model AttendanceLog {
   ipAddress             String?
   totalWorkedMinutes    Int?
   overtimeMinutes       Int?
-  lateMinutes           Int?
+  // Holiday
+  isHoliday             Boolean           @default(false)
+  holidayName           String?
+  holidayType           String?
+
+  // Shift
+  shiftId               String?
+  shiftName             String?
+  shiftStartTime        String?
+  shiftEndTime          String?
+
+  // Late
+  isLate                Boolean           @default(false)
+  lateMinutes           Int?              @default(0)
+  adjustedCheckOutTime  DateTime?
+
+  // Checkout
+  requiredMinutes       Int?
+  actualMinutes         Int?
+  shortfallMinutes      Int?
+
+  // Break
+  totalBreaks           Int               @default(0)
+  totalBreakMinutes     Int               @default(0)
+  remainingBreaks       Int?
+  remainingBreakMinutes Int?
+
   status                AttendanceStatus  @default(PRESENT)
   remarks               String?
   createdAt             DateTime          @default(now())
@@ -566,20 +592,24 @@ enum AttendanceStatus {
 }
 
 model AttendanceBreak {
-  id                  String        @id @default(uuid())
-  attendanceLogId     String
-  attendanceLog       AttendanceLog @relation(fields: [attendanceLogId], references: [id], onDelete: Cascade)
-  employeeId          String
-  employee            Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  breakStartAt        DateTime
-  breakEndAt          DateTime?
-  breakPhotoUrl       String?
-  breakPhotoPublicId  String?
-  breakLivenessScore  String?
-  breakFaceMatchScore String?
-  totalBreakMinutes   Int?
-  breakType           String?
-  createdAt           DateTime      @default(now())
+  id                     String        @id @default(uuid())
+  attendanceLogId        String
+  attendanceLog          AttendanceLog @relation(fields: [attendanceLogId], references: [id], onDelete: Cascade)
+  employeeId             String
+  employee               Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  breakStartAt           DateTime
+  breakEndAt             DateTime?
+  breakPhotoUrl          String?
+  breakPhotoPublicId     String?
+  breakLivenessScore     String?
+  breakFaceMatchScore    String?
+  totalBreakMinutes      Int?
+  breakType              String?       // LUNCH, SHORT
+  expectedReturnTime     DateTime?
+  actualReturnTime       DateTime?
+  lateReturnMinutes      Int           @default(0)
+  allowedDurationMinutes Int?
+  createdAt              DateTime      @default(now())
 
   @@map("attendance_breaks")
 }
@@ -1599,4 +1629,49 @@ model ReportHistory {
   @@index([companyId, type])
   @@map("report_histories")
 }
+
+// ============ 15. AI & ANALYTICS (2 models) ============
+
+model AIInsight {
+  id          String    @id @default(uuid())
+  companyId   String?
+  employeeId  String?
+  userId      String?
+  insightType String
+  period      String?
+  prompt      String?   @db.Text
+  content     Json
+  rawResponse String?   @db.Text
+  model       String    @default("gemini-1.5-flash")
+  tokensUsed  Int       @default(0)
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([companyId, insightType])
+  @@index([employeeId, insightType])
+  @@index([expiresAt])
+  @@map("ai_insights")
+}
+
+model AIUsageLog {
+  id               String   @id @default(uuid())
+  companyId        String?
+  userId           String?
+  provider         String   @default("gemini")
+  model            String   @default("gemini-1.5-flash")
+  action           String
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  latencyMs        Int      @default(0)
+  status           String   @default("SUCCESS")
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+
+  @@index([companyId, createdAt])
+  @@index([provider, createdAt])
+  @@map("ai_usage_logs")
+}
+
 

@@ -4,6 +4,7 @@ import { pushQueue } from './push.queue.js';
 import { payrollQueue } from './payroll.queue.js';
 import { attendanceQueue } from './attendance.queue.js';
 import { reportQueue } from './report.queue.js';
+import { aiQueue } from './ai.queue.js';
 import logger from '../config/logger.js';
 
 export const allQueues = [
@@ -12,7 +13,8 @@ export const allQueues = [
   pushQueue,
   payrollQueue,
   attendanceQueue,
-  reportQueue
+  reportQueue,
+  aiQueue
 ];
 
 /**
@@ -30,7 +32,8 @@ export {
   pushQueue,
   payrollQueue,
   attendanceQueue,
-  reportQueue
+  reportQueue,
+  aiQueue
 };
 
 export default {
@@ -40,6 +43,7 @@ export default {
   payrollQueue,
   attendanceQueue,
   reportQueue,
+  aiQueue,
   allQueues,
   closeAllQueues
 };

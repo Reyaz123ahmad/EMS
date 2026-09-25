@@ -79,6 +79,22 @@ export const attendanceRepository = {
         isDeviceTrusted: data.isDeviceTrusted || true,
         ipAddress: data.ipAddress || null,
         lateMinutes: data.lateMinutes || 0,
+        isLate: data.isLate || (data.lateMinutes > 0),
+        adjustedCheckOutTime: data.adjustedCheckOutTime || null,
+        isHoliday: data.isHoliday || false,
+        holidayName: data.holidayName || null,
+        holidayType: data.holidayType || null,
+        shiftId: data.shiftId || null,
+        shiftName: data.shiftName || null,
+        shiftStartTime: data.shiftStartTime || null,
+        shiftEndTime: data.shiftEndTime || null,
+        requiredMinutes: data.requiredMinutes || null,
+        actualMinutes: data.actualMinutes || null,
+        shortfallMinutes: data.shortfallMinutes || null,
+        totalBreaks: data.totalBreaks || 0,
+        totalBreakMinutes: data.totalBreakMinutes || 0,
+        remainingBreaks: data.remainingBreaks !== undefined ? data.remainingBreaks : null,
+        remainingBreakMinutes: data.remainingBreakMinutes !== undefined ? data.remainingBreakMinutes : null,
         status: data.status || 'PRESENT',
         remarks: data.remarks || null
       }
@@ -183,7 +199,12 @@ export const attendanceRepository = {
         breakType: data.breakType || 'SHORT',
         breakPhotoUrl: data.breakPhotoUrl || null,
         breakLivenessScore: data.breakLivenessScore ? String(data.breakLivenessScore) : null,
-        breakFaceMatchScore: data.breakFaceMatchScore ? String(data.breakFaceMatchScore) : null
+        breakFaceMatchScore: data.breakFaceMatchScore ? String(data.breakFaceMatchScore) : null,
+        expectedReturnTime: data.expectedReturnTime || null,
+        actualReturnTime: data.actualReturnTime || null,
+        lateReturnMinutes: data.lateReturnMinutes || 0,
+        allowedDurationMinutes: data.allowedDurationMinutes || null,
+        totalBreakMinutes: data.totalBreakMinutes || null
       }
     });
   },

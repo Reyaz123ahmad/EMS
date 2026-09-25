@@ -34,6 +34,7 @@ import paymentAnalyticsRoutes from '../modules/payment-analytics/payment-analyti
 import couponsRoutes from '../modules/coupons/coupons.routes.js';
 import clientPortalRoutes from '../modules/client-portal/client-portal.routes.js';
 import healthRoutes from '../modules/health/health.routes.js';
+import aiRoutes from '../modules/ai/ai.routes.js';
 import { getPrometheusMetrics, metricsMiddleware } from '../modules/monitoring/metrics.js';
 import { sanitizeInput } from '../middlewares/security.middleware.js';
 
@@ -135,6 +136,7 @@ router.use('/payment-analytics', paymentAnalyticsRoutes);
 router.use('/coupons', couponsRoutes);
 router.use('/client-portal', clientPortalRoutes);
 router.use('/client', clientPortalRoutes);
+router.use('/ai', aiRoutes);
 
 // Dashboard Aliases
 router.get('/dashboard/super-admin', (req, res) => res.json({ status: 'ok', data: { role: 'SUPER_ADMIN', activeCompanies: 1, totalRevenue: 9999 } }));

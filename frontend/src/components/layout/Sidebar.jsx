@@ -35,7 +35,8 @@ import {
   RotateCcw,
   TrendingUp,
   Tag,
-  MessageSquare
+  MessageSquare,
+  Sparkles
 } from 'lucide-react';
 
 export const Sidebar = ({
@@ -55,6 +56,7 @@ export const Sidebar = ({
       case 'SUPER_ADMIN':
         return [
           { label: 'Dashboard', to: '/dashboard/super-admin', icon: LayoutDashboard },
+          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Companies', to: '/companies', icon: Building2 },
           {
             label: 'Subscriptions',
@@ -96,6 +98,7 @@ export const Sidebar = ({
       case 'HR_ADMIN':
         return [
           { label: 'Dashboard', to: role === 'COMPANY_ADMIN' ? '/dashboard/company-admin' : '/dashboard/hr-admin', icon: LayoutDashboard },
+          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Employees', to: '/employees', icon: Users },
           {
             label: 'Organization',
@@ -248,6 +251,7 @@ export const Sidebar = ({
       case 'HR_MANAGER':
         return [
           { label: 'Dashboard', to: '/dashboard/hr-manager', icon: LayoutDashboard },
+          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Employees', to: '/employees', icon: Users },
           {
             label: 'Attendance',
@@ -305,6 +309,7 @@ export const Sidebar = ({
       case 'MANAGER':
         return [
           { label: 'Dashboard', to: '/dashboard/manager', icon: LayoutDashboard },
+          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Team Members', to: '/employees', icon: Users },
           { label: 'Attendance Review', to: '/attendance/logs', icon: CalendarCheck },
           { label: 'Emergency Requests', to: '/emergency-attendance/requests', icon: AlertOctagon },
@@ -329,6 +334,7 @@ export const Sidebar = ({
       default:
         return [
           { label: 'Dashboard', to: '/dashboard/employee', icon: LayoutDashboard },
+          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           {
             label: 'Attendance',
             icon: CalendarCheck,
