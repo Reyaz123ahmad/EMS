@@ -11,6 +11,11 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:seed": "node prisma/seed.js",
+    "start:prod": "pm2 start ecosystem.config.cjs",
+    "stop:prod": "pm2 stop ecosystem.config.cjs",
+    "reload:prod": "pm2 reload ecosystem.config.cjs",
+    "logs:prod": "pm2 logs",
+    "monit:prod": "pm2 monit",
     "test": "node tests/run-all-tests.js",
     "test:integration": "node tests/run-phase-5b.js",
     "test:security": "node tests/security/auth.security.test.js",
@@ -21,6 +26,7 @@
     "@bull-board/api": "^5.23.0",
     "@bull-board/express": "^5.23.0",
     "@prisma/client": "^6.4.1",
+    "@socket.io/redis-adapter": "^8.3.0",
     "bcryptjs": "^2.4.3",
     "bullmq": "^5.81.5",
     "cloudinary": "^2.0.0",
@@ -42,14 +48,16 @@
     "pino-pretty": "^10.0.0",
     "prisma": "^6.4.1",
     "qrcode": "^1.5.0",
-    "rate-limit-redis": "^4.0.0",
+    "rate-limit-redis": "^4.3.1",
     "razorpay": "^2.9.0",
+    "redis": "^6.2.1",
     "socket.io": "^4.8.4",
     "speakeasy": "^2.0.0",
     "streamifier": "^0.1.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.0"
+    "nodemon": "^3.0.0",
+    "pm2": "^7.0.4"
   }
 }

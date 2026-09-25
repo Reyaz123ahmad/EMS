@@ -1,12 +1,43 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { createClient } from 'redis';
 import { env } from './env.js';
 import { prisma } from './prisma.js';
 import logger from './logger.js';
 
 let ioInstance = null;
+let pubClient = null;
+let subClient = null;
 
-export const initSocket = (httpServer) => {
+/**
+ * Initializes Redis Pub/Sub clients and attaches Redis adapter to Socket.io
+ */
+const setupRedisAdapter = async (io) => {
+  const redisUrl = env.REDIS_URL || 'redis://127.0.0.1:6379';
+
+  try {
+    pubClient = createClient({ url: redisUrl });
+    subClient = pubClient.duplicate();
+
+    pubClient.on('error', (err) => {
+      logger.error({ err: err.message }, 'Socket.io Redis PubClient Error');
+    });
+
+    subClient.on('error', (err) => {
+      logger.error({ err: err.message }, 'Socket.io Redis SubClient Error');
+    });
+
+    await Promise.all([pubClient.connect(), subClient.connect()]);
+
+    io.adapter(createAdapter(pubClient, subClient));
+    logger.info('Socket.io Redis adapter attached successfully for multi-instance cluster');
+  } catch (error) {
+    logger.warn({ error: error.message }, 'Failed to initialize Socket.io Redis adapter. Falling back to in-memory adapter.');
+  }
+};
+
+export const initSocket = async (httpServer) => {
   ioInstance = new Server(httpServer, {
     cors: {
       origin: env.FRONTEND_URL || '*',
@@ -16,6 +47,9 @@ export const initSocket = (httpServer) => {
     pingTimeout: 60000,
     pingInterval: 25000
   });
+
+  // Attach Redis cluster adapter
+  await setupRedisAdapter(ioInstance);
 
   // JWT Authentication Middleware for Socket.io
   ioInstance.use(async (socket, next) => {
@@ -68,7 +102,7 @@ export const initSocket = (httpServer) => {
 
   ioInstance.on('connection', (socket) => {
     const user = socket.user;
-    logger.info({ socketId: socket.id, userId: user?.id }, 'Socket client connected');
+    logger.info({ socketId: socket.id, userId: user?.id, instance: process.env.INSTANCE_ID }, 'Socket client connected');
 
     if (user?.id) {
       // Join user specific room
@@ -99,7 +133,26 @@ export const getIO = () => {
   return ioInstance;
 };
 
+/**
+ * Gracefully close Redis adapter pub/sub clients
+ */
+export const closeSocketClients = async () => {
+  try {
+    if (pubClient && pubClient.isOpen) {
+      await pubClient.quit();
+      logger.info('Socket.io Redis pubClient closed');
+    }
+    if (subClient && subClient.isOpen) {
+      await subClient.quit();
+      logger.info('Socket.io Redis subClient closed');
+    }
+  } catch (err) {
+    logger.warn({ err: err.message }, 'Error closing Socket.io Redis adapter clients');
+  }
+};
+
 export default {
   initSocket,
-  getIO
+  getIO,
+  closeSocketClients
 };
