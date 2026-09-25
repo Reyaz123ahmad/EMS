@@ -1,0 +1,160 @@
+{
+  "info": {
+    "_postman_id": "ems-phase-4a-collection-id",
+    "name": "EMS Phase 4A - Notifications & Dashboards API",
+    "description": "Postman Collection for EMS Phase 4A containing full payloads for all notification and dashboard real-time endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notificationId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Notification (Full Payload)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"title\": \"Biometric Face Enrollment Complete\",\n  \"body\": \"Your 512-dimensional facial biometric embedding has been encrypted with AES-256-GCM and enrolled into the access control terminal.\",\n  \"type\": \"ATTENDANCE\",\n  \"priority\": \"HIGH\",\n  \"metadata\": {\n    \"device\": \"Android Terminal 01\",\n    \"vectorDim\": 512,\n    \"encryption\": \"AES-256-GCM\",\n    \"timestamp\": \"2026-09-25T15:30:00.000Z\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/notifications",
+          "host": ["{{baseUrl}}"],
+          "path": ["notifications"]
+        }
+      }
+    },
+    {
+      "name": "2. Get Unread Count",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/unread-count",
+          "host": ["{{baseUrl}}"],
+          "path": ["notifications", "unread-count"]
+        }
+      }
+    },
+    {
+      "name": "3. List Notifications (Filtered & Paginated)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications?type=ATTENDANCE&priority=HIGH&page=1&limit=10",
+          "host": ["{{baseUrl}}"],
+          "path": ["notifications"],
+          "query": [
+            {
+              "key": "type",
+              "value": "ATTENDANCE"
+            },
+            {
+              "key": "priority",
+              "value": "HIGH"
+            },
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "4. Mark Notification as Read",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
+          "host": ["{{baseUrl}}"],
+          "path": ["notifications", "{{notificationId}}", "read"]
+        }
+      }
+    },
+    {
+      "name": "5. Mark All Notifications as Read",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/read-all",
+          "host": ["{{baseUrl}}"],
+          "path": ["notifications", "read-all"]
+        }
+      }
+    },
+    {
+      "name": "6. Delete Notification",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{accessToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/notifications/{{notificationId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["notifications", "{{notificationId}}"]
+        }
+      }
+    }
+  ]
+}

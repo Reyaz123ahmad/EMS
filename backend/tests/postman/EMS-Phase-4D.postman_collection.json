@@ -1,0 +1,525 @@
+{
+  "info": {
+    "name": "EMS Phase 4D - Platform Admin & Security API Collection",
+    "_postman_id": "phase-4d-ems-collection-id",
+    "description": "Full Postman collection for Phase 4D: Subscriptions, Settings, Advanced Security, Approvals, Assets, Emergency Attendance, and Queue Monitor APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "token", "value": "YOUR_SUPER_ADMIN_JWT_TOKEN" },
+    { "key": "companyId", "value": "1432e74d-35ab-4f27-956a-4fcf11c821c9" },
+    { "key": "planId", "value": "plan-uuid-placeholder" },
+    { "key": "workflowId", "value": "workflow-uuid-placeholder" },
+    { "key": "assetId", "value": "asset-uuid-placeholder" }
+  ],
+  "item": [
+    {
+      "name": "1. Subscriptions & Billing",
+      "item": [
+        {
+          "name": "Get Subscription Plans",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subscriptions/plans"
+          }
+        },
+        {
+          "name": "Get Current Subscription",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/subscriptions/current"
+          }
+        },
+        {
+          "name": "Create Razorpay Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"{{planId}}\",\n  \"billingCycle\": \"yearly\"\n}"
+            },
+            "url": "{{baseUrl}}/subscriptions/orders"
+          }
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razorpayOrderId\": \"order_test_12345\",\n  \"razorpayPaymentId\": \"pay_test_12345\",\n  \"razorpaySignature\": \"sig_test_12345\",\n  \"planId\": \"{{planId}}\",\n  \"billingCycle\": \"yearly\"\n}"
+            },
+            "url": "{{baseUrl}}/subscriptions/verify"
+          }
+        },
+        {
+          "name": "Renew Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"{{planId}}\",\n  \"billingCycle\": \"monthly\"\n}"
+            },
+            "url": "{{baseUrl}}/subscriptions/renew"
+          }
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Company restructuring\"\n}"
+            },
+            "url": "{{baseUrl}}/subscriptions/cancel"
+          }
+        },
+        {
+          "name": "Get Subscription History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/subscriptions/history"
+          }
+        },
+        {
+          "name": "Get Subscription Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/subscriptions/stats"
+          }
+        },
+        {
+          "name": "Check Expiry",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/subscriptions/check-expiry"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Company Settings",
+      "item": [
+        {
+          "name": "Get Settings Schema",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/companies/settings/schema"
+          }
+        },
+        {
+          "name": "Get Attendance Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/attendance"
+          }
+        },
+        {
+          "name": "Update Attendance Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"modes\": { \"face\": true, \"card\": true, \"finger\": true },\n  \"geofence\": { \"enabled\": true, \"radiusMeters\": 100 },\n  \"timeRules\": { \"graceMinutes\": 15, \"halfDayThresholdHours\": 4, \"fullDayHours\": 8 }\n}"
+            },
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/attendance"
+          }
+        },
+        {
+          "name": "Get Security Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/security"
+          }
+        },
+        {
+          "name": "Update Security Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"level\": \"HIGH\",\n  \"layers\": [\"FACE_LIVENESS\", \"DEVICE_ATTESTATION\", \"GEO_FENCING\"],\n  \"deviceAttestation\": { \"required\": true },\n  \"ipWhitelist\": [\"192.168.1.1/24\", \"10.0.0.1\"]\n}"
+            },
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/security"
+          }
+        },
+        {
+          "name": "Get Leave Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/leave"
+          }
+        },
+        {
+          "name": "Update Leave Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"yearStartMonth\": 1,\n  \"carryForwardAllowed\": true,\n  \"maxCarryForwardDays\": 15\n}"
+            },
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/leave"
+          }
+        },
+        {
+          "name": "Get Payroll Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/payroll"
+          }
+        },
+        {
+          "name": "Update Payroll Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payCycle\": \"MONTHLY\",\n  \"payDay\": 30,\n  \"tdsDeduction\": true,\n  \"pfDeduction\": true\n}"
+            },
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/payroll"
+          }
+        },
+        {
+          "name": "Get Notification Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/notifications"
+          }
+        },
+        {
+          "name": "Update Notification Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channels\": { \"email\": true, \"sms\": false, \"push\": true, \"inApp\": true },\n  \"events\": { \"punchAlert\": true, \"leaveApproved\": true }\n}"
+            },
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/notifications"
+          }
+        },
+        {
+          "name": "Get General Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/general"
+          }
+        },
+        {
+          "name": "Update General Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timezone\": \"Asia/Kolkata\",\n  \"currency\": \"INR\",\n  \"dateFormat\": \"YYYY-MM-DD\",\n  \"workWeekDays\": [\"MON\", \"TUE\", \"WED\", \"THU\", \"FRI\"]\n}"
+            },
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/general"
+          }
+        },
+        {
+          "name": "Reset Settings",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"settingType\": \"general\"\n}"
+            },
+            "url": "{{baseUrl}}/companies/{{companyId}}/settings/reset"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Advanced Security & Audit",
+      "item": [
+        {
+          "name": "Get Security Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/security/dashboard"
+          }
+        },
+        {
+          "name": "Get Security Score",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/security/security-score"
+          }
+        },
+        {
+          "name": "Get Security Events",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/security/events"
+          }
+        },
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/security/audit-logs"
+          }
+        },
+        {
+          "name": "Export Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/security/audit-logs/export"
+          }
+        },
+        {
+          "name": "Get Blocked Employees",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/security/blocked-employees"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Approvals & Workflows",
+      "item": [
+        {
+          "name": "Get Approval Workflows",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/approvals/workflows"
+          }
+        },
+        {
+          "name": "Create Workflow",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Leave Approval Workflow\",\n  \"entityType\": \"LEAVE\",\n  \"levels\": [\n    { \"level\": 1, \"role\": \"MANAGER\", \"name\": \"Direct Manager\" },\n    { \"level\": 2, \"role\": \"HR_ADMIN\", \"name\": \"HR Administrator\" }\n  ],\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/approvals/workflows"
+          }
+        },
+        {
+          "name": "Get Approval Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/approvals/stats"
+          }
+        },
+        {
+          "name": "Get Pending Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/approvals/pending"
+          }
+        },
+        {
+          "name": "Get Approval History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/approvals/history"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Assets Management",
+      "item": [
+        {
+          "name": "Get Assets List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/assets"
+          }
+        },
+        {
+          "name": "Create Asset",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dell XPS 15\",\n  \"code\": \"LAP-DELL-01\",\n  \"category\": \"Electronics\",\n  \"purchasePrice\": 180000,\n  \"condition\": \"NEW\"\n}"
+            },
+            "url": "{{baseUrl}}/assets"
+          }
+        },
+        {
+          "name": "Get Asset Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/assets/stats"
+          }
+        },
+        {
+          "name": "Get Asset Categories",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/assets/categories"
+          }
+        },
+        {
+          "name": "Export Assets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/assets/export"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Emergency Attendance",
+      "item": [
+        {
+          "name": "Get Emergency Requests",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/emergency-attendance"
+          }
+        },
+        {
+          "name": "Get Emergency Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/emergency-attendance/stats"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Queue Monitor",
+      "item": [
+        {
+          "name": "Get Queue Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/admin/queues/stats"
+          }
+        },
+        {
+          "name": "Get Queue Health",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/admin/queues/health"
+          }
+        },
+        {
+          "name": "Get Attendance Queue Jobs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/admin/queues/attendance-queue/jobs"
+          }
+        },
+        {
+          "name": "Pause Queue",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/admin/queues/attendance-queue/pause"
+          }
+        },
+        {
+          "name": "Resume Queue",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/admin/queues/attendance-queue/resume"
+          }
+        },
+        {
+          "name": "Clean Queue",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gracePeriod\": 0,\n  \"status\": \"completed\",\n  \"limit\": 50\n}"
+            },
+            "url": "{{baseUrl}}/admin/queues/attendance-queue/clean"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,224 @@
+{
+  "info": {
+    "name": "EMS Phase 3C - Biometrics & Advanced Security",
+    "description": "Postman Collection for Face Enrollment, Fingerprint Attendance, Hardware Attestation, and Zero-Trust Security",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "token", "value": "YOUR_JWT_TOKEN" },
+    { "key": "deviceApiKey", "value": "YOUR_DEVICE_API_KEY" }
+  ],
+  "item": [
+    {
+      "name": "1. Face Registration",
+      "item": [
+        {
+          "name": "POST /face/register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"photo\": \"data:image/jpeg;base64,...\",\n  \"livenessScore\": 0.96\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/face/register", "host": ["{{baseUrl}}"], "path": ["face", "register"] }
+          }
+        },
+        {
+          "name": "POST /face/verify",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"photo\": \"data:image/jpeg;base64,...\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/face/verify", "host": ["{{baseUrl}}"], "path": ["face", "verify"] }
+          }
+        },
+        {
+          "name": "GET /face/status/:employeeId",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/face/status/{{employeeId}}", "host": ["{{baseUrl}}"], "path": ["face", "status", "{{employeeId}}"] }
+          }
+        },
+        {
+          "name": "GET /face/with-face",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/face/with-face?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["face", "with-face"] }
+          }
+        },
+        {
+          "name": "GET /face/stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/face/stats", "host": ["{{baseUrl}}"], "path": ["face", "stats"] }
+          }
+        },
+        {
+          "name": "DELETE /face/delete",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"reason\": \"Biometric reset requested\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/face/delete", "host": ["{{baseUrl}}"], "path": ["face", "delete"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Fingerprint Attendance",
+      "item": [
+        {
+          "name": "POST /finger/enroll",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"fingerIndex\": 1,\n  \"template\": \"base64_iso_template\",\n  \"templateFormat\": \"ISO\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finger/enroll", "host": ["{{baseUrl}}"], "path": ["finger", "enroll"] }
+          }
+        },
+        {
+          "name": "POST /finger/punch (Device Auth)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-api-key", "value": "{{deviceApiKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"fingerIndex\": 1,\n  \"punchType\": \"CHECK_IN\",\n  \"verification\": \"FINGERPRINT\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/finger/punch", "host": ["{{baseUrl}}"], "path": ["finger", "punch"] }
+          }
+        },
+        {
+          "name": "GET /finger/punches",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/finger/punches?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["finger", "punches"] }
+          }
+        },
+        {
+          "name": "GET /finger/stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/finger/stats", "host": ["{{baseUrl}}"], "path": ["finger", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Advanced Security & Zero-Trust",
+      "item": [
+        {
+          "name": "POST /security/attest",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"device-android-123\",\n  \"attestationToken\": \"play_integrity_sample_token\",\n  \"platform\": \"android\",\n  \"isRooted\": false,\n  \"isEmulator\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/security/attest", "host": ["{{baseUrl}}"], "path": ["security", "attest"] }
+          }
+        },
+        {
+          "name": "POST /security/validate-ip",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ipAddress\": \"192.168.1.50\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/security/validate-ip", "host": ["{{baseUrl}}"], "path": ["security", "validate-ip"] }
+          }
+        },
+        {
+          "name": "POST /security/detect-vpn",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ipAddress\": \"10.8.0.1\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/security/detect-vpn", "host": ["{{baseUrl}}"], "path": ["security", "detect-vpn"] }
+          }
+        },
+        {
+          "name": "GET /security/dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/security/dashboard", "host": ["{{baseUrl}}"], "path": ["security", "dashboard"] }
+          }
+        },
+        {
+          "name": "PUT /security/security-settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"securityLevel\": \"HIGH\",\n  \"blockVpn\": true,\n  \"blockRootedDevices\": true,\n  \"ipWhitelistEnabled\": false\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/security/security-settings", "host": ["{{baseUrl}}"], "path": ["security", "security-settings"] }
+          }
+        }
+      ]
+    }
+  ]
+}

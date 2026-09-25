@@ -1,0 +1,145 @@
+import { prisma } from '../../config/prisma.js';
+
+export const documentsService = {
+  async listDocumentsByCompany(companyId, filters = {}) {
+    const where = {
+      employee: { companyId }
+    };
+    if (filters.status) where.status = filters.status;
+    if (filters.documentTypeId) where.documentTypeId = filters.documentTypeId;
+    if (filters.employeeId) where.employeeId = filters.employeeId;
+
+    return prisma.employeeDocument.findMany({
+      where,
+      include: {
+        documentType: true,
+        employee: {
+          select: { id: true, firstName: true, lastName: true, employeeCode: true, email: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  },
+
+  async listDocumentsByEmployee(employeeId) {
+    return prisma.employeeDocument.findMany({
+      where: { employeeId },
+      include: {
+        documentType: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  },
+
+  async getDocumentById(id) {
+    return prisma.employeeDocument.findUnique({
+      where: { id },
+      include: {
+        documentType: true,
+        employee: {
+          select: { id: true, firstName: true, lastName: true, employeeCode: true, email: true, companyId: true }
+        }
+      }
+    });
+  },
+
+  async uploadDocument(data) {
+    return prisma.employeeDocument.create({
+      data: {
+        employeeId: data.employeeId,
+        documentTypeId: data.documentTypeId,
+        fileName: data.fileName,
+        fileUrl: data.fileUrl,
+        publicId: data.publicId || data.fileName,
+        fileSize: data.fileSize ? parseInt(data.fileSize, 10) : null,
+        mimeType: data.mimeType || 'application/pdf',
+        format: data.format || 'PDF',
+        status: 'PENDING'
+      },
+      include: {
+        documentType: true,
+        employee: true
+      }
+    });
+  },
+
+  async verifyDocument(id, verifiedBy) {
+    return prisma.employeeDocument.update({
+      where: { id },
+      data: {
+        status: 'VERIFIED',
+        verifiedBy: verifiedBy || 'HR_ADMIN',
+        verifiedAt: new Date(),
+        rejectionReason: null
+      }
+    });
+  },
+
+  async rejectDocument(id, rejectionReason, verifiedBy) {
+    return prisma.employeeDocument.update({
+      where: { id },
+      data: {
+        status: 'REJECTED',
+        rejectionReason,
+        verifiedBy: verifiedBy || 'HR_ADMIN',
+        verifiedAt: new Date()
+      }
+    });
+  },
+
+  async deleteDocument(id) {
+    return prisma.employeeDocument.delete({
+      where: { id }
+    });
+  },
+
+  async getDocumentStats(companyId) {
+    try {
+      const docs = await prisma.employeeDocument.findMany({
+        where: { employee: { companyId } },
+        select: { status: true }
+      });
+      const total = docs.length;
+      const pending = docs.filter(d => d.status === 'PENDING').length;
+      const verified = docs.filter(d => d.status === 'VERIFIED').length;
+      const rejected = docs.filter(d => d.status === 'REJECTED').length;
+      return { total, pending, verified, rejected };
+    } catch (err) {
+      return { total: 0, pending: 0, verified: 0, rejected: 0 };
+    }
+  },
+
+  async listDocumentTypes(companyId) {
+    return prisma.documentType.findMany({
+      where: { companyId },
+      orderBy: { name: 'asc' }
+    });
+  },
+
+  async createDocumentType(companyId, data) {
+    return prisma.documentType.create({
+      data: {
+        companyId,
+        name: data.name,
+        isMandatory: data.isMandatory || false,
+        isActive: true
+      }
+    });
+  },
+
+  async getDownloadUrl(id) {
+    const doc = await this.getDocumentById(id);
+    if (!doc) {
+      return {
+        downloadUrl: `https://storage.googleapis.com/ems-docs/doc_${id}.pdf`,
+        fileName: `document_${id}.pdf`
+      };
+    }
+    return {
+      downloadUrl: doc.fileUrl || `https://storage.googleapis.com/ems-docs/${doc.fileName}`,
+      fileName: doc.fileName
+    };
+  }
+};
+
+export default documentsService;

@@ -1,0 +1,7 @@
+export const OVERTIME_STATUS = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+};
+
+export const DEFAULT_MULTIPLIER = 1.5;

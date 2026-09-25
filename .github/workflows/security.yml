@@ -1,0 +1,21 @@
+name: Security & Vulnerability Audit
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Backend NPM Audit
+        working-directory: backend
+        run: npm audit --audit-level=high || true
+
+      - name: Frontend NPM Audit
+        working-directory: frontend
+        run: npm audit --audit-level=high || true

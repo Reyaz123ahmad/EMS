@@ -1,0 +1,251 @@
+{
+  "info": {
+    "_postman_id": "phase-4b-core-hr-admin-ui",
+    "name": "EMS Phase 4B - Core HR & Admin API Collection",
+    "description": "Full payload API collection for Company creation, Employee onboarding with 2-step OTP, Organization (Branch, Department, Designation), Document management, and 8-type Reports module.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Company Module",
+      "item": [
+        {
+          "name": "Send Company OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyData\": {\n    \"name\": \"Acme Global Corp\",\n    \"domain\": \"acmeglobal.com\",\n    \"email\": \"admin@acmeglobal.com\",\n    \"phone\": \"+1 555 0192\",\n    \"address\": \"100 Enterprise Way, Suite 400\",\n    \"country\": \"USA\",\n    \"timezone\": \"America/New_York\",\n    \"currency\": \"USD\"\n  },\n  \"adminData\": {\n    \"firstName\": \"Alex\",\n    \"lastName\": \"Morgan\",\n    \"email\": \"alex.morgan@acmeglobal.com\",\n    \"phone\": \"+1 555 0193\"\n  }\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/companies/send-otp", "host": ["{{BASE_URL}}"], "path": ["companies", "send-otp"] }
+          }
+        },
+        {
+          "name": "Verify Company OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alex.morgan@acmeglobal.com\",\n  \"otp\": \"123456\",\n  \"sessionId\": \"{{COMPANY_OTP_SESSION_ID}}\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/companies/verify-otp", "host": ["{{BASE_URL}}"], "path": ["companies", "verify-otp"] }
+          }
+        },
+        {
+          "name": "Create Company with Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{COMPANY_OTP_SESSION_ID}}\",\n  \"companyData\": {\n    \"name\": \"Acme Global Corp\",\n    \"domain\": \"acmeglobal.com\",\n    \"email\": \"admin@acmeglobal.com\",\n    \"phone\": \"+1 555 0192\",\n    \"address\": \"100 Enterprise Way, Suite 400\"\n  },\n  \"adminData\": {\n    \"firstName\": \"Alex\",\n    \"lastName\": \"Morgan\",\n    \"email\": \"alex.morgan@acmeglobal.com\",\n    \"phone\": \"+1 555 0193\"\n  }\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/companies/create", "host": ["{{BASE_URL}}"], "path": ["companies", "create"] }
+          }
+        },
+        {
+          "name": "Get Company Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/companies/stats", "host": ["{{BASE_URL}}"], "path": ["companies", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Employee Module",
+      "item": [
+        {
+          "name": "Send Employee OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeData\": {\n    \"firstName\": \"Sarah\",\n    \"lastName\": \"Connor\",\n    \"email\": \"sarah.connor@example.com\",\n    \"phone\": \"+1 555 8822\",\n    \"employeeCode\": \"EMP-9001\",\n    \"employmentType\": \"FULL_TIME\",\n    \"joiningDate\": \"2026-03-01\"\n  }\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/employees/send-otp", "host": ["{{BASE_URL}}"], "path": ["employees", "send-otp"] }
+          }
+        },
+        {
+          "name": "Verify Employee OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sarah.connor@example.com\",\n  \"otp\": \"123456\",\n  \"sessionId\": \"{{EMP_OTP_SESSION_ID}}\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/employees/verify-otp", "host": ["{{BASE_URL}}"], "path": ["employees", "verify-otp"] }
+          }
+        },
+        {
+          "name": "Bulk Import Employees",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"firstName\": \"Liam\",\n      \"lastName\": \"Neeson\",\n      \"email\": \"liam.neeson@example.com\",\n      \"employeeCode\": \"EMP-9002\",\n      \"employmentType\": \"FULL_TIME\"\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/employees/bulk-import", "host": ["{{BASE_URL}}"], "path": ["employees", "bulk-import"] }
+          }
+        },
+        {
+          "name": "Export Employees",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/employees/export?format=csv", "host": ["{{BASE_URL}}"], "path": ["employees", "export"], "query": [{ "key": "format", "value": "csv" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Organization Module",
+      "item": [
+        {
+          "name": "Create Branch",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Austin R&D Center\",\n  \"code\": \"ATX-01\",\n  \"address\": \"500 Congress Ave\",\n  \"city\": \"Austin\",\n  \"state\": \"TX\",\n  \"country\": \"USA\",\n  \"latitude\": 30.2672,\n  \"longitude\": -97.7431,\n  \"radiusMeters\": 120\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/branches", "host": ["{{BASE_URL}}"], "path": ["branches"] }
+          }
+        },
+        {
+          "name": "Create Department",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Product Management\",\n  \"code\": \"PM-01\",\n  \"description\": \"Roadmap strategy, UI/UX, and delivery\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/departments", "host": ["{{BASE_URL}}"], "path": ["departments"] }
+          }
+        },
+        {
+          "name": "Create Designation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Principal Architect\",\n  \"code\": \"PR-ARCH\",\n  \"level\": 5,\n  \"description\": \"Enterprise system architecture and scalability\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/designations", "host": ["{{BASE_URL}}"], "path": ["designations"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Document Module",
+      "item": [
+        {
+          "name": "Verify Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verifiedNotes\": \"Verified against government portal\"\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/documents/{{DOC_ID}}/verify", "host": ["{{BASE_URL}}"], "path": ["documents", "{{DOC_ID}}", "verify"] }
+          }
+        },
+        {
+          "name": "Get Document Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/documents/stats", "host": ["{{BASE_URL}}"], "path": ["documents", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Reports Module",
+      "item": [
+        {
+          "name": "Generate Report (Attendance)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"ATTENDANCE\",\n  \"filters\": {\n    \"startDate\": \"2026-01-01\",\n    \"endDate\": \"2026-12-31\"\n  }\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/reports/generate", "host": ["{{BASE_URL}}"], "path": ["reports", "generate"] }
+          }
+        },
+        {
+          "name": "Export Report (Excel)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"ATTENDANCE\",\n  \"format\": \"EXCEL\",\n  \"filters\": {\n    \"startDate\": \"2026-01-01\",\n    \"endDate\": \"2026-12-31\"\n  }\n}"
+            },
+            "url": { "raw": "{{BASE_URL}}/reports/export", "host": ["{{BASE_URL}}"], "path": ["reports", "export"] }
+          }
+        },
+        {
+          "name": "Get Report History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }],
+            "url": { "raw": "{{BASE_URL}}/reports/history", "host": ["{{BASE_URL}}"], "path": ["reports", "history"] }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "BASE_URL", "value": "http://localhost:5000/api/v1" },
+    { "key": "ACCESS_TOKEN", "value": "" }
+  ]
+}

@@ -1,0 +1,193 @@
+{
+  "info": {
+    "name": "EMS Phase 3A - Biometric Attendance & Security Suite",
+    "_postman_id": "ems-phase-3a-attendance-collection",
+    "description": "Comprehensive Postman test suite for EMS Biometric Multi-Layer Attendance System (Face, Card, Finger, Geofencing, Liveness, Breaks, Monthly Reports, Fraud Signals).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1", "type": "string" },
+    { "key": "authToken", "value": "", "type": "string" },
+    { "key": "adminToken", "value": "", "type": "string" },
+    { "key": "employeeId", "value": "", "type": "string" },
+    { "key": "challengeId", "value": "", "type": "string" },
+    { "key": "fraudSignalId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Attendance Security - Liveness",
+      "item": [
+        {
+          "name": "Generate Liveness Challenge",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attendance-security/liveness/challenge", "host": ["{{baseUrl}}"], "path": ["attendance-security", "liveness", "challenge"] }
+          }
+        },
+        {
+          "name": "Verify Liveness Challenge",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"challengeId\": \"{{challengeId}}\",\n  \"livenessScore\": 0.94,\n  \"imageData\": \"data:image/jpeg;base64,...\",\n  \"metadata\": { \"gesture\": \"BLINK\", \"fps\": 30 }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attendance-security/liveness/verify", "host": ["{{baseUrl}}"], "path": ["attendance-security", "liveness", "verify"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Biometric Attendance Operations",
+      "item": [
+        {
+          "name": "Check-In (Face Biometrics - Full Payload)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"face\",\n  \"photo\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD...\",\n  \"location\": {\n    \"lat\": 28.6139,\n    \"lng\": 77.2090,\n    \"accuracy\": 10,\n    \"source\": \"gps\",\n    \"timestamp\": 1700000000000\n  },\n  \"deviceInfo\": {\n    \"deviceId\": \"device-abc-123\",\n    \"isMockLocation\": false,\n    \"ipAddress\": \"192.168.1.1\",\n    \"userAgent\": \"Mozilla/5.0...\",\n    \"platform\": \"Android\",\n    \"osVersion\": \"13\",\n    \"appVersion\": \"2.0.0\"\n  },\n  \"cardNumber\": null,\n  \"remarks\": \"Morning shift start\",\n  \"livenessScore\": 0.95\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attendance/check-in", "host": ["{{baseUrl}}"], "path": ["attendance", "check-in"] }
+          }
+        },
+        {
+          "name": "Start Break",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"face\",\n  \"breakType\": \"TEA_BREAK\",\n  \"deviceInfo\": {\n    \"deviceId\": \"device-abc-123\"\n  },\n  \"remarks\": \"15 min coffee break\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attendance/break-start", "host": ["{{baseUrl}}"], "path": ["attendance", "break-start"] }
+          }
+        },
+        {
+          "name": "End Break",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"face\",\n  \"deviceInfo\": {\n    \"deviceId\": \"device-abc-123\"\n  },\n  \"remarks\": \"Resuming shift\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attendance/break-end", "host": ["{{baseUrl}}"], "path": ["attendance", "break-end"] }
+          }
+        },
+        {
+          "name": "Check-Out (Shift Conclusion - Full Payload)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"face\",\n  \"location\": {\n    \"lat\": 28.6139,\n    \"lng\": 77.2090,\n    \"accuracy\": 8,\n    \"source\": \"gps\"\n  },\n  \"deviceInfo\": {\n    \"deviceId\": \"device-abc-123\",\n    \"isMockLocation\": false\n  },\n  \"remarks\": \"Shift complete\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attendance/check-out", "host": ["{{baseUrl}}"], "path": ["attendance", "check-out"] }
+          }
+        },
+        {
+          "name": "Get Today Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/attendance/today", "host": ["{{baseUrl}}"], "path": ["attendance", "today"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Audit, Reporting & Analytics",
+      "item": [
+        {
+          "name": "Get Attendance Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/attendance/logs?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["attendance", "logs"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+          }
+        },
+        {
+          "name": "Get Monthly Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/attendance/monthly-summary?month=9&year=2026", "host": ["{{baseUrl}}"], "path": ["attendance", "monthly-summary"], "query": [{ "key": "month", "value": "9" }, { "key": "year", "value": "2026" }] }
+          }
+        },
+        {
+          "name": "Get Attendance Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/attendance/stats", "host": ["{{baseUrl}}"], "path": ["attendance", "stats"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Security Alerts & Fraud Signals",
+      "item": [
+        {
+          "name": "List Fraud Signals",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/attendance/fraud-signals?page=1&limit=20", "host": ["{{baseUrl}}"], "path": ["attendance", "fraud-signals"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }] }
+          }
+        },
+        {
+          "name": "Review Fraud Signal Incident",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\",\n  \"reviewNotes\": \"Verified employee location with management\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/attendance/fraud-signals/{{fraudSignalId}}/review", "host": ["{{baseUrl}}"], "path": ["attendance", "fraud-signals", "{{fraudSignalId}}", "review"] }
+          }
+        }
+      ]
+    }
+  ]
+}

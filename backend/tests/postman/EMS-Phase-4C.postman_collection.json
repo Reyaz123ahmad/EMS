@@ -1,0 +1,583 @@
+{
+  "info": {
+    "_postman_id": "phase-4c-enterprise-operations-collection",
+    "name": "EMS Phase 4C - Attendance, Leave, Payroll, Overtime, Shifts, Rosters & Holidays",
+    "description": "Comprehensive API collection for HR operations covering Attendance Calendar & Overrides, Leave Entitlements & Approvals, Payroll Preview & Processing, Overtime Rules & Claims, Shift Assignments & Automated Rostering, and Holiday Calendars with full payloads.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "authToken", "value": "" },
+    { "key": "companyId", "value": "" },
+    { "key": "employeeId", "value": "" },
+    { "key": "leaveTypeId", "value": "" },
+    { "key": "leaveRequestId", "value": "" },
+    { "key": "payrollRunId", "value": "" },
+    { "key": "overtimeRuleId", "value": "" },
+    { "key": "overtimeRequestId", "value": "" },
+    { "key": "shiftId", "value": "" },
+    { "key": "holidayCalendarId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Attendance Module",
+      "item": [
+        {
+          "name": "Get Attendance Calendar View",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/calendar?companyId={{companyId}}&month=9&year=2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", "calendar"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" },
+                { "key": "month", "value": "9" },
+                { "key": "year", "value": "2026" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Employee Attendance Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/summary?companyId={{companyId}}&employeeId={{employeeId}}&month=9&year=2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", "summary"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" },
+                { "key": "employeeId", "value": "{{employeeId}}" },
+                { "key": "month", "value": "9" },
+                { "key": "year", "value": "2026" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Manual Attendance (Override)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"employeeId\": \"{{employeeId}}\",\n  \"date\": \"2026-09-24\",\n  \"checkIn\": \"09:00\",\n  \"checkOut\": \"18:00\",\n  \"status\": \"PRESENT\",\n  \"reason\": \"Manual system punch correction requested by management\",\n  \"markedBy\": \"{{employeeId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/attendance/manual",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", "manual"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Mark Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"employeeIds\": [\"{{employeeId}}\"],\n  \"date\": \"2026-09-23\",\n  \"status\": \"PRESENT\",\n  \"markedBy\": \"{{employeeId}}\",\n  \"reason\": \"Bulk team on-site authorization\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/attendance/bulk-mark",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", "bulk-mark"]
+            }
+          }
+        },
+        {
+          "name": "Get Attendance Exceptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/attendance/exceptions?companyId={{companyId}}&startDate=2026-09-01&endDate=2026-09-30",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", "exceptions"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" },
+                { "key": "startDate", "value": "2026-09-01" },
+                { "key": "endDate", "value": "2026-09-30" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Attendance Policy",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"policy\": {\n    \"workHoursPerDay\": 8,\n    \"gracePeriodMinutes\": 15,\n    \"halfDayThresholdHours\": 4,\n    \"overtimeThresholdMinutes\": 30\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/attendance/policy",
+              "host": ["{{baseUrl}}"],
+              "path": ["attendance", "policy"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Leave Management Module",
+      "item": [
+        {
+          "name": "Create Leave Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"name\": \"Privilege Leave\",\n  \"code\": \"PL\",\n  \"description\": \"Annual paid earned leave\",\n  \"daysAllowed\": 18,\n  \"isPaid\": true,\n  \"carryForward\": true,\n  \"maxCarryForwardDays\": 6\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave/types",
+              "host": ["{{baseUrl}}"],
+              "path": ["leave", "types"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Allocate Leaves",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"leaveTypeId\": \"{{leaveTypeId}}\",\n  \"year\": 2026,\n  \"days\": 18,\n  \"employeeIds\": [\"{{employeeId}}\"],\n  \"allocatedBy\": \"{{employeeId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave/balances/bulk-allocate",
+              "host": ["{{baseUrl}}"],
+              "path": ["leave", "balances", "bulk-allocate"]
+            }
+          }
+        },
+        {
+          "name": "Apply for Leave",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"employeeId\": \"{{employeeId}}\",\n  \"leaveTypeId\": \"{{leaveTypeId}}\",\n  \"startDate\": \"2026-10-10\",\n  \"endDate\": \"2026-10-12\",\n  \"reason\": \"Family vacation and relocation arrangements\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["leave", "apply"]
+            }
+          }
+        },
+        {
+          "name": "Approve Leave Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approvedBy\": \"{{employeeId}}\",\n  \"remarks\": \"Authorized by HR Operations\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave/requests/{{leaveRequestId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["leave", "requests", "{{leaveRequestId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Get Leave Calendar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/leave/calendar?companyId={{companyId}}&month=10&year=2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["leave", "calendar"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" },
+                { "key": "month", "value": "10" },
+                { "key": "year", "value": "2026" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Payroll Module",
+      "item": [
+        {
+          "name": "Create Salary Component",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"name\": \"Special Allowance\",\n  \"code\": \"SA\",\n  \"type\": \"EARNING\",\n  \"calculationType\": \"FIXED\",\n  \"defaultAmount\": 15000,\n  \"isTaxable\": true,\n  \"description\": \"Supplementary performance compensation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payroll/components",
+              "host": ["{{baseUrl}}"],
+              "path": ["payroll", "components"]
+            }
+          }
+        },
+        {
+          "name": "Preview Payroll Run",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"month\": 9,\n  \"year\": 2026\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payroll/preview",
+              "host": ["{{baseUrl}}"],
+              "path": ["payroll", "preview"]
+            }
+          }
+        },
+        {
+          "name": "Process Payroll Run",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"month\": 9,\n  \"year\": 2026,\n  \"processedBy\": \"{{employeeId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payroll/process",
+              "host": ["{{baseUrl}}"],
+              "path": ["payroll", "process"]
+            }
+          }
+        },
+        {
+          "name": "Approve Payroll Run",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approvedBy\": \"{{employeeId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payroll/runs/{{payrollRunId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["payroll", "runs", "{{payrollRunId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Get Salary Slips",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payroll/slips?companyId={{companyId}}&month=9&year=2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["payroll", "slips"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" },
+                { "key": "month", "value": "9" },
+                { "key": "year", "value": "2026" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Overtime Module",
+      "item": [
+        {
+          "name": "Create Overtime Rule",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"name\": \"Weekend Rate\",\n  \"dayType\": \"WEEKEND\",\n  \"multiplier\": 2.0,\n  \"minMinutes\": 60,\n  \"maxDailyMinutes\": 480,\n  \"requiresApproval\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/overtime/rules",
+              "host": ["{{baseUrl}}"],
+              "path": ["overtime", "rules"]
+            }
+          }
+        },
+        {
+          "name": "Apply for Overtime Claim",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"employeeId\": \"{{employeeId}}\",\n  \"date\": \"2026-09-24\",\n  \"minutes\": 120,\n  \"reason\": \"End-of-quarter financial audits and ledger reconciliation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/overtime/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["overtime", "apply"]
+            }
+          }
+        },
+        {
+          "name": "Approve Overtime Claim",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approvedBy\": \"{{employeeId}}\",\n  \"remarks\": \"Verified against system audit logs\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/overtime/requests/{{overtimeRequestId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["overtime", "requests", "{{overtimeRequestId}}", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Get Overtime Analytics Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/overtime/stats?companyId={{companyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["overtime", "stats"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Shift & Roster Module",
+      "item": [
+        {
+          "name": "Create Shift",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"name\": \"Night Shift Operations\",\n  \"code\": \"NS\",\n  \"startTime\": \"22:00\",\n  \"endTime\": \"06:00\",\n  \"gracePeriod\": 15,\n  \"halfDayHours\": 4,\n  \"fullDayHours\": 8,\n  \"breakDuration\": 60,\n  \"isNightShift\": true,\n  \"description\": \"Graveyard shift overnight engineering support\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shifts",
+              "host": ["{{baseUrl}}"],
+              "path": ["shifts"]
+            }
+          }
+        },
+        {
+          "name": "Assign Shift to Employees",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"shiftId\": \"{{shiftId}}\",\n  \"effectiveFrom\": \"2026-10-01\",\n  \"effectiveTo\": \"2026-12-31\",\n  \"employeeIds\": [\"{{employeeId}}\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shifts/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["shifts", "assign"]
+            }
+          }
+        },
+        {
+          "name": "Generate Automated Roster Schedule",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"month\": 10,\n  \"year\": 2026,\n  \"shiftId\": \"{{shiftId}}\",\n  \"shiftPattern\": \"5_2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rosters/generate",
+              "host": ["{{baseUrl}}"],
+              "path": ["rosters", "generate"]
+            }
+          }
+        },
+        {
+          "name": "Get Roster Monthly Calendar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/rosters/calendar?companyId={{companyId}}&month=10&year=2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["rosters", "calendar"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" },
+                { "key": "month", "value": "10" },
+                { "key": "year", "value": "2026" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Holiday Calendar Module",
+      "item": [
+        {
+          "name": "Create Holiday Calendar",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"name\": \"Official 2026 Corporate Holidays\",\n  \"year\": 2026,\n  \"isDefault\": true,\n  \"description\": \"State and national gazetted holiday list\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/holiday-calendars",
+              "host": ["{{baseUrl}}"],
+              "path": ["holiday-calendars"]
+            }
+          }
+        },
+        {
+          "name": "Create Festival Holiday",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"calendarId\": \"{{holidayCalendarId}}\",\n  \"name\": \"Diwali (Deepavali)\",\n  \"date\": \"2026-11-08\",\n  \"isOptional\": false,\n  \"description\": \"Festival of Lights\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/holidays",
+              "host": ["{{baseUrl}}"],
+              "path": ["holidays"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Import Holidays",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"calendarId\": \"{{holidayCalendarId}}\",\n  \"importedBy\": \"{{employeeId}}\",\n  \"holidays\": [\n    { \"name\": \"New Year's Day\", \"date\": \"2026-01-01\", \"isOptional\": false },\n    { \"name\": \"Labour Day\", \"date\": \"2026-05-01\", \"isOptional\": false },\n    { \"name\": \"Christmas Day\", \"date\": \"2026-12-25\", \"isOptional\": false }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/holidays/bulk-import",
+              "host": ["{{baseUrl}}"],
+              "path": ["holidays", "bulk-import"]
+            }
+          }
+        },
+        {
+          "name": "Get Year Holiday Calendar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/holidays/calendar?companyId={{companyId}}&year=2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["holidays", "calendar"],
+              "query": [
+                { "key": "companyId", "value": "{{companyId}}" },
+                { "key": "year", "value": "2026" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

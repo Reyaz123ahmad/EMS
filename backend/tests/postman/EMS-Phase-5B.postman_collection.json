@@ -1,0 +1,470 @@
+{
+	"info": {
+		"_postman_id": "8f694e91-7f8e-4a6c-9477-8c8f0cb18a4d",
+		"name": "EMS - Phase 5B Platform Completion Collection",
+		"description": "Comprehensive Postman collection for EMS Phase 5B covering Custom Unique IDs, Refunds, Payments, Subscriptions & Proration, Invoices & Tax, Payment Analytics, Coupons, and Client Portal.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Custom Unique IDs",
+			"item": [
+				{
+					"name": "List Companies by Code",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{superAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/companies?companyCode={{sampleCompanyCode}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["companies"],
+							"query": [{ "key": "companyCode", "value": "{{sampleCompanyCode}}" }]
+						}
+					}
+				},
+				{
+					"name": "Get Company by Code or UUID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{superAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/companies/{{sampleCompanyCode}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["companies", "{{sampleCompanyCode}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Employee by Code or UUID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/employees/{{sampleEmployeeCode}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["employees", "{{sampleEmployeeCode}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Refunds & Payments",
+			"item": [
+				{
+					"name": "Get Refund Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/refunds/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["refunds", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Request Refund (Customer/Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"paymentId\": \"{{paymentId}}\",\n  \"amount\": 1000,\n  \"reason\": \"Overcharge during renewal\",\n  \"description\": \"Customer requested billing adjustment\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/refunds/request",
+							"host": ["{{baseUrl}}"],
+							"path": ["refunds", "request"]
+						}
+					}
+				},
+				{
+					"name": "System Issue Refund (Super Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{superAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"paymentId\": \"{{paymentId}}\",\n  \"amount\": 500,\n  \"description\": \"System SLA guarantee breach credit\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/refunds/system-issue",
+							"host": ["{{baseUrl}}"],
+							"path": ["refunds", "system-issue"]
+						}
+					}
+				},
+				{
+					"name": "Handle Payment Failure",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"paymentId\": \"{{paymentId}}\",\n  \"reason\": \"Card authentication failed (3DS timeout)\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payments/failure",
+							"host": ["{{baseUrl}}"],
+							"path": ["payments", "failure"]
+						}
+					}
+				},
+				{
+					"name": "Retry Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"paymentId\": \"{{paymentId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/payments/retry",
+							"host": ["{{baseUrl}}"],
+							"path": ["payments", "retry"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Subscriptions & Proration",
+			"item": [
+				{
+					"name": "Start Trial",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{superAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"planId\": \"{{planId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/trial/start",
+							"host": ["{{baseUrl}}"],
+							"path": ["subscriptions", "trial", "start"]
+						}
+					}
+				},
+				{
+					"name": "Calculate Proration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newPlanId\": \"{{upgradePlanId}}\",\n  \"changeType\": \"UPGRADE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/proration/calculate",
+							"host": ["{{baseUrl}}"],
+							"path": ["subscriptions", "proration", "calculate"]
+						}
+					}
+				},
+				{
+					"name": "Apply Proration Plan Upgrade",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newPlanId\": \"{{upgradePlanId}}\",\n  \"changeType\": \"UPGRADE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/subscriptions/proration/apply",
+							"host": ["{{baseUrl}}"],
+							"path": ["subscriptions", "proration", "apply"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Invoices & PDF",
+			"item": [
+				{
+					"name": "List Invoices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/invoices",
+							"host": ["{{baseUrl}}"],
+							"path": ["invoices"]
+						}
+					}
+				},
+				{
+					"name": "Download Invoice PDF",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/invoices/{{invoiceId}}/download",
+							"host": ["{{baseUrl}}"],
+							"path": ["invoices", "{{invoiceId}}", "download"]
+						}
+					}
+				},
+				{
+					"name": "Send Invoice Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/invoices/{{invoiceId}}/send-email",
+							"host": ["{{baseUrl}}"],
+							"path": ["invoices", "{{invoiceId}}", "send-email"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Payment Analytics",
+			"item": [
+				{
+					"name": "Get Revenue Summary",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payment-analytics/revenue",
+							"host": ["{{baseUrl}}"],
+							"path": ["payment-analytics", "revenue"]
+						}
+					}
+				},
+				{
+					"name": "Get MRR & ARR",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payment-analytics/mrr",
+							"host": ["{{baseUrl}}"],
+							"path": ["payment-analytics", "mrr"]
+						}
+					}
+				},
+				{
+					"name": "Get Churn Analysis",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payment-analytics/churn",
+							"host": ["{{baseUrl}}"],
+							"path": ["payment-analytics", "churn"]
+						}
+					}
+				},
+				{
+					"name": "Get Payment Success & Refund Rates",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/payment-analytics/success-rate",
+							"host": ["{{baseUrl}}"],
+							"path": ["payment-analytics", "success-rate"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Coupons & Discounts",
+			"item": [
+				{
+					"name": "Create Coupon",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{superAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"LAUNCH20\",\n  \"discountType\": \"PERCENTAGE\",\n  \"discountValue\": 20,\n  \"maxUses\": 100,\n  \"validTo\": \"2026-12-31T23:59:59.000Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons",
+							"host": ["{{baseUrl}}"],
+							"path": ["coupons"]
+						}
+					}
+				},
+				{
+					"name": "Validate Coupon Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"LAUNCH20\",\n  \"planId\": \"{{planId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons/validate",
+							"host": ["{{baseUrl}}"],
+							"path": ["coupons", "validate"]
+						}
+					}
+				},
+				{
+					"name": "Apply Coupon",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{companyAdminToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"LAUNCH20\",\n  \"planId\": \"{{planId}}\",\n  \"companyId\": \"{{companyId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/coupons/apply",
+							"host": ["{{baseUrl}}"],
+							"path": ["coupons", "apply"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Client Portal",
+			"item": [
+				{
+					"name": "Get Client Dashboard",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{clientToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/client-portal/dashboard",
+							"host": ["{{baseUrl}}"],
+							"path": ["client-portal", "dashboard"]
+						}
+					}
+				},
+				{
+					"name": "List Client Projects",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{clientToken}}", "type": "text" }
+						],
+						"url": {
+							"raw": "{{baseUrl}}/client-portal/projects",
+							"host": ["{{baseUrl}}"],
+							"path": ["client-portal", "projects"]
+						}
+					}
+				},
+				{
+					"name": "Submit Project Requirement",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{clientToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"title\": \"Custom Slack Notification Webhook Integration\",\n  \"description\": \"Real-time alerts for leave approval and shift swaps directly in Slack channels.\",\n  \"priority\": \"HIGH\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/client-portal/requirements",
+							"host": ["{{baseUrl}}"],
+							"path": ["client-portal", "requirements"]
+						}
+					}
+				},
+				{
+					"name": "Post Discussion Comment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Authorization", "value": "Bearer {{clientToken}}", "type": "text" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"projectId\": \"{{projectId}}\",\n  \"content\": \"Milestone accepted and verified by QA team.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/client-portal/comments",
+							"host": ["{{baseUrl}}"],
+							"path": ["client-portal", "comments"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{ "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+		{ "key": "superAdminToken", "value": "" },
+		{ "key": "companyAdminToken", "value": "" },
+		{ "key": "clientToken", "value": "" },
+		{ "key": "sampleCompanyCode", "value": "MIND-2026-0001" },
+		{ "key": "sampleEmployeeCode", "value": "EMP002" },
+		{ "key": "companyId", "value": "" },
+		{ "key": "paymentId", "value": "" },
+		{ "key": "planId", "value": "" },
+		{ "key": "upgradePlanId", "value": "" },
+		{ "key": "invoiceId", "value": "" },
+		{ "key": "projectId", "value": "" }
+	]
+}
