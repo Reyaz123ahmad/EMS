@@ -1,17 +1,24 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSubscription, usePlans, useCurrentSubscription } from '../../hooks/useSubscription.js';
+import { usePlans, useCurrentSubscription } from '../../hooks/useSubscription.js';
+import useAuthStore from '../../store/auth.store.js';
 import PlanCard from '../../components/subscription/PlanCard.jsx';
 import PlanComparison from '../../components/subscription/PlanComparison.jsx';
 import { Sparkles } from 'lucide-react';
 
 export function PlansPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const { data: plans = [], isLoading: loadingPlans } = usePlans();
   const { data: currentSub } = useCurrentSubscription();
 
   const handleSelectPlan = (plan) => {
-    navigate('/subscription/upgrade', { state: { selectedPlan: plan } });
+    if (isSuperAdmin) {
+      navigate('/companies');
+    } else {
+      navigate('/subscription/upgrade', { state: { selectedPlan: plan } });
+    }
   };
 
   return (
@@ -21,10 +28,12 @@ export function PlansPage() {
           <Sparkles className="h-3.5 w-3.5" /> Flexible SaaS Plans for Enterprise Growth
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-          Choose the Perfect Plan for Your Team
+          {isSuperAdmin ? 'Platform Subscription Tiers' : 'Choose the Perfect Plan for Your Team'}
         </h1>
         <p className="text-base text-slate-500 dark:text-slate-400">
-          Scale your attendance tracking, biometric security, and HR payroll effortlessly with enterprise-grade cloud reliability.
+          {isSuperAdmin
+            ? 'Manage and assign subscription tiers across all tenant companies.'
+            : 'Scale your attendance tracking, biometric security, and HR payroll effortlessly with enterprise-grade cloud reliability.'}
         </p>
       </div>
 
@@ -40,10 +49,16 @@ export function PlansPage() {
             <PlanCard
               key={plan.id}
               plan={plan}
-              isCurrent={currentSub?.planId === plan.id}
+              isCurrent={!isSuperAdmin && currentSub?.planId === plan.id}
               isPopular={plan.name?.toLowerCase().includes('pro')}
               onSelect={handleSelectPlan}
-              actionText={currentSub?.planId === plan.id ? 'Current Plan' : 'Select Plan'}
+              actionText={
+                isSuperAdmin
+                  ? 'Assign to Company'
+                  : currentSub?.planId === plan.id
+                  ? 'Current Plan'
+                  : 'Select Plan'
+              }
             />
           ))}
         </div>
@@ -60,3 +75,4 @@ export function PlansPage() {
 }
 
 export default PlansPage;
+

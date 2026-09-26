@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCompanies } from '../../hooks/useCompany.js';
 import { DataTable } from '../../components/ui/DataTable.jsx';
 import { Button } from '../../components/ui/Button.jsx';
@@ -21,6 +22,22 @@ export function CompanyListPage() {
 
   const companies = data?.data?.companies || [];
   const pagination = data?.data?.pagination || { page: 1, limit: 10, total: 0, totalPages: 1 };
+
+  const queryClient = useQueryClient();
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  const handleAction = async (actionFn, id, confirmMsg = null) => {
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    try {
+      setActionLoadingId(id);
+      await actionFn(id);
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Operation failed');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
 
   const columns = [
     {
@@ -67,7 +84,7 @@ export function CompanyListPage() {
               {status}
             </span>
             <span className="text-[11px] text-slate-400">
-              {row.subscription?.plan?.name ? `${row.subscription.plan.name} Plan` : '14-Day Trial'}
+              {row.subscription?.plan?.name ? `${row.subscription.plan.name} Plan` : 'Trial'}
             </span>
           </div>
         );
@@ -87,26 +104,66 @@ export function CompanyListPage() {
       header: 'Actions',
       key: 'actions',
       align: 'right',
-      render: (row) => (
-        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(`/companies/${row.id}`)}
-            className="text-slate-300 hover:text-white hover:bg-slate-800"
-          >
-            View
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/companies/${row.id}/settings`)}
-            className="border-slate-700 hover:border-slate-600"
-          >
-            Settings
-          </Button>
-        </div>
-      )
+      render: (row) => {
+        const isCurrentActive = row.status === 'ACTIVE';
+        const isLoadingThis = actionLoadingId === row.id;
+
+        return (
+          <div className="flex items-center justify-end gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => navigate(`/companies/${row.id}`)}
+              className="text-slate-300 hover:text-white hover:bg-slate-800 text-xs px-2 py-1"
+            >
+              View
+            </Button>
+            
+            {!isCurrentActive ? (
+              <Button
+                variant="outline"
+                size="xs"
+                disabled={isLoadingThis}
+                onClick={() => handleAction(companyService.activateCompany, row.id)}
+                className="border-emerald-700/50 text-emerald-400 hover:bg-emerald-950/40 text-xs px-2 py-1"
+              >
+                Activate
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  disabled={isLoadingThis}
+                  onClick={() => handleAction(companyService.deactivateCompany, row.id)}
+                  className="border-amber-700/50 text-amber-400 hover:bg-amber-950/40 text-xs px-2 py-1"
+                >
+                  Deactivate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  disabled={isLoadingThis}
+                  onClick={() => handleAction(companyService.suspendCompany, row.id)}
+                  className="border-red-700/50 text-red-400 hover:bg-red-950/40 text-xs px-2 py-1"
+                >
+                  Suspend
+                </Button>
+              </>
+            )}
+
+            <Button
+              variant="ghost"
+              size="xs"
+              disabled={isLoadingThis}
+              onClick={() => handleAction(companyService.deleteCompany, row.id, `Are you sure you want to permanently delete ${row.name}?`)}
+              className="text-red-400 hover:text-red-300 hover:bg-red-950/30 text-xs px-2 py-1"
+            >
+              Delete
+            </Button>
+          </div>
+        );
+      }
     }
   ];
 

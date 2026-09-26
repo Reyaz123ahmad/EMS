@@ -51,6 +51,12 @@ router.get('/:id/dashboard', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_A
 router.get('/:id/stats', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), companiesController.getStats);
 router.get('/:id/analytics', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), companiesController.getAnalytics);
 
+// Lifecycle Actions (SUPER_ADMIN only)
+router.post('/:id/activate', authenticate, requireRole('SUPER_ADMIN'), companiesController.activateCompany);
+router.post('/:id/deactivate', authenticate, requireRole('SUPER_ADMIN'), companiesController.deactivateCompany);
+router.post('/:id/suspend', authenticate, requireRole('SUPER_ADMIN'), companiesController.suspendCompany);
+router.delete('/:id', authenticate, requireRole('SUPER_ADMIN'), companiesController.deleteCompany);
+
 // Single Company details (after specific sub-routes)
 router.get('/:id', authenticate, companiesController.getCompany);
 router.put('/:id', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), companiesController.updateCompany);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useEmployees, useDeleteEmployee } from '../../hooks/useEmployee.js';
+import useAuthStore from '../../store/auth.store.js';
 import { DataTable } from '../../components/ui/DataTable.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Card } from '../../components/ui/Card.jsx';
@@ -9,6 +10,8 @@ import { Modal } from '../../components/ui/Modal.jsx';
 
 export function EmployeeListPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -173,25 +176,27 @@ export function EmployeeListPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Link to="/employees/bulk-import">
-            <Button variant="outline" className="border-slate-700 hover:bg-slate-800 text-slate-200">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              Bulk Import
-            </Button>
-          </Link>
+        {!isSuperAdmin && (
+          <div className="flex items-center gap-3">
+            <Link to="/employees/bulk-import">
+              <Button variant="outline" className="border-slate-700 hover:bg-slate-800 text-slate-200">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Bulk Import
+              </Button>
+            </Link>
 
-          <Link to="/employees/create">
-            <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/20">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Add Employee
-            </Button>
-          </Link>
-        </div>
+            <Link to="/employees/create">
+              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/20">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Employee
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Filter and Search Bar */}

@@ -102,6 +102,38 @@ export const companyService = {
   async getCompanyAnalytics(params = {}) {
     const response = await api.get('/companies/analytics', { params });
     return response.data;
+  },
+
+  /**
+   * Activate company
+   */
+  async activateCompany(id) {
+    const response = await api.post(`/companies/${id}/activate`);
+    return response.data;
+  },
+
+  /**
+   * Deactivate company
+   */
+  async deactivateCompany(id) {
+    const response = await api.post(`/companies/${id}/deactivate`);
+    return response.data;
+  },
+
+  /**
+   * Suspend company
+   */
+  async suspendCompany(id) {
+    const response = await api.post(`/companies/${id}/suspend`);
+    return response.data;
+  },
+
+  /**
+   * Delete company
+   */
+  async deleteCompany(id) {
+    const response = await api.delete(`/companies/${id}`);
+    return response.data;
   }
 };
 

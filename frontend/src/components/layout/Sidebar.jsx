@@ -82,8 +82,7 @@ export const Sidebar = ({
             ]
           },
           { label: 'Queue Monitor', to: '/admin/queues', icon: Cpu },
-          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
-          { label: 'Settings', to: '/settings/general', icon: Settings }
+          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles }
         ];
       case 'COMPANY_ADMIN':
       case 'HR_ADMIN':

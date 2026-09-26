@@ -71,7 +71,25 @@ export async function getPaymentHistory(companyId, pagination = { page: 1, limit
   const skip = (page - 1) * limit;
 
   if (!companyId) {
-    return { payments: [], total: 0, page: 1, limit: 20, totalPages: 0 };
+    const [total, payments] = await Promise.all([
+      prisma.paymentTransaction.count(),
+      prisma.paymentTransaction.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          subscription: {
+            include: {
+              company: true,
+              plan: true,
+            },
+          },
+          refundRequests: true,
+        },
+      }),
+    ]);
+
+    return { total, page, limit, totalPages: Math.ceil(total / limit) || 1, payments };
   }
 
   const subscription = await prisma.subscription.findUnique({
@@ -79,7 +97,7 @@ export async function getPaymentHistory(companyId, pagination = { page: 1, limit
   });
 
   if (!subscription) {
-    return { total: 0, page, limit, payments: [] };
+    return { total: 0, page, limit, totalPages: 0, payments: [] };
   }
 
   const [total, payments] = await Promise.all([
@@ -90,12 +108,18 @@ export async function getPaymentHistory(companyId, pagination = { page: 1, limit
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
+        subscription: {
+          include: {
+            company: true,
+            plan: true,
+          },
+        },
         refundRequests: true,
       },
     }),
   ]);
 
-  return { total, page, limit, totalPages: Math.ceil(total / limit), payments };
+  return { total, page, limit, totalPages: Math.ceil(total / limit) || 1, payments };
 }
 
 export const listPayments = getPaymentHistory;

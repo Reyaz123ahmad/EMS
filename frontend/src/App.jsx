@@ -144,6 +144,8 @@ import CurrentSubscriptionPage from './pages/subscription/CurrentSubscriptionPag
 import UpgradeSubscriptionPage from './pages/subscription/UpgradeSubscriptionPage.jsx';
 import SubscriptionHistoryPage from './pages/subscription/SubscriptionHistoryPage.jsx';
 import RenewSubscriptionPage from './pages/subscription/RenewSubscriptionPage.jsx';
+import PaymentsPage from './pages/payments/PaymentsPage.jsx';
+import InvoicesPage from './pages/invoices/InvoicesPage.jsx';
 
 // Advanced Security Module Pages
 import SecurityDashboardPage from './pages/security/SecurityDashboardPage.jsx';
@@ -257,12 +259,15 @@ export default function App() {
         <Route path="/profile/change-password" element={<ChangePasswordPage />} />
         <Route path="/profile/2fa" element={<TwoFactorSetupPage />} />
 
-        {/* Subscription Routes */}
+        {/* Subscription & Billing Routes */}
         <Route path="/subscription/plans" element={<PlansPage />} />
+        <Route path="/plans" element={<PlansPage />} />
         <Route path="/subscription/current" element={<CurrentSubscriptionPage />} />
         <Route path="/subscription/upgrade" element={<UpgradeSubscriptionPage />} />
         <Route path="/subscription/history" element={<SubscriptionHistoryPage />} />
         <Route path="/subscription/renew" element={<RenewSubscriptionPage />} />
+        <Route path="/payments" element={<PaymentsPage />} />
+        <Route path="/invoices" element={<InvoicesPage />} />
 
         {/* Settings Routes */}
         <Route path="/settings" element={<SettingsLayout />}>

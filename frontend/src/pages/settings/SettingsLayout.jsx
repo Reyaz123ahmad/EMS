@@ -10,7 +10,15 @@ import {
   Bell
 } from 'lucide-react';
 
+import useAuthStore from '../../store/auth.store';
+import { Navigate } from 'react-router-dom';
+
 export const SettingsLayout = () => {
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN';
+  if (isSuperAdmin) {
+    return <Navigate to="/dashboard/super-admin" replace />;
+  }
   const tabs = [
     { label: 'General & Branding', to: '/settings/general', icon: Building },
     { label: 'Attendance & Shifts', to: '/settings/attendance', icon: CalendarCheck },

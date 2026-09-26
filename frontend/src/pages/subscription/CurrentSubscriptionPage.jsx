@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCurrentSubscription, useSubscriptionStats, useCheckExpiry, useCancelSubscription } from '../../hooks/useSubscription.js';
+import useAuthStore from '../../store/auth.store.js';
 import UsageCard from '../../components/subscription/UsageCard.jsx';
-import { Users, Building2, Smartphone, ShieldCheck, RefreshCw, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { Users, Building2, Smartphone, ShieldCheck, RefreshCw, AlertCircle, ArrowUpRight, Edit3 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CurrentSubscriptionPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const { data: sub, isLoading: loadingSub } = useCurrentSubscription();
   const { data: stats } = useSubscriptionStats();
   const { data: expiry } = useCheckExpiry();
@@ -32,25 +35,46 @@ export function CurrentSubscriptionPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-            Current Subscription
+            {isSuperAdmin ? 'Subscription Management' : 'Current Subscription'}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Manage your company's tier, usage limits, and renewal options.
+            {isSuperAdmin
+              ? 'Platform Super Admin view. Configure tiers and assign subscriptions to organizations.'
+              : "Manage your company's tier, usage limits, and renewal options."}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Link
-            to="/subscription/plans"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            Change Plan <ArrowUpRight className="h-4 w-4" />
-          </Link>
-          <button
-            onClick={() => navigate('/subscription/renew')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition-colors"
-          >
-            <RefreshCw className="h-4 w-4" /> Renew Plan
-          </button>
+          {isSuperAdmin ? (
+            <>
+              <Link
+                to="/plans"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition-colors"
+              >
+                <Edit3 className="h-4 w-4" /> Edit Platform Plans
+              </Link>
+              <Link
+                to="/companies"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Assign Plan to Company <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/subscription/plans"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Change Plan <ArrowUpRight className="h-4 w-4" />
+              </Link>
+              <button
+                onClick={() => navigate('/subscription/renew')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition-colors"
+              >
+                <RefreshCw className="h-4 w-4" /> Renew Plan
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -109,22 +133,24 @@ export function CurrentSubscriptionPage() {
       </div>
 
       {/* Subscription Actions */}
-      <div className="flex items-center justify-between p-5 rounded-2xl border border-rose-100 dark:border-rose-950/30 bg-rose-50/20 dark:bg-rose-950/10">
-        <div>
-          <h3 className="text-sm font-semibold text-rose-900 dark:text-rose-300">
-            Cancel Subscription
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Auto-renew will be paused at the end of the current billing cycle.
-          </p>
+      {!isSuperAdmin && (
+        <div className="flex items-center justify-between p-5 rounded-2xl border border-rose-100 dark:border-rose-950/30 bg-rose-50/20 dark:bg-rose-950/10">
+          <div>
+            <h3 className="text-sm font-semibold text-rose-900 dark:text-rose-300">
+              Cancel Subscription
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Auto-renew will be paused at the end of the current billing cycle.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowCancelModal(true)}
+            className="px-3.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+          >
+            Cancel Auto-Renew
+          </button>
         </div>
-        <button
-          onClick={() => setShowCancelModal(true)}
-          className="px-3.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-        >
-          Cancel Auto-Renew
-        </button>
-      </div>
+      )}
 
       {/* Cancel Modal */}
       {showCancelModal && (

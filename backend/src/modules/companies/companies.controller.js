@@ -226,6 +226,58 @@ export const companiesController = {
     } catch (err) {
       next(err);
     }
+  },
+
+  /**
+   * POST /companies/:id/activate
+   */
+  async activateCompany(req, res, next) {
+    try {
+      const { id } = req.params;
+      const company = await companiesService.activateCompany(id);
+      res.status(200).json({ status: 'ok', message: 'Company activated successfully', data: { company } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /companies/:id/deactivate
+   */
+  async deactivateCompany(req, res, next) {
+    try {
+      const { id } = req.params;
+      const company = await companiesService.deactivateCompany(id);
+      res.status(200).json({ status: 'ok', message: 'Company deactivated successfully', data: { company } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /companies/:id/suspend
+   */
+  async suspendCompany(req, res, next) {
+    try {
+      const { id } = req.params;
+      const company = await companiesService.suspendCompany(id);
+      res.status(200).json({ status: 'ok', message: 'Company suspended successfully', data: { company } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * DELETE /companies/:id
+   */
+  async deleteCompany(req, res, next) {
+    try {
+      const { id } = req.params;
+      await companiesService.deleteCompany(id);
+      res.status(200).json({ status: 'ok', message: 'Company deleted successfully' });
+    } catch (err) {
+      next(err);
+    }
   }
 };
 

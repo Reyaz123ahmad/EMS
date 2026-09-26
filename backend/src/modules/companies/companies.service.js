@@ -24,7 +24,7 @@ export const companiesService = {
   /**
    * Step 1: Send OTP to prospective company admin email
    */
-  async sendCompanyOTP({ companyData, adminData }) {
+  async sendCompanyOTP({ companyData, adminData, planId }) {
     const existingUser = await authRepository.findUserByEmail(adminData.email);
     if (existingUser) {
       throw new Error(`An account with email ${adminData.email} is already registered.`);
@@ -47,6 +47,7 @@ export const companiesService = {
       verified: false,
       companyData,
       adminData,
+      planId: planId || companyData?.planId || null,
       createdAt: Date.now()
     };
 
@@ -59,14 +60,18 @@ export const companiesService = {
     );
 
     // Queue OTP email
-    await addOTPEmail({
-      to: adminData.email,
-      name: `${adminData.firstName} ${adminData.lastName}`,
-      otp,
-      purpose: 'COMPANY_ADMIN_CREATE',
-      expiryMinutes: 15,
-      companyName: companyData.name
-    });
+    try {
+      await addOTPEmail({
+        to: adminData.email,
+        name: `${adminData.firstName} ${adminData.lastName}`,
+        otp,
+        purpose: 'COMPANY_ADMIN_CREATE',
+        expiryMinutes: 15,
+        companyName: companyData.name
+      });
+    } catch (emailErr) {
+      console.warn('[companies.service] Could not queue OTP email:', emailErr.message);
+    }
 
     return {
       sessionId,
@@ -125,7 +130,7 @@ export const companiesService = {
   /**
    * Step 3: Complete Company Creation & Admin Provisioning
    */
-  async createCompanyWithAdmin({ sessionId, companyData, adminData }) {
+  async createCompanyWithAdmin({ sessionId, companyData, adminData, planId }) {
     const rawData = await authRepository.getOTP(`session:${sessionId}`, 'COMPANY_ADMIN_CREATE');
     if (!rawData) {
       throw new Error('Verification session expired. Please verify OTP again.');
@@ -137,9 +142,10 @@ export const companiesService = {
     }
 
     // Resolve subscription plan
+    const selectedPlanId = planId || companyData?.planId || session?.planId;
     let plan = null;
-    if (companyData.planId) {
-      plan = await companiesRepository.findPlanById(companyData.planId);
+    if (selectedPlanId) {
+      plan = await companiesRepository.findPlanById(selectedPlanId);
     }
     if (!plan) {
       plan = await companiesRepository.findDefaultPlan();
@@ -149,8 +155,10 @@ export const companiesService = {
     const temporaryPassword = `Temp@${crypto.randomBytes(4).toString('hex')}!`;
     const passwordHash = await hashPassword(temporaryPassword);
 
-    // Create Company and Subscription in transaction
-    const trialEndsAt = new Date(Date.now() + DEFAULT_TRIAL_DAYS * 86400000);
+    const isTrial = plan?.name?.toUpperCase() === 'TRIAL';
+    const initialStatus = isTrial ? 'TRIAL' : 'ACTIVE';
+    const trialDurationDays = isTrial ? DEFAULT_TRIAL_DAYS : 365;
+    const subscriptionEndDate = new Date(Date.now() + trialDurationDays * 86400000);
 
     // Generate company code
     const companyCode = await generateCompanyCode();
@@ -165,7 +173,7 @@ export const companiesService = {
           email: companyData.email || adminData.email,
           phone: companyData.phone || adminData.phone || null,
           address: companyData.address || null,
-          status: 'TRIAL',
+          status: initialStatus,
           attendanceSettings: COMPANY_SETTINGS_DEFAULTS.attendanceSettings,
           securitySettings: COMPANY_SETTINGS_DEFAULTS.securitySettings,
           leaveSettings: COMPANY_SETTINGS_DEFAULTS.leaveSettings,
@@ -180,9 +188,10 @@ export const companiesService = {
         data: {
           companyId: company.id,
           planId: plan.id,
-          status: 'TRIAL',
-          trialEndsAt,
-          endDate: trialEndsAt,
+          status: initialStatus,
+          trialEndsAt: isTrial ? subscriptionEndDate : null,
+          startDate: new Date(),
+          endDate: subscriptionEndDate,
           autoRenew: true
         }
       });
@@ -214,7 +223,7 @@ export const companiesService = {
       }
 
       // 5. Create default Branch
-      const branchCode = await generateBranchCode(company.id);
+      const branchCode = `${company.companyCode || 'COMP'}-BR-0001`;
       const mainBranch = await tx.branch.create({
         data: {
           companyId: company.id,
@@ -229,7 +238,7 @@ export const companiesService = {
       });
 
       // 6. Create default Department
-      const departmentCode = await generateDepartmentCode(company.id);
+      const departmentCode = `${company.companyCode || 'COMP'}-DEPT-0001`;
       const mainDept = await tx.department.create({
         data: {
           companyId: company.id,
@@ -240,7 +249,7 @@ export const companiesService = {
       });
 
       // 7. Create Employee profile for Admin
-      const employeeCode = await generateEmployeeCode(company.id);
+      const employeeCode = `${company.companyCode || 'COMP'}-EMP-0001`;
       const employee = await tx.employee.create({
         data: {
           companyId: company.id,
@@ -283,17 +292,21 @@ export const companiesService = {
     await authRepository.deleteOTP(`session:${sessionId}`, 'COMPANY_ADMIN_CREATE');
 
     // Queue credentials email
-    await addCredentialsEmail({
-      to: adminData.email,
-      name: `${adminData.firstName} ${adminData.lastName}`,
-      email: adminData.email,
-      password: temporaryPassword,
-      role: 'COMPANY_ADMIN',
-      companyName: companyData.name,
-      employeeCode: 'EMP001',
-      department: 'Administration',
-      loginUrl: 'http://localhost:3000/login'
-    });
+    try {
+      await addCredentialsEmail({
+        to: adminData.email,
+        name: `${adminData.firstName} ${adminData.lastName}`,
+        email: adminData.email,
+        password: temporaryPassword,
+        role: 'COMPANY_ADMIN',
+        companyName: companyData.name,
+        employeeCode: 'EMP001',
+        department: 'Administration',
+        loginUrl: 'http://localhost:3000/login'
+      });
+    } catch (emailErr) {
+      console.warn('[companies.service] Could not queue credentials email:', emailErr.message);
+    }
 
     return {
       company: result.company,
@@ -531,10 +544,119 @@ export const companiesService = {
   },
 
   /**
+   * Get company by ID
+   */
+  async getCompanyById(id) {
+    const company = await companiesRepository.findCompanyById(id);
+    if (!company) {
+      const err = new Error('Company not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    return company;
+  },
+
+  /**
+   * List all companies
+   */
+  async listCompanies(filters = {}, pagination = { page: 1, limit: 10 }) {
+    return companiesRepository.findAllCompanies(filters, pagination);
+  },
+
+  /**
    * Update company details
    */
   async updateCompany(id, data) {
     return companiesRepository.updateCompany(id, data);
+  },
+
+  /**
+   * Activate company
+   */
+  async activateCompany(id) {
+    const company = await companiesRepository.findCompanyById(id);
+    if (!company) {
+      const err = new Error('Company not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    const updated = await prisma.$transaction(async (tx) => {
+      const comp = await tx.company.update({
+        where: { id },
+        data: { status: 'ACTIVE' }
+      });
+      await tx.subscription.updateMany({
+        where: { companyId: id },
+        data: { status: 'ACTIVE' }
+      });
+      await tx.user.updateMany({
+        where: { companyId: id },
+        data: { status: 'ACTIVE' }
+      });
+      return comp;
+    });
+    return updated;
+  },
+
+  /**
+   * Deactivate company
+   */
+  async deactivateCompany(id) {
+    const company = await companiesRepository.findCompanyById(id);
+    if (!company) {
+      const err = new Error('Company not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    const updated = await prisma.$transaction(async (tx) => {
+      const comp = await tx.company.update({
+        where: { id },
+        data: { status: 'EXPIRED' }
+      });
+      await tx.subscription.updateMany({
+        where: { companyId: id },
+        data: { status: 'EXPIRED' }
+      });
+      return comp;
+    });
+    return updated;
+  },
+
+  /**
+   * Suspend company
+   */
+  async suspendCompany(id) {
+    const company = await companiesRepository.findCompanyById(id);
+    if (!company) {
+      const err = new Error('Company not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    const updated = await prisma.$transaction(async (tx) => {
+      const comp = await tx.company.update({
+        where: { id },
+        data: { status: 'SUSPENDED' }
+      });
+      await tx.subscription.updateMany({
+        where: { companyId: id },
+        data: { status: 'CANCELLED' }
+      });
+      return comp;
+    });
+    return updated;
+  },
+
+  /**
+   * Delete company
+   */
+  async deleteCompany(id) {
+    const company = await companiesRepository.findCompanyById(id);
+    if (!company) {
+      const err = new Error('Company not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    return companiesRepository.deleteCompany(id);
   }
 };
 

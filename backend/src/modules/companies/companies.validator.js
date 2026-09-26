@@ -17,7 +17,8 @@ export const sendCompanyOTPSchema = Joi.object({
     lastName: Joi.string().min(1).max(50).required(),
     email: Joi.string().email().required(),
     phone: Joi.string().optional().allow('', null)
-  }).required()
+  }).required(),
+  planId: Joi.string().optional().allow('', null)
 });
 
 export const verifyCompanyOTPSchema = Joi.object({
@@ -44,7 +45,8 @@ export const createCompanySchema = Joi.object({
     lastName: Joi.string().min(1).max(50).required(),
     email: Joi.string().email().required(),
     phone: Joi.string().optional().allow('', null)
-  }).required()
+  }).required(),
+  planId: Joi.string().optional().allow('', null)
 });
 
 export const updateCompanySchema = Joi.object({
