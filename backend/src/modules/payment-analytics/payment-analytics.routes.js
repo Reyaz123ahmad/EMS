@@ -14,6 +14,7 @@ router.get('/arr', controller.getARR);
 router.get('/churn', controller.getChurnRate);
 router.get('/success-rate', controller.getPaymentSuccessRate);
 router.get('/refund-rate', controller.getRefundRate);
+router.get('/refunds', controller.getRefundRate);
 router.get('/payment-methods', controller.getPaymentMethodStats);
 router.get('/revenue-by-plan', controller.getRevenueByPlan);
 

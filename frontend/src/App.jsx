@@ -108,8 +108,10 @@ import OvertimeStatsPage from './pages/overtime/OvertimeStatsPage.jsx';
 
 // Shift & Roster Module Pages
 import ShiftListPage from './pages/shifts/ShiftListPage.jsx';
+import CreateShiftPage from './pages/shifts/CreateShiftPage.jsx';
 import ShiftDetailPage from './pages/shifts/ShiftDetailPage.jsx';
 import AssignShiftPage from './pages/shifts/AssignShiftPage.jsx';
+import MyShiftPage from './pages/shifts/MyShiftPage.jsx';
 import RosterListPage from './pages/shifts/RosterListPage.jsx';
 import GenerateRosterPage from './pages/shifts/GenerateRosterPage.jsx';
 import RosterCalendarPage from './pages/shifts/RosterCalendarPage.jsx';
@@ -346,8 +348,10 @@ export default function App() {
 
         {/* Shift & Roster Routes */}
         <Route path="/shifts" element={<ShiftListPage />} />
+        <Route path="/shifts/create" element={<CreateShiftPage />} />
         <Route path="/shifts/assign" element={<AssignShiftPage />} />
         <Route path="/shifts/:id" element={<ShiftDetailPage />} />
+        <Route path="/my-shift" element={<MyShiftPage />} />
         <Route path="/rosters" element={<RosterListPage />} />
         <Route path="/rosters/generate" element={<GenerateRosterPage />} />
         <Route path="/rosters/calendar" element={<RosterCalendarPage />} />

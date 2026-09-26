@@ -19,6 +19,7 @@ import Progress from '../../components/ui/Progress';
 import useAuthStore from '../../store/auth.store';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import MyShiftCard from '../../components/dashboard/MyShiftCard';
 
 export const EmployeeDashboard = () => {
   const { user } = useAuthStore();
@@ -139,12 +140,17 @@ export const EmployeeDashboard = () => {
         />
       </div>
 
-      {/* Quick Actions */}
-      <div className="space-y-2">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
-          Quick Employee Actions
-        </h3>
-        <QuickActions actions={quickActions} />
+      {/* My Shift & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <div>
+          <MyShiftCard />
+        </div>
+        <div className="lg:col-span-2 space-y-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
+            Quick Employee Actions
+          </h3>
+          <QuickActions actions={quickActions} />
+        </div>
       </div>
 
       {/* Grid: Shift Progress & Leave Balances */}

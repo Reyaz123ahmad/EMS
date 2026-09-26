@@ -9,16 +9,15 @@ import {
   CartesianGrid
 } from 'recharts';
 
-export const CompanyGrowthChart = ({
-  data = [
-    { month: 'Jan', companies: 12, users: 180 },
-    { month: 'Feb', companies: 19, users: 320 },
-    { month: 'Mar', companies: 28, users: 490 },
-    { month: 'Apr', companies: 42, users: 780 },
-    { month: 'May', companies: 58, users: 1240 },
-    { month: 'Jun', companies: 75, users: 1850 }
-  ]
-}) => {
+export const CompanyGrowthChart = ({ data = [] }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs text-slate-400">
+        No tenant growth data available for this timeframe
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">

@@ -10,23 +10,18 @@ import {
 } from 'recharts';
 
 export function SuccessRateChart({ data = [] }) {
-  const chartData =
-    data.length > 0
-      ? data
-      : [
-          { date: 'Mon', successRate: 98.4 },
-          { date: 'Tue', successRate: 99.1 },
-          { date: 'Wed', successRate: 97.8 },
-          { date: 'Thu', successRate: 99.5 },
-          { date: 'Fri', successRate: 99.2 },
-          { date: 'Sat', successRate: 100 },
-          { date: 'Sun', successRate: 99.8 }
-        ];
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs text-slate-400">
+        No payment transactions recorded for this timeframe
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5} />
           <XAxis
             dataKey="date"
@@ -35,7 +30,7 @@ export function SuccessRateChart({ data = [] }) {
             tick={{ fill: '#94a3b8', fontSize: 12 }}
           />
           <YAxis
-            domain={[95, 100]}
+            domain={[0, 100]}
             axisLine={false}
             tickLine={false}
             tick={{ fill: '#94a3b8', fontSize: 12 }}

@@ -28,7 +28,9 @@ export const shiftsService = {
     });
   },
 
-  async createShift(companyId, data) {
+  async createShift(companyIdOrData, maybeData) {
+    const companyId = typeof companyIdOrData === 'object' ? companyIdOrData.companyId : companyIdOrData;
+    const data = typeof companyIdOrData === 'object' ? companyIdOrData : (maybeData || {});
     return prisma.shift.create({
       data: {
         companyId,
@@ -96,6 +98,108 @@ export const shiftsService = {
       totalShifts,
       activeShifts,
       totalAssignments
+    };
+  },
+
+  async getMyShift({ userId, companyId, email }) {
+    let employee = null;
+
+    if (userId) {
+      employee = await prisma.employee.findFirst({
+        where: {
+          userId,
+          ...(companyId ? { companyId } : {})
+        },
+        include: {
+          department: { select: { name: true } },
+          designation: { select: { name: true } }
+        }
+      });
+    }
+
+    if (!employee && email && companyId) {
+      employee = await prisma.employee.findFirst({
+        where: { email, companyId },
+        include: {
+          department: { select: { name: true } },
+          designation: { select: { name: true } }
+        }
+      });
+    }
+
+    const now = new Date();
+
+    if (employee) {
+      const assignment = await prisma.shiftAssignment.findFirst({
+        where: {
+          employeeId: employee.id,
+          OR: [
+            { effectiveTo: null },
+            { effectiveTo: { gte: now } }
+          ]
+        },
+        include: {
+          shift: {
+            include: {
+              shiftBreakRules: {
+                include: { breakRule: true }
+              }
+            }
+          }
+        },
+        orderBy: { effectiveFrom: 'desc' }
+      });
+
+      if (assignment?.shift) {
+        return {
+          shift: assignment.shift,
+          assignment,
+          employee: {
+            id: employee.id,
+            firstName: employee.firstName,
+            lastName: employee.lastName,
+            employeeCode: employee.employeeCode,
+            department: employee.department?.name,
+            designation: employee.designation?.name
+          }
+        };
+      }
+    }
+
+    // Fallback to active default shift for the company
+    const targetCompanyId = companyId || employee?.companyId;
+    if (targetCompanyId) {
+      const defaultShift = await prisma.shift.findFirst({
+        where: {
+          companyId: targetCompanyId,
+          isActive: true
+        },
+        include: {
+          shiftBreakRules: {
+            include: { breakRule: true }
+          }
+        },
+        orderBy: { createdAt: 'asc' }
+      });
+
+      if (defaultShift) {
+        return {
+          shift: defaultShift,
+          assignment: null,
+          employee: employee ? {
+            id: employee.id,
+            firstName: employee.firstName,
+            lastName: employee.lastName,
+            employeeCode: employee.employeeCode
+          } : null
+        };
+      }
+    }
+
+    return {
+      shift: null,
+      assignment: null,
+      employee: null
     };
   }
 };

@@ -25,6 +25,7 @@ import RecentActivity from '../../components/dashboard/RecentActivity';
 import QuickActions from '../../components/dashboard/QuickActions';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import MyShiftCard from '../../components/dashboard/MyShiftCard';
 
 export const CompanyAdminDashboard = () => {
   const navigate = useNavigate();
@@ -159,12 +160,17 @@ export const CompanyAdminDashboard = () => {
         />
       </div>
 
-      {/* Quick Actions */}
-      <div className="space-y-2">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
-          Quick Management Actions
-        </h3>
-        <QuickActions actions={quickActionsList} />
+      {/* My Shift & Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <div>
+          <MyShiftCard />
+        </div>
+        <div className="lg:col-span-2 space-y-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-1">
+            Quick Management Actions
+          </h3>
+          <QuickActions actions={quickActionsList} />
+        </div>
       </div>
 
       {/* Charts Grid */}
@@ -174,7 +180,7 @@ export const CompanyAdminDashboard = () => {
             title="Weekly Attendance & Punctuality"
             subtitle="Present vs late percentage trends across all shifts"
           >
-            <AttendanceTrendChart />
+            <AttendanceTrendChart data={dashboardData?.attendanceTrend || []} />
           </ChartCard>
         </div>
 
@@ -183,7 +189,7 @@ export const CompanyAdminDashboard = () => {
             title="Today's Headcount Ratio"
             subtitle={`Live breakdown of ${totalHeadcount} employees`}
           >
-            <AttendancePieChart />
+            <AttendancePieChart data={dashboardData?.attendanceBreakdown || []} />
           </ChartCard>
         </div>
       </div>

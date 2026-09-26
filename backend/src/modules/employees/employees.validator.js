@@ -9,6 +9,7 @@ export const sendEmployeeOTPSchema = Joi.object({
     departmentId: Joi.string().optional().allow('', null),
     designationId: Joi.string().optional().allow('', null),
     branchId: Joi.string().optional().allow('', null),
+    shiftId: Joi.string().optional().allow('', null),
     joiningDate: Joi.date().iso().optional(),
     employmentType: Joi.string()
       .valid('FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN', 'CONSULTANT')
@@ -37,6 +38,7 @@ export const createEmployeeSchema = Joi.object({
     departmentId: Joi.string().optional().allow('', null),
     designationId: Joi.string().optional().allow('', null),
     branchId: Joi.string().optional().allow('', null),
+    shiftId: Joi.string().optional().allow('', null),
     joiningDate: Joi.date().iso().optional(),
     employmentType: Joi.string()
       .valid('FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN', 'CONSULTANT')
@@ -56,6 +58,7 @@ export const updateEmployeeSchema = Joi.object({
   departmentId: Joi.string().optional().allow('', null),
   designationId: Joi.string().optional().allow('', null),
   branchId: Joi.string().optional().allow('', null),
+  shiftId: Joi.string().optional().allow('', null),
   employmentType: Joi.string()
     .valid('FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN', 'CONSULTANT')
     .optional(),

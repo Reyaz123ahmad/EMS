@@ -10,22 +10,18 @@ import {
 } from 'recharts';
 
 export function ChurnChart({ data = [] }) {
-  const chartData =
-    data.length > 0
-      ? data
-      : [
-          { month: 'Apr', churnRate: 3.2 },
-          { month: 'May', churnRate: 2.8 },
-          { month: 'Jun', churnRate: 2.1 },
-          { month: 'Jul', churnRate: 1.9 },
-          { month: 'Aug', churnRate: 1.4 },
-          { month: 'Sep', churnRate: 1.2 }
-        ];
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs text-slate-400">
+        No churn or cancellation records for this period
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5} />
           <XAxis
             dataKey="month"

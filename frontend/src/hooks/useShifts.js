@@ -16,6 +16,13 @@ export function useShift(id) {
   });
 }
 
+export function useMyShift() {
+  return useQuery({
+    queryKey: ['my-shift'],
+    queryFn: () => shiftService.getMyShift()
+  });
+}
+
 export function useCreateShift() {
   const queryClient = useQueryClient();
   return useMutation({

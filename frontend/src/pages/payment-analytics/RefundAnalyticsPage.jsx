@@ -5,11 +5,11 @@ import { RotateCcw, ShieldAlert, IndianRupee, PieChart, CheckCircle2 } from 'luc
 
 export function RefundAnalyticsPage() {
   const { data: refundData } = useRefundRate();
-  const { data: revenueData } = useRevenueStats();
 
-  const refundRate = refundData?.refundRate || 0.8;
-  const totalRefundAmount = refundData?.totalRefundedAmount || 12500;
-  const totalRefundCount = refundData?.totalRefundCount || 4;
+  const refundRate = Number(refundData?.refundRate || 0);
+  const totalRefundAmount = Number(refundData?.totalRefundedAmount || 0);
+  const totalRefundCount = Number(refundData?.totalRefundCount || 0);
+  const reasons = refundData?.reasons || [];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-6 px-4 sm:px-6">
@@ -32,7 +32,7 @@ export function RefundAnalyticsPage() {
           <h2 className="text-3xl font-extrabold text-purple-600 dark:text-purple-400 mt-2">
             {refundRate}%
           </h2>
-          <p className="text-xs text-slate-400 mt-2">Well below 2.0% platform threshold</p>
+          <p className="text-xs text-slate-400 mt-2">Processed vs requested ratio</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
@@ -41,19 +41,19 @@ export function RefundAnalyticsPage() {
           </span>
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center">
             <IndianRupee className="w-6 h-6 text-emerald-600" />
-            {Number(totalRefundAmount).toLocaleString('en-IN')}
+            {totalRefundAmount.toLocaleString('en-IN')}
           </h2>
           <p className="text-xs text-slate-400 mt-2">Across {totalRefundCount} authorized tickets</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
           <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-            Gateway Resolution Speed
+            Settlement Processing
           </span>
           <h2 className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">
-            &lt; 24 Hours
+            {refundData?.processedCount || 0} Processed
           </h2>
-          <p className="text-xs text-slate-400 mt-2">Average time from request to bank credit</p>
+          <p className="text-xs text-slate-400 mt-2">Out of {totalRefundCount} total tickets</p>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ export function RefundAnalyticsPage() {
             </p>
           </div>
         </div>
-        <RefundChart />
+        <RefundChart data={reasons} />
       </div>
     </div>
   );

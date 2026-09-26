@@ -10,21 +10,18 @@ import {
 } from 'recharts';
 
 export const AttendanceTrendChart = ({ data = [], period = 'daily' }) => {
-  // Sample fallback trend if empty
-  const chartData = data && data.length > 0 ? data : [
-    { date: 'Mon', present: 45, late: 4, absent: 3 },
-    { date: 'Tue', present: 48, late: 2, absent: 2 },
-    { date: 'Wed', present: 47, late: 3, absent: 2 },
-    { date: 'Thu', present: 49, late: 1, absent: 2 },
-    { date: 'Fri', present: 46, late: 5, absent: 1 },
-    { date: 'Sat', present: 42, late: 2, absent: 8 },
-    { date: 'Sun', present: 20, late: 0, absent: 32 },
-  ];
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/50 text-xs text-slate-400">
+        No attendance trend data available
+      </div>
+    );
+  }
 
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="presentGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
@@ -70,3 +67,5 @@ export const AttendanceTrendChart = ({ data = [], period = 'daily' }) => {
     </div>
   );
 };
+
+export default AttendanceTrendChart;

@@ -72,10 +72,112 @@ router.use('/security', advancedSecurityRoutes);
 router.use('/ai', aiRoutes);
 router.use('/notifications', notificationRoutes);
 
+// ================= ANALYTICS & TREND HELPERS =================
+async function get6MonthCompanyGrowthTrend() {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const trend = [];
+  const now = new Date();
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+    const monthName = months[d.getMonth()];
+
+    const count = await prisma.company.count({
+      where: {
+        createdAt: { lte: endOfMonth }
+      }
+    }).catch(() => 0);
+
+    trend.push({
+      month: monthName,
+      companies: count
+    });
+  }
+
+  return trend;
+}
+
+async function get6MonthRevenueTrend() {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const trend = [];
+  const now = new Date();
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+    const monthName = months[d.getMonth()];
+
+    const result = await prisma.paymentTransaction.aggregate({
+      where: {
+        status: 'SUCCESS',
+        createdAt: { gte: d, lte: endOfMonth }
+      },
+      _sum: { amount: true }
+    }).catch(() => ({ _sum: { amount: 0 } }));
+
+    trend.push({
+      month: monthName,
+      revenue: Number(result._sum?.amount || 0)
+    });
+  }
+
+  return trend;
+}
+
+async function get7DayAttendanceTrend(companyId, employeeIds = null) {
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const trend = [];
+  const now = new Date();
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const dayDate = new Date(dateStr);
+    const dayName = days[d.getDay()];
+
+    const where = {
+      companyId,
+      attendanceDate: dayDate,
+      ...(employeeIds && employeeIds.length > 0 ? { employeeId: { in: employeeIds } } : {})
+    };
+
+    const [totalPresent, totalLate] = await Promise.all([
+      prisma.attendanceLog.count({ where: { ...where, status: 'PRESENT' } }).catch(() => 0),
+      prisma.attendanceLog.count({ where: { ...where, isLate: true } }).catch(() => 0)
+    ]);
+
+    const activeCount = employeeIds ? employeeIds.length : (await prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 1)) || 1;
+    const presentPct = Math.min(100, Math.round((totalPresent / Math.max(1, activeCount)) * 100));
+    const latePct = Math.min(100, Math.round((totalLate / Math.max(1, activeCount)) * 100));
+
+    trend.push({
+      date: dateStr,
+      day: dayName,
+      present: presentPct,
+      late: latePct,
+      presentCount: totalPresent,
+      lateCount: totalLate
+    });
+  }
+
+  return trend;
+}
+
 // Platform-Level Super Admin Dashboard API
 router.get('/dashboard/super-admin', authenticate, requireRole('SUPER_ADMIN'), async (req, res, next) => {
   try {
-    const [totalCompanies, activeCompanies, totalUsers, totalSubscriptions, recentPayments, recentCompanies] = await Promise.all([
+    const [
+      totalCompanies,
+      activeCompanies,
+      totalUsers,
+      totalSubscriptions,
+      recentPayments,
+      recentCompanies,
+      companyGrowthTrend,
+      monthlyRevenueTrend
+    ] = await Promise.all([
       prisma.company.count(),
       prisma.company.count({ where: { status: 'ACTIVE' } }),
       prisma.user.count(),
@@ -89,24 +191,28 @@ router.get('/dashboard/super-admin', authenticate, requireRole('SUPER_ADMIN'), a
         take: 5,
         orderBy: { createdAt: 'desc' },
         include: { subscription: { include: { plan: true } } }
-      })
+      }),
+      get6MonthCompanyGrowthTrend(),
+      get6MonthRevenueTrend()
     ]);
 
     const totalRevResult = await prisma.paymentTransaction.aggregate({
       where: { status: 'SUCCESS' },
       _sum: { amount: true }
-    });
-    const totalRevenue = Number(totalRevResult._sum.amount || 0);
+    }).catch(() => ({ _sum: { amount: 0 } }));
+    const totalRevenue = Number(totalRevResult?._sum?.amount || 0);
 
     return successResponse(res, {
       role: 'SUPER_ADMIN',
-      totalCompanies,
-      activeCompanies,
-      totalUsers,
-      totalSubscriptions,
-      totalRevenue,
-      mrr: Math.round(totalRevenue / 12),
-      arr: totalRevenue,
+      totalCompanies: totalCompanies || 0,
+      activeCompanies: activeCompanies || 0,
+      totalUsers: totalUsers || 0,
+      totalSubscriptions: totalSubscriptions || 0,
+      totalRevenue: totalRevenue || 0,
+      mrr: Math.round(totalRevenue / 12) || 0,
+      arr: totalRevenue || 0,
+      companyGrowthTrend,
+      monthlyRevenueTrend,
       recentPayments,
       recentCompanies
     }, 'Super Admin platform metrics retrieved');
@@ -182,7 +288,8 @@ router.get('/dashboard/company-admin', authenticate, requireCompany, async (req,
       lateToday,
       onLeaveToday,
       pendingApprovals,
-      recentActivity
+      recentActivity,
+      attendanceTrend
     ] = await Promise.all([
       prisma.employee.count({ where: { companyId } }).catch(() => 0),
       prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
@@ -220,23 +327,33 @@ router.get('/dashboard/company-admin', authenticate, requireCompany, async (req,
         where: { user: { companyId } },
         take: 10,
         orderBy: { createdAt: 'desc' }
-      }).catch(() => [])
+      }).catch(() => []),
+      get7DayAttendanceTrend(companyId)
     ]);
 
     const absentToday = Math.max(0, activeEmployees - presentToday - onLeaveToday);
 
+    const attendanceBreakdown = [
+      { name: 'Present', value: presentToday, color: '#10b981' },
+      { name: 'Late', value: lateToday, color: '#f59e0b' },
+      { name: 'On Leave', value: onLeaveToday, color: '#6366f1' },
+      { name: 'Absent', value: absentToday, color: '#f43f5e' }
+    ];
+
     return successResponse(res, {
       role: 'COMPANY_ADMIN',
-      totalEmployees,
-      activeEmployees,
-      totalBranches,
-      totalDepartments,
-      presentToday,
-      lateToday,
-      onLeaveToday,
-      absentToday,
+      totalEmployees: totalEmployees || 0,
+      activeEmployees: activeEmployees || 0,
+      totalBranches: totalBranches || 0,
+      totalDepartments: totalDepartments || 0,
+      presentToday: presentToday || 0,
+      lateToday: lateToday || 0,
+      onLeaveToday: onLeaveToday || 0,
+      absentToday: absentToday || 0,
       pendingApprovals,
-      recentActivity
+      recentActivity,
+      attendanceTrend,
+      attendanceBreakdown
     }, 'Company admin dashboard retrieved');
   } catch (err) {
     next(err);
@@ -250,15 +367,22 @@ router.get('/dashboard/hr-admin', authenticate, requireCompany, async (req, res,
 
     const [
       totalEmployees,
+      activeEmployees,
       presentToday,
+      lateToday,
       onLeaveToday,
       pendingLeaves,
       pendingDocs,
-      pendingApprovals
+      pendingApprovals,
+      attendanceTrend
     ] = await Promise.all([
       prisma.employee.count({ where: { companyId } }).catch(() => 0),
+      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
       prisma.attendanceLog.count({
         where: { companyId, attendanceDate: today, status: 'PRESENT' }
+      }).catch(() => 0),
+      prisma.attendanceLog.count({
+        where: { companyId, attendanceDate: today, isLate: true }
       }).catch(() => 0),
       prisma.leaveRequest.count({
         where: {
@@ -282,16 +406,31 @@ router.get('/dashboard/hr-admin', authenticate, requireCompany, async (req, res,
       }).catch(() => []),
       prisma.approvalRequest.count({
         where: { workflow: { companyId }, status: 'PENDING' }
-      }).catch(() => 0)
+      }).catch(() => 0),
+      get7DayAttendanceTrend(companyId)
     ]);
 
+    const absentToday = Math.max(0, activeEmployees - presentToday - onLeaveToday);
+
+    const attendanceBreakdown = [
+      { name: 'Present', value: presentToday, color: '#10b981' },
+      { name: 'Late', value: lateToday, color: '#f59e0b' },
+      { name: 'On Leave', value: onLeaveToday, color: '#6366f1' },
+      { name: 'Absent', value: absentToday, color: '#f43f5e' }
+    ];
+
     return successResponse(res, {
-      totalEmployees,
-      presentToday,
-      onLeaveToday,
+      totalEmployees: totalEmployees || 0,
+      activeEmployees: activeEmployees || 0,
+      presentToday: presentToday || 0,
+      lateToday: lateToday || 0,
+      onLeaveToday: onLeaveToday || 0,
+      absentToday: absentToday || 0,
       pendingLeaves,
       pendingDocs,
-      pendingApprovals
+      pendingApprovals,
+      attendanceTrend,
+      attendanceBreakdown
     }, 'HR Admin dashboard retrieved');
   } catch (err) {
     next(err);
@@ -303,7 +442,7 @@ router.get('/dashboard/hr-manager', authenticate, requireCompany, async (req, re
     const companyId = req.user.companyId;
     const today = new Date(new Date().toISOString().split('T')[0]);
 
-    const [teamSize, presentToday, lateToday, pendingApprovals, teamMembers] = await Promise.all([
+    const [teamSize, presentToday, lateToday, pendingApprovals, teamMembers, attendanceTrend] = await Promise.all([
       prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
       prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, status: 'PRESENT' } }).catch(() => 0),
       prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, isLate: true } }).catch(() => 0),
@@ -320,7 +459,8 @@ router.get('/dashboard/hr-manager', authenticate, requireCompany, async (req, re
             take: 1
           }
         }
-      }).catch(() => [])
+      }).catch(() => []),
+      get7DayAttendanceTrend(companyId)
     ]);
 
     const formattedMembers = teamMembers.map(m => {
@@ -337,11 +477,12 @@ router.get('/dashboard/hr-manager', authenticate, requireCompany, async (req, re
     });
 
     return successResponse(res, {
-      teamSize,
-      presentToday,
-      lateToday,
-      pendingApprovals,
-      teamMembers: formattedMembers
+      teamSize: teamSize || 0,
+      presentToday: presentToday || 0,
+      lateToday: lateToday || 0,
+      pendingApprovals: pendingApprovals || 0,
+      teamMembers: formattedMembers,
+      attendanceTrend
     }, 'HR Manager dashboard metrics retrieved');
   } catch (err) {
     next(err);
@@ -353,7 +494,7 @@ router.get('/dashboard/manager', authenticate, requireCompany, async (req, res, 
     const companyId = req.user.companyId;
     const today = new Date(new Date().toISOString().split('T')[0]);
 
-    const [directReports, presentToday, pendingApprovals, tasks, teamMembers] = await Promise.all([
+    const [directReports, presentToday, pendingApprovals, tasks, teamMembers, attendanceTrend] = await Promise.all([
       prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
       prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, status: 'PRESENT' } }).catch(() => 0),
       prisma.approvalRequest.count({ where: { workflow: { companyId }, status: 'PENDING' } }).catch(() => 0),
@@ -364,7 +505,8 @@ router.get('/dashboard/manager', authenticate, requireCompany, async (req, res, 
         include: {
           attendanceLogs: { where: { attendanceDate: today }, take: 1 }
         }
-      }).catch(() => [])
+      }).catch(() => []),
+      get7DayAttendanceTrend(companyId)
     ]);
 
     const formattedTeam = teamMembers.map(m => {
@@ -380,12 +522,13 @@ router.get('/dashboard/manager', authenticate, requireCompany, async (req, res, 
     });
 
     return successResponse(res, {
-      directReports,
-      presentToday,
-      pendingTasks: tasks.length,
-      pendingApprovals,
+      directReports: directReports || 0,
+      presentToday: presentToday || 0,
+      pendingTasks: tasks.length || 0,
+      pendingApprovals: pendingApprovals || 0,
       tasks,
-      teamAttendance: formattedTeam
+      teamAttendance: formattedTeam,
+      attendanceTrend
     }, 'Manager dashboard retrieved');
   } catch (err) {
     next(err);

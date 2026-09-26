@@ -176,7 +176,9 @@ export const Sidebar = ({
             label: 'Shifts & Rosters',
             icon: CalendarDays,
             children: [
+              { label: 'My Shift', to: '/my-shift' },
               { label: 'Work Shifts', to: '/shifts' },
+              { label: 'Create Shift', to: '/shifts/create' },
               { label: 'Assign Shifts', to: '/shifts/assign' },
               { label: 'Shift Rosters', to: '/rosters' },
               { label: 'Generate Roster', to: '/rosters/generate' },
@@ -291,7 +293,16 @@ export const Sidebar = ({
               { label: 'Records', to: '/overtime/records' }
             ]
           },
-          { label: 'Shifts & Rosters', to: '/rosters/calendar', icon: CalendarDays },
+          {
+            label: 'Shifts & Rosters',
+            icon: CalendarDays,
+            children: [
+              { label: 'My Shift', to: '/my-shift' },
+              { label: 'Work Shifts', to: '/shifts' },
+              { label: 'Assign Shifts', to: '/shifts/assign' },
+              { label: 'Roster Calendar', to: '/rosters/calendar' }
+            ]
+          },
           { label: 'Documents', to: '/documents', icon: FileText },
           { label: 'Reports', to: '/reports', icon: FileCheck2 },
           { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null }
@@ -300,6 +311,7 @@ export const Sidebar = ({
         return [
           { label: 'Dashboard', to: '/dashboard/manager', icon: LayoutDashboard },
           { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
+          { label: 'My Shift', to: '/my-shift', icon: Clock },
           { label: 'Team Members', to: '/employees', icon: Users },
           { label: 'Attendance Review', to: '/attendance/logs', icon: CalendarCheck },
           { label: 'Emergency Requests', to: '/emergency-attendance/requests', icon: AlertOctagon },
@@ -325,6 +337,7 @@ export const Sidebar = ({
         return [
           { label: 'Dashboard', to: '/dashboard/employee', icon: LayoutDashboard },
           { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
+          { label: 'My Shift', to: '/my-shift', icon: Clock },
           {
             label: 'Attendance',
             icon: CalendarCheck,
@@ -368,7 +381,7 @@ export const Sidebar = ({
             ]
           },
           { label: 'My Payslips', to: '/payroll/slips', icon: DollarSign },
-          { label: 'My Shifts & Roster', to: '/rosters/calendar', icon: CalendarDays },
+          { label: 'Roster Schedule', to: '/rosters/calendar', icon: CalendarDays },
           { label: 'Holiday Calendar', to: '/holidays', icon: Calendar },
           { label: 'Documents', to: '/documents', icon: FileText },
           { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },

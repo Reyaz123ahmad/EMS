@@ -205,7 +205,27 @@ export const employeesService = {
         }
       });
 
-      // 5. Initialize Leave Balances
+      // 5. Assign Shift
+      let finalShiftId = employeeData.shiftId;
+      if (!finalShiftId) {
+        const defaultShift = await tx.shift.findFirst({
+          where: { companyId, isActive: true },
+          orderBy: { createdAt: 'asc' }
+        });
+        finalShiftId = defaultShift?.id;
+      }
+
+      if (finalShiftId) {
+        await tx.shiftAssignment.create({
+          data: {
+            employeeId: employee.id,
+            shiftId: finalShiftId,
+            effectiveFrom: new Date()
+          }
+        });
+      }
+
+      // 6. Initialize Leave Balances
       const currentYear = new Date().getFullYear();
       for (const quota of DEFAULT_LEAVE_QUOTAS) {
         let leaveType = await tx.leaveType.findFirst({
@@ -236,7 +256,7 @@ export const employeesService = {
         });
       }
 
-      // 6. Audit Log
+      // 7. Audit Log
       await tx.auditLog.create({
         data: {
           userId: createdBy || user.id,
@@ -246,7 +266,8 @@ export const employeesService = {
           newValues: {
             employeeCode,
             email: employee.email,
-            companyName: company.name
+            companyName: company.name,
+            shiftId: finalShiftId
           }
         }
       });

@@ -358,24 +358,27 @@ export const attendanceRepository = {
    * Daily attendance stats for company dashboard
    */
   async getAttendanceStats(companyId, date = new Date()) {
-    const startOfDay = new Date(date);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setUTCHours(23, 59, 59, 999);
+    const targetDate = new Date(date);
+    const dateStr = targetDate.toISOString().split('T')[0];
+    const startOfDay = new Date(dateStr);
 
-    const [totalEmployees, logs] = await Promise.all([
+    const [totalEmployees, logs, departments] = await Promise.all([
       prisma.employee.count({
         where: { companyId, status: 'ACTIVE' }
-      }),
+      }).catch(() => 0),
       prisma.attendanceLog.findMany({
         where: {
           companyId,
-          attendanceDate: {
-            gte: startOfDay,
-            lte: endOfDay
-          }
+          attendanceDate: startOfDay
+        },
+        include: {
+          employee: { select: { departmentId: true, department: { select: { name: true } } } }
         }
-      })
+      }).catch(() => []),
+      prisma.department.findMany({
+        where: { companyId },
+        include: { _count: { select: { employees: { where: { status: 'ACTIVE' } } } } }
+      }).catch(() => [])
     ]);
 
     let present = 0;
@@ -384,23 +387,72 @@ export const attendanceRepository = {
 
     logs.forEach((log) => {
       if (log.status === 'PRESENT') present += 1;
-      else if (log.status === 'LATE') late += 1;
+      if (log.isLate) late += 1;
       else if (log.status === 'HALF_DAY') halfDay += 1;
     });
 
     const clockedInCount = logs.length;
     const absent = Math.max(0, totalEmployees - clockedInCount);
-    const presentRate = totalEmployees > 0 ? Math.round(((present + late + halfDay) / totalEmployees) * 100) : 0;
+    const attendanceRate = totalEmployees > 0 ? Math.round((clockedInCount / totalEmployees) * 1000) / 10 : 0;
+    const punctualityRate = clockedInCount > 0 ? Math.round(((clockedInCount - late) / clockedInCount) * 1000) / 10 : 100;
+
+    // Real 7-day trend
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const trend = [];
+    const now = new Date(startOfDay);
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const curDateStr = d.toISOString().split('T')[0];
+      const curDayDate = new Date(curDateStr);
+      const dayName = days[d.getDay()];
+
+      const [dayPresent, dayLate] = await Promise.all([
+        prisma.attendanceLog.count({
+          where: { companyId, attendanceDate: curDayDate, status: 'PRESENT' }
+        }).catch(() => 0),
+        prisma.attendanceLog.count({
+          where: { companyId, attendanceDate: curDayDate, isLate: true }
+        }).catch(() => 0)
+      ]);
+
+      trend.push({
+        date: curDateStr,
+        day: dayName,
+        present: totalEmployees > 0 ? Math.min(100, Math.round((dayPresent / totalEmployees) * 100)) : 0,
+        late: totalEmployees > 0 ? Math.min(100, Math.round((dayLate / totalEmployees) * 100)) : 0
+      });
+    }
+
+    // Real department breakdown
+    const departmentBreakdown = departments.map(dept => {
+      const deptTotal = dept._count?.employees || 0;
+      const deptPresent = logs.filter(l => l.employee?.departmentId === dept.id).length;
+      const pct = deptTotal > 0 ? Math.min(100, Math.round((deptPresent / deptTotal) * 100)) : 0;
+      return {
+        department: dept.name,
+        presentPct: pct
+      };
+    });
 
     return {
-      date: startOfDay.toISOString().split('T')[0],
-      totalEmployees,
-      clockedIn: clockedInCount,
-      present,
-      late,
-      halfDay,
-      absent,
-      presentRate: `${presentRate}%`
+      date: dateStr,
+      totalEmployees: totalEmployees || 0,
+      clockedIn: clockedInCount || 0,
+      presentCount: present || 0,
+      present: present || 0,
+      lateCount: late || 0,
+      late: late || 0,
+      halfDayCount: halfDay || 0,
+      halfDay: halfDay || 0,
+      absentCount: absent || 0,
+      absent: absent || 0,
+      attendanceRate,
+      punctualityRate,
+      presentRate: `${attendanceRate}%`,
+      trend,
+      departmentBreakdown
     };
   }
 };

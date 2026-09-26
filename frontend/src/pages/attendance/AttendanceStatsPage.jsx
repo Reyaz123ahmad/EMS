@@ -21,20 +21,22 @@ export const AttendanceStatsPage = () => {
   const { data: statsResponse, isLoading, refetch } = useAttendanceStats({ date: selectedDate });
 
   const stats = statsResponse?.data || {
-    totalEmployees: 45,
-    presentCount: 38,
-    lateCount: 4,
-    halfDayCount: 2,
-    absentCount: 1,
-    attendanceRate: 88.9,
-    punctualityRate: 89.5,
+    totalEmployees: 0,
+    presentCount: 0,
+    lateCount: 0,
+    halfDayCount: 0,
+    absentCount: 0,
+    attendanceRate: 0,
+    punctualityRate: 0,
+    trend: [],
+    departmentBreakdown: []
   };
 
   const pieData = [
-    { name: 'Present', value: stats.presentCount || 0 },
-    { name: 'Late', value: stats.lateCount || 0 },
-    { name: 'Half Day', value: stats.halfDayCount || 0 },
-    { name: 'Absent', value: stats.absentCount || 0 },
+    { name: 'Present', value: stats.presentCount || 0, color: '#10b981' },
+    { name: 'Late', value: stats.lateCount || 0, color: '#f59e0b' },
+    { name: 'Half Day', value: stats.halfDayCount || 0, color: '#6366f1' },
+    { name: 'Absent', value: stats.absentCount || 0, color: '#ef4444' },
   ];
 
   return (
@@ -78,16 +80,14 @@ export const AttendanceStatsPage = () => {
         <StatCard
           icon={TrendingUp}
           label="Attendance Rate"
-          value={`${stats.attendanceRate || 92.5}%`}
-          change={4.2}
+          value={`${stats.attendanceRate || 0}%`}
           variant="emerald"
           subtitle="Overall workforce check-in ratio"
         />
         <StatCard
           icon={Award}
           label="Punctuality Score"
-          value={`${stats.punctualityRate || 89.0}%`}
-          change={1.8}
+          value={`${stats.punctualityRate || 0}%`}
           variant="indigo"
           subtitle="Arrivals within grace period"
         />
@@ -102,7 +102,6 @@ export const AttendanceStatsPage = () => {
           icon={AlertTriangle}
           label="Late & Absences"
           value={`${(stats.lateCount || 0) + (stats.absentCount || 0)}`}
-          change={-8.5}
           isIncreasePositive={false}
           variant="amber"
           subtitle="Deviations from scheduled shifts"
@@ -116,7 +115,7 @@ export const AttendanceStatsPage = () => {
             7-Day Attendance Trend Curve
           </h3>
           <div className="mt-4">
-            <AttendanceTrendChart period="weekly" />
+            <AttendanceTrendChart data={stats.trend || []} period="weekly" />
           </div>
         </div>
 
@@ -136,7 +135,7 @@ export const AttendanceStatsPage = () => {
           Departmental Attendance Benchmarks
         </h3>
         <div className="mt-4">
-          <AttendanceBarChart />
+          <AttendanceBarChart data={stats.departmentBreakdown || []} />
         </div>
       </div>
     </div>

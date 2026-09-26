@@ -20,6 +20,7 @@ import AttendanceTrendChart from '../../components/dashboard/AttendanceTrendChar
 import AttendancePieChart from '../../components/dashboard/AttendancePieChart';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import MyShiftCard from '../../components/dashboard/MyShiftCard';
 
 export const HRAdminDashboard = () => {
   const queryClient = useQueryClient();
@@ -134,20 +135,25 @@ export const HRAdminDashboard = () => {
         />
       </div>
 
+      {/* My Shift Overview */}
+      <div className="max-w-md">
+        <MyShiftCard />
+      </div>
+
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard
           title="Attendance & Punctuality Trend"
           subtitle="Monthly attendance overview"
         >
-          <AttendanceTrendChart />
+          <AttendanceTrendChart data={dashboardData?.attendanceTrend || []} />
         </ChartCard>
 
         <ChartCard
           title="Department Leave Distribution"
           subtitle="Headcount split by attendance status"
         >
-          <AttendancePieChart />
+          <AttendancePieChart data={dashboardData?.attendanceBreakdown || []} />
         </ChartCard>
       </div>
 

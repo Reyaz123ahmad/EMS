@@ -11,19 +11,22 @@ import {
 const COLORS = ['#10b981', '#f59e0b', '#6366f1', '#ef4444', '#64748b'];
 
 export const AttendancePieChart = ({ data = [] }) => {
-  const chartData = data && data.length > 0 ? data : [
-    { name: 'Present', value: 78 },
-    { name: 'Late', value: 12 },
-    { name: 'Half Day', value: 4 },
-    { name: 'Absent', value: 6 },
-  ];
+  const filteredData = Array.isArray(data) ? data.filter(d => (Number(d.value) || 0) > 0) : [];
+
+  if (filteredData.length === 0) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/50 text-xs text-slate-400">
+        No attendance records for this period
+      </div>
+    );
+  }
 
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={chartData}
+            data={filteredData}
             cx="50%"
             cy="50%"
             innerRadius={60}
@@ -31,8 +34,8 @@ export const AttendancePieChart = ({ data = [] }) => {
             paddingAngle={4}
             dataKey="value"
           >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {filteredData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
             ))}
           </Pie>
           <Tooltip
@@ -55,3 +58,5 @@ export const AttendancePieChart = ({ data = [] }) => {
     </div>
   );
 };
+
+export default AttendancePieChart;

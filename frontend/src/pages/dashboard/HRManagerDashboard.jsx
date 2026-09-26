@@ -16,6 +16,7 @@ import ChartCard from '../../components/dashboard/ChartCard';
 import AttendanceTrendChart from '../../components/dashboard/AttendanceTrendChart';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import MyShiftCard from '../../components/dashboard/MyShiftCard';
 
 export const HRManagerDashboard = () => {
   const navigate = useNavigate();
@@ -114,6 +115,11 @@ export const HRManagerDashboard = () => {
         />
       </div>
 
+      {/* My Shift Overview */}
+      <div className="max-w-md">
+        <MyShiftCard />
+      </div>
+
       {/* Charts & Team List */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
@@ -121,7 +127,7 @@ export const HRManagerDashboard = () => {
             title="Team Attendance Performance"
             subtitle="Weekly check-in punctuality rate"
           >
-            <AttendanceTrendChart />
+            <AttendanceTrendChart data={dashboardData?.attendanceTrend || []} />
           </ChartCard>
         </div>
 

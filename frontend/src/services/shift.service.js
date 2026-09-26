@@ -36,6 +36,11 @@ export const shiftService = {
     return response.data;
   },
 
+  async getMyShift() {
+    const response = await api.get('/shifts/my-shift');
+    return response.data?.data || response.data;
+  },
+
   // Rosters
   async getRosters(params = {}) {
     const response = await api.get('/rosters', { params });

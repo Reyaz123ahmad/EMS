@@ -9,16 +9,15 @@ import {
   CartesianGrid
 } from 'recharts';
 
-export const AttendanceTrendChart = ({
-  data = [
-    { day: 'Mon', present: 88, absent: 8, late: 4 },
-    { day: 'Tue', present: 92, absent: 5, late: 3 },
-    { day: 'Wed', present: 90, absent: 7, late: 3 },
-    { day: 'Thu', present: 95, absent: 3, late: 2 },
-    { day: 'Fri', present: 89, absent: 6, late: 5 },
-    { day: 'Sat', present: 45, absent: 2, late: 1 }
-  ]
-}) => {
+export const AttendanceTrendChart = ({ data = [] }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs text-slate-400">
+        No attendance trend logs recorded for this timeframe
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">

@@ -155,14 +155,14 @@ export const SuperAdminDashboard = () => {
           title="Tenant Growth Trend"
           subtitle="New tenant onboardings over past 6 months"
         >
-          <CompanyGrowthChart />
+          <CompanyGrowthChart data={dashboardData?.companyGrowthTrend || []} />
         </ChartCard>
 
         <ChartCard
           title="Revenue & Growth Projection"
           subtitle="Monthly recurring revenue (MRR in INR)"
         >
-          <RevenueChart />
+          <RevenueChart data={dashboardData?.monthlyRevenueTrend || []} />
         </ChartCard>
       </div>
 

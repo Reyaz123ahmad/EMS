@@ -15,6 +15,7 @@ import ChartCard from '../../components/dashboard/ChartCard';
 import AttendanceTrendChart from '../../components/dashboard/AttendanceTrendChart';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import MyShiftCard from '../../components/dashboard/MyShiftCard';
 
 export const ManagerDashboard = () => {
   const { data: dashboardData, isLoading, isError, error, refetch } = useQuery({
@@ -103,6 +104,11 @@ export const ManagerDashboard = () => {
         />
       </div>
 
+      {/* My Shift Overview */}
+      <div className="max-w-md">
+        <MyShiftCard />
+      </div>
+
       {/* Charts & Team Attendance */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
@@ -110,7 +116,7 @@ export const ManagerDashboard = () => {
             title="Team Weekly Attendance & Overtime"
             subtitle="Punctuality patterns for direct reports"
           >
-            <AttendanceTrendChart />
+            <AttendanceTrendChart data={dashboardData?.attendanceTrend || []} />
           </ChartCard>
         </div>
 

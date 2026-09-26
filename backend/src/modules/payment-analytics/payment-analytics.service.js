@@ -1,7 +1,7 @@
 import prisma from '../../config/prisma.js';
 import dayjs from 'dayjs';
 
-export async function getRevenueStats({ companyId, startDate, endDate }) {
+export async function getRevenueStats({ companyId, startDate, endDate } = {}) {
   const where = { status: 'SUCCESS' };
   if (companyId) {
     where.subscription = { companyId };
@@ -25,7 +25,27 @@ export async function getRevenueStats({ companyId, startDate, endDate }) {
     .filter((p) => dayjs(p.createdAt).isAfter(dayjs().subtract(30, 'day')))
     .reduce((acc, p) => acc + Number(p.amount || 0), 0);
 
-  // Group by day for charts
+  // Group by month for 6-month RevenueChart
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const now = new Date();
+  const monthlyTrend = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+    const monthName = months[d.getMonth()];
+
+    const monthSum = payments
+      .filter((p) => new Date(p.createdAt) >= d && new Date(p.createdAt) <= endOfMonth)
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+    monthlyTrend.push({
+      month: monthName,
+      revenue: monthSum
+    });
+  }
+
+  // Daily map
   const dailyMap = {};
   payments.forEach((p) => {
     const date = dayjs(p.createdAt).format('YYYY-MM-DD');
@@ -39,10 +59,11 @@ export async function getRevenueStats({ companyId, startDate, endDate }) {
     monthlyRevenue: monthlyRevenue || 0,
     paymentCount: payments.length || 0,
     trend,
+    monthlyTrend,
   };
 }
 
-export async function getMRR({ companyId }) {
+export async function getMRR({ companyId } = {}) {
   const where = { status: 'ACTIVE' };
   if (companyId) where.companyId = companyId;
 
@@ -65,7 +86,7 @@ export async function getMRR({ companyId }) {
   };
 }
 
-export async function getARR({ companyId }) {
+export async function getARR({ companyId } = {}) {
   const { mrr, activeSubscribers } = await getMRR({ companyId });
   const arr = mrr * 12;
 
@@ -77,7 +98,7 @@ export async function getARR({ companyId }) {
   };
 }
 
-export async function getChurnRate({ companyId }) {
+export async function getChurnRate({ companyId } = {}) {
   const whereTotal = companyId ? { companyId } : {};
   const [total, cancelled, expired] = await Promise.all([
     prisma.subscription.count({ where: whereTotal }),
@@ -88,16 +109,52 @@ export async function getChurnRate({ companyId }) {
   const churned = cancelled + expired;
   const churnRate = total > 0 ? Math.round((churned / total) * 10000) / 100 : 0;
 
+  // Real 6-month churn trend
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const now = new Date();
+  const monthlyTrend = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+    const monthName = months[d.getMonth()];
+
+    const [monthTotal, monthCancelled] = await Promise.all([
+      prisma.subscription.count({
+        where: {
+          ...whereTotal,
+          createdAt: { lte: endOfMonth }
+        }
+      }).catch(() => 0),
+      prisma.subscription.count({
+        where: {
+          ...whereTotal,
+          status: { in: ['CANCELLED', 'EXPIRED'] },
+          updatedAt: { gte: d, lte: endOfMonth }
+        }
+      }).catch(() => 0)
+    ]);
+
+    const rate = monthTotal > 0 ? Math.round((monthCancelled / monthTotal) * 1000) / 10 : 0;
+    monthlyTrend.push({
+      month: monthName,
+      churnRate: rate
+    });
+  }
+
   return {
     totalSubscriptions: total || 0,
     cancelled: cancelled || 0,
     expired: expired || 0,
     churnedTotal: churned || 0,
+    churnedSubscriptions: churned || 0,
+    churnRate: churnRate || 0,
     churnRatePercentage: churnRate || 0,
+    monthlyTrend
   };
 }
 
-export async function getPaymentSuccessRate({ companyId }) {
+export async function getPaymentSuccessRate({ companyId } = {}) {
   const where = {};
   if (companyId) {
     where.subscription = { companyId };
@@ -109,47 +166,119 @@ export async function getPaymentSuccessRate({ companyId }) {
     prisma.paymentTransaction.count({ where: { ...where, status: 'FAILED' } }),
   ]);
 
-  const successRate = total > 0 ? Math.round((success / total) * 10000) / 100 : 100;
+  const successRate = total > 0 ? Math.round((success / total) * 10000) / 100 : (total === 0 ? 100 : 0);
+
+  // 7-day daily trend for SuccessRateChart
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const now = new Date();
+  const dailyTrend = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const startOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+    const endOfDay = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+    const dayName = days[d.getDay()];
+
+    const [dayTotal, daySuccess] = await Promise.all([
+      prisma.paymentTransaction.count({
+        where: { ...where, createdAt: { gte: startOfDay, lte: endOfDay } }
+      }).catch(() => 0),
+      prisma.paymentTransaction.count({
+        where: { ...where, status: 'SUCCESS', createdAt: { gte: startOfDay, lte: endOfDay } }
+      }).catch(() => 0)
+    ]);
+
+    const rate = dayTotal > 0 ? Math.round((daySuccess / dayTotal) * 1000) / 10 : 100;
+    dailyTrend.push({
+      date: dayName,
+      successRate: rate
+    });
+  }
 
   return {
     totalPayments: total || 0,
+    totalTransactions: total || 0,
     successCount: success || 0,
     failedCount: failed || 0,
+    failedTransactions: failed || 0,
+    successRate: successRate || 0,
     successRatePercentage: successRate || 0,
+    dailyTrend
   };
 }
 
-export async function getRefundRate({ companyId }) {
+export async function getRefundRate({ companyId } = {}) {
   const where = companyId ? { companyId } : {};
 
-  const [totalRefunds, processedRefunds, aggregate] = await Promise.all([
-    prisma.refundRequest.count({ where }),
-    prisma.refundRequest.count({ where: { ...where, status: 'PROCESSED' } }),
+  const [totalRefunds, processedRefunds, aggregate, reasonGroups] = await Promise.all([
+    prisma.refundRequest.count({ where }).catch(() => 0),
+    prisma.refundRequest.count({ where: { ...where, status: 'PROCESSED' } }).catch(() => 0),
     prisma.refundRequest.aggregate({
       where: { ...where, status: 'PROCESSED' },
       _sum: { amount: true },
-    }),
+    }).catch(() => ({ _sum: { amount: 0 } })),
+    prisma.refundRequest.groupBy({
+      by: ['reason'],
+      where,
+      _count: { reason: true }
+    }).catch(() => [])
   ]);
+
+  const refundRate = totalRefunds > 0 ? Math.round((processedRefunds / totalRefunds) * 1000) / 10 : 0;
+  const reasons = reasonGroups.map((r) => ({
+    reason: r.reason || 'General Inquiry',
+    count: r._count?.reason || 0
+  }));
 
   return {
     totalRefundRequests: totalRefunds || 0,
+    totalRefundCount: totalRefunds || 0,
     processedCount: processedRefunds || 0,
     totalRefundedAmount: Number(aggregate._sum?.amount || 0),
+    refundRate,
+    reasons
   };
 }
 
-export async function getPaymentMethodStats() {
-  return {
-    methods: [
-      { method: 'UPI / QR', percentage: 58 },
-      { method: 'Credit / Debit Card', percentage: 27 },
-      { method: 'Net Banking', percentage: 11 },
-      { method: 'Corporate Wallet', percentage: 4 },
-    ],
-  };
+export async function getPaymentMethodStats({ companyId } = {}) {
+  const where = { status: 'SUCCESS' };
+  if (companyId) {
+    where.subscription = { companyId };
+  }
+
+  const transactions = await prisma.paymentTransaction.findMany({
+    where,
+    select: { gateway: true, method: true, amount: true }
+  }).catch(() => []);
+
+  const total = transactions.length;
+  if (total === 0) {
+    return {
+      methods: [
+        { method: 'UPI / QR', count: 0, percentage: 0 },
+        { method: 'Credit / Debit Card', count: 0, percentage: 0 },
+        { method: 'Net Banking', count: 0, percentage: 0 }
+      ]
+    };
+  }
+
+  const methodCounts = {};
+  transactions.forEach((t) => {
+    const m = t.method || (t.gateway === 'RAZORPAY' ? 'UPI / QR' : 'Credit / Debit Card');
+    methodCounts[m] = (methodCounts[m] || 0) + 1;
+  });
+
+  const methods = Object.entries(methodCounts).map(([method, count]) => ({
+    method,
+    count,
+    percentage: Math.round((count / total) * 1000) / 10
+  }));
+
+  return { methods };
 }
 
-export async function getRevenueByPlan({ companyId }) {
+export async function getRevenueByPlan({ companyId } = {}) {
   const where = { status: 'ACTIVE' };
   if (companyId) where.companyId = companyId;
 

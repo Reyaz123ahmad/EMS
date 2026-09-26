@@ -1239,7 +1239,59 @@ export const attendanceService = {
       companyId,
       policy: updatedCompany.attendanceSettings
     };
+  },
 
+  /**
+   * Monthly Summary Analytics
+   */
+  async getMonthlySummary(companyId, month, year, filters = {}) {
+    const targetMonth = month ? Number(month) - 1 : new Date().getMonth();
+    const targetYear = year ? Number(year) : new Date().getFullYear();
+
+    const startDate = new Date(targetYear, targetMonth, 1);
+    const endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
+
+    const where = {
+      companyId,
+      attendanceDate: { gte: startDate, lte: endDate },
+      ...(filters.departmentId ? { employee: { departmentId: filters.departmentId } } : {}),
+      ...(filters.employeeId ? { employeeId: filters.employeeId } : {})
+    };
+
+    const logs = await prisma.attendanceLog.findMany({
+      where,
+      include: {
+        employee: {
+          select: { id: true, firstName: true, lastName: true, employeeCode: true, department: true }
+        }
+      }
+    });
+
+    const presentDays = logs.filter(l => l.status === 'PRESENT').length;
+    const absentDays = logs.filter(l => l.status === 'ABSENT').length;
+    const halfDays = logs.filter(l => l.status === 'HALF_DAY').length;
+    const lateDays = logs.filter(l => l.isLate).length;
+    const totalWorkingDays = new Date(targetYear, targetMonth + 1, 0).getDate();
+
+    let totalOvertimeMinutes = 0;
+    logs.forEach(l => {
+      if (l.overtimeMinutes) totalOvertimeMinutes += l.overtimeMinutes;
+    });
+
+    const punctualityRate = presentDays > 0 ? Math.round(((presentDays - lateDays) / presentDays) * 100) : 100;
+
+    return {
+      month: targetMonth + 1,
+      year: targetYear,
+      presentDays,
+      absentDays,
+      halfDays,
+      lateDays,
+      totalWorkingDays,
+      totalOvertimeHours: Number((totalOvertimeMinutes / 60).toFixed(1)),
+      punctualityRate: isNaN(punctualityRate) ? 100 : punctualityRate,
+      totalLogs: logs.length
+    };
   }
 };
 

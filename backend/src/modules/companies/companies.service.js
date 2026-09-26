@@ -267,7 +267,104 @@ export const companiesService = {
         }
       });
 
-      // 8. Audit Log
+      // 8. CREATE DEFAULT SHIFT (General Shift 09:00 - 18:00)
+      const defaultShift = await tx.shift.create({
+        data: {
+          companyId: company.id,
+          name: 'General Shift',
+          startTime: '09:00',
+          endTime: '18:00',
+          graceMinutes: 15,
+          isNightShift: false,
+          workingHours: 8,
+          isActive: true
+        }
+      });
+
+      // 9. CREATE DEFAULT BREAK RULES
+      const lunchBreak = await tx.breakRule.create({
+        data: {
+          companyId: company.id,
+          name: 'Lunch Break',
+          durationMinutes: 30,
+          isPaid: false,
+          maxPerShift: 1,
+          isActive: true
+        }
+      });
+
+      const shortBreak = await tx.breakRule.create({
+        data: {
+          companyId: company.id,
+          name: 'Short Break',
+          durationMinutes: 15,
+          isPaid: true,
+          maxPerShift: 2,
+          isActive: true
+        }
+      });
+
+      // Link Break Rules to Shift
+      await tx.shiftBreakRule.createMany({
+        data: [
+          { shiftId: defaultShift.id, breakRuleId: lunchBreak.id },
+          { shiftId: defaultShift.id, breakRuleId: shortBreak.id }
+        ]
+      });
+
+      // 10. ASSIGN DEFAULT SHIFT TO COMPANY ADMIN EMPLOYEE
+      await tx.shiftAssignment.create({
+        data: {
+          employeeId: employee.id,
+          shiftId: defaultShift.id,
+          effectiveFrom: new Date(),
+          effectiveTo: null
+        }
+      });
+
+      // 11. CREATE DEFAULT LEAVE TYPES & INITIALIZE ADMIN LEAVE BALANCES
+      const currentYear = new Date().getFullYear();
+      const defaultLeaveTypes = [
+        { name: 'Casual Leave', code: 'CL', maxDaysPerYear: 12, isPaid: true },
+        { name: 'Sick Leave', code: 'SL', maxDaysPerYear: 10, isPaid: true },
+        { name: 'Earned Leave', code: 'EL', maxDaysPerYear: 15, isPaid: true }
+      ];
+
+      for (const lt of defaultLeaveTypes) {
+        const createdLt = await tx.leaveType.create({
+          data: {
+            companyId: company.id,
+            name: lt.name,
+            code: lt.code,
+            maxDaysPerYear: lt.maxDaysPerYear,
+            isPaid: lt.isPaid,
+            isActive: true
+          }
+        });
+
+        await tx.leaveBalance.create({
+          data: {
+            employeeId: employee.id,
+            leaveTypeId: createdLt.id,
+            year: currentYear,
+            totalDays: lt.maxDaysPerYear,
+            usedDays: 0,
+            remainingDays: lt.maxDaysPerYear
+          }
+        });
+      }
+
+      // 12. CREATE DEFAULT WEEKLY OFF RULE
+      await tx.weeklyOffRule.create({
+        data: {
+          companyId: company.id,
+          name: 'Sunday Off',
+          days: ['SUNDAY'],
+          isActive: true
+        }
+      });
+
+      // 13. Audit Log
       await tx.auditLog.create({
         data: {
           userId: user.id,
@@ -277,12 +374,13 @@ export const companiesService = {
           newValues: {
             companyName: company.name,
             adminEmail: user.email,
-            plan: plan.name
+            plan: plan.name,
+            defaultShift: defaultShift.name
           }
         }
       });
 
-      return { company, user, employee, subscription };
+      return { company, user, employee, subscription, shift: defaultShift };
     }, {
       maxWait: 10000,
       timeout: 30000
@@ -315,6 +413,8 @@ export const companiesService = {
         email: result.user.email,
         name: `${adminData.firstName} ${adminData.lastName}`
       },
+      employee: result.employee,
+      shift: result.shift,
       message: 'Company and Administrator account provisioned successfully.'
     };
   },

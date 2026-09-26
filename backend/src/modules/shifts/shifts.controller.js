@@ -76,6 +76,18 @@ export const shiftsController = {
     } catch (err) {
       next(err);
     }
+  },
+
+  async getMyShift(req, res, next) {
+    try {
+      const userId = req.user?.id || req.user?.userId || req.user?.sub;
+      const companyId = req.user?.companyId;
+
+      const myShift = await shiftsService.getMyShift({ userId, companyId, email: req.user?.email });
+      res.status(200).json({ status: 'ok', data: myShift });
+    } catch (err) {
+      next(err);
+    }
   }
 };
 

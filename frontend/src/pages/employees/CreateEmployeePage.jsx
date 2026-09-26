@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSendEmployeeOTP, useVerifyEmployeeOTP, useCreateEmployee } from '../../hooks/useEmployee.js';
+import { useShifts } from '../../hooks/useShifts.js';
 import { StepWizard } from '../../components/shared/StepWizard.jsx';
 import { OTPInput } from '../../components/ui/OTPInput.jsx';
 import { Input } from '../../components/ui/Input.jsx';
@@ -17,6 +18,17 @@ export function CreateEmployeePage() {
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
 
+  const { data: shiftsData } = useShifts();
+  const shifts = Array.isArray(shiftsData)
+    ? shiftsData
+    : Array.isArray(shiftsData?.shifts)
+    ? shiftsData.shifts
+    : Array.isArray(shiftsData?.data?.shifts)
+    ? shiftsData.data.shifts
+    : Array.isArray(shiftsData?.data)
+    ? shiftsData.data
+    : [];
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -24,6 +36,7 @@ export function CreateEmployeePage() {
     phone: '',
     department: 'Engineering',
     employmentType: 'FULL_TIME',
+    shiftId: '',
     employeeCode: '',
     joiningDate: new Date().toISOString().split('T')[0]
   });
@@ -55,6 +68,7 @@ export function CreateEmployeePage() {
           email: formData.email.toLowerCase(),
           phone: formData.phone,
           employmentType: formData.employmentType,
+          shiftId: formData.shiftId || undefined,
           employeeCode: formData.employeeCode || undefined,
           joiningDate: formData.joiningDate
         }
@@ -95,6 +109,7 @@ export function CreateEmployeePage() {
           email: formData.email.toLowerCase(),
           phone: formData.phone,
           employmentType: formData.employmentType,
+          shiftId: formData.shiftId || undefined,
           employeeCode: formData.employeeCode || undefined,
           joiningDate: formData.joiningDate
         }
@@ -249,6 +264,23 @@ export function CreateEmployeePage() {
                     value={formData.joiningDate}
                     onChange={handleInputChange}
                   />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">Work Shift Schedule</label>
+                  <select
+                    name="shiftId"
+                    value={formData.shiftId}
+                    onChange={handleInputChange}
+                    className="w-full h-11 px-3 rounded-lg bg-slate-950/60 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="">-- Default General Shift (Auto-Assign) --</option>
+                    {shifts.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({s.startTime} - {s.endTime})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="sm:col-span-2">

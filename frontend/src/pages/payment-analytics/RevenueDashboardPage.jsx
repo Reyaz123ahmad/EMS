@@ -19,9 +19,9 @@ export function RevenueDashboardPage() {
   const { data: arrData } = useARR();
   const { data: planRevenue = [] } = useRevenueByPlan();
 
-  const totalRevenue = revenueStats?.totalRevenue || 485000;
-  const mrr = mrrData?.mrr || 65000;
-  const arr = arrData?.arr || 780000;
+  const totalRevenue = Number(revenueStats?.totalRevenue || 0);
+  const mrr = Number(mrrData?.mrr || 0);
+  const arr = Number(arrData?.arr || 0);
   const monthlyData = revenueStats?.monthlyTrend || [];
 
   return (
@@ -65,11 +65,11 @@ export function RevenueDashboardPage() {
           </span>
           <h2 className="text-3xl font-extrabold mt-2 flex items-center">
             <IndianRupee className="w-6 h-6" />
-            {Number(totalRevenue).toLocaleString('en-IN')}
+            {totalRevenue.toLocaleString('en-IN')}
           </h2>
           <div className="mt-4 flex items-center gap-1.5 text-xs text-indigo-100">
             <TrendingUp className="w-4 h-4" />
-            <span>+18.4% compared to previous period</span>
+            <span>Real-time transaction aggregate</span>
           </div>
         </div>
 
@@ -79,7 +79,7 @@ export function RevenueDashboardPage() {
           </span>
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center text-indigo-600 dark:text-indigo-400">
             <IndianRupee className="w-6 h-6" />
-            {Number(mrr).toLocaleString('en-IN')}
+            {mrr.toLocaleString('en-IN')}
           </h2>
           <p className="text-xs text-slate-400 mt-2">Active recurring subscription base</p>
         </div>
@@ -90,7 +90,7 @@ export function RevenueDashboardPage() {
           </span>
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center text-emerald-600 dark:text-emerald-400">
             <IndianRupee className="w-6 h-6" />
-            {Number(arr).toLocaleString('en-IN')}
+            {arr.toLocaleString('en-IN')}
           </h2>
           <p className="text-xs text-slate-400 mt-2">Annualized revenue projection</p>
         </div>
@@ -131,23 +131,9 @@ export function RevenueDashboardPage() {
               );
             })
           ) : (
-            <>
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
-                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">Starter Tier</span>
-                <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1">₹45,000</h4>
-                <span className="text-xs text-slate-400">15 active subscribers</span>
-              </div>
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
-                <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">Pro Business</span>
-                <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1">₹185,000</h4>
-                <span className="text-xs text-slate-400">22 active subscribers</span>
-              </div>
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
-                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Enterprise Custom</span>
-                <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1">₹255,000</h4>
-                <span className="text-xs text-slate-400">8 large enterprise contracts</span>
-              </div>
-            </>
+            <div className="col-span-3 py-6 text-center text-xs text-slate-500">
+              No active subscription tiers registered.
+            </div>
           )}
         </div>
       </div>

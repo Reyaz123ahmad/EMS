@@ -112,7 +112,15 @@ export default function ShiftListPage() {
     setIsAssignModalOpen(false);
   };
 
-  const shifts = shiftsData?.data?.data || shiftsData?.data || [];
+  const shifts = Array.isArray(shiftsData)
+    ? shiftsData
+    : Array.isArray(shiftsData?.shifts)
+    ? shiftsData.shifts
+    : Array.isArray(shiftsData?.data?.shifts)
+    ? shiftsData.data.shifts
+    : Array.isArray(shiftsData?.data)
+    ? shiftsData.data
+    : [];
 
   return (
     <div className="space-y-6">

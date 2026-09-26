@@ -10,25 +10,18 @@ import {
 } from 'recharts';
 
 export function RevenueChart({ data = [] }) {
-  const chartData =
-    data.length > 0
-      ? data
-      : [
-          { month: 'Jan', revenue: 45000 },
-          { month: 'Feb', revenue: 52000 },
-          { month: 'Mar', revenue: 58000 },
-          { month: 'Apr', revenue: 64000 },
-          { month: 'May', revenue: 78000 },
-          { month: 'Jun', revenue: 95000 },
-          { month: 'Jul', revenue: 112000 },
-          { month: 'Aug', revenue: 125000 },
-          { month: 'Sep', revenue: 140000 }
-        ];
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs text-slate-400">
+        No revenue data recorded for this timeframe
+      </div>
+    );
+  }
 
   return (
     <div className="w-full h-72">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />

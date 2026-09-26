@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldCheck, ShieldAlert, Shield } from 'lucide-react';
 
-export function SecurityScoreCard({ score = 85, level = 'HIGH', totalSignals = 0, deviceTrustRate = 98 }) {
+export function SecurityScoreCard({ score = 100, level = 'OPTIMAL', totalSignals = 0, deviceTrustRate = 100 }) {
   const getScoreColor = (val) => {
     if (val >= 80) return 'text-emerald-600 dark:text-emerald-400 border-emerald-500';
     if (val >= 60) return 'text-amber-600 dark:text-amber-400 border-amber-500';

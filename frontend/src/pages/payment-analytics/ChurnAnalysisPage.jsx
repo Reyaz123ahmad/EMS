@@ -6,9 +6,11 @@ import { UserMinus, AlertTriangle, ShieldCheck, HeartHandshake, TrendingDown } f
 export function ChurnAnalysisPage() {
   const { data, isLoading } = useChurnRate();
 
-  const churnRate = data?.churnRate || 1.4;
-  const churnedCount = data?.churnedSubscriptions || 3;
-  const retentionRate = (100 - churnRate).toFixed(1);
+  const churnRate = Number(data?.churnRatePercentage ?? data?.churnRate ?? 0);
+  const churnedCount = Number(data?.churnedSubscriptions ?? data?.churnedTotal ?? 0);
+  const totalSubscriptions = Number(data?.totalSubscriptions ?? 0);
+  const retentionRate = totalSubscriptions > 0 ? (100 - churnRate).toFixed(1) : '100.0';
+  const monthlyTrend = data?.monthlyTrend || [];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-6 px-4 sm:px-6">
@@ -30,9 +32,8 @@ export function ChurnAnalysisPage() {
           </span>
           <h2 className="text-3xl font-extrabold text-rose-600 dark:text-rose-400 mt-2 flex items-center gap-2">
             <span>{churnRate}%</span>
-            <TrendingDown className="w-5 h-5 text-emerald-500" />
           </h2>
-          <p className="text-xs text-slate-400 mt-2">Decreased by 0.3% this month</p>
+          <p className="text-xs text-slate-400 mt-2">Calculated from subscription lifecycle</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
@@ -42,7 +43,7 @@ export function ChurnAnalysisPage() {
           <h2 className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">
             {retentionRate}%
           </h2>
-          <p className="text-xs text-slate-400 mt-2">High tenant loyalty across core tiers</p>
+          <p className="text-xs text-slate-400 mt-2">Active vs churned tenant ratio</p>
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
@@ -52,7 +53,7 @@ export function ChurnAnalysisPage() {
           <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2">
             {churnedCount} accounts
           </h2>
-          <p className="text-xs text-slate-400 mt-2">Out of total active tenant base</p>
+          <p className="text-xs text-slate-400 mt-2">Out of {totalSubscriptions} total subscriptions</p>
         </div>
       </div>
 
@@ -66,32 +67,7 @@ export function ChurnAnalysisPage() {
             </p>
           </div>
         </div>
-        <ChurnChart />
-      </div>
-
-      {/* Primary Cancellation Drivers */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Top Cancellation Feedback</h3>
-        <div className="space-y-3">
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
-              Downsizing or Seasonal Staff Reductions
-            </span>
-            <span className="text-xs font-semibold text-slate-500">45% of cancellations</span>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
-              Missing Custom Biometric Hardware Integration
-            </span>
-            <span className="text-xs font-semibold text-slate-500">30% of cancellations</span>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
-              Budget Constraint / Price Sensitivity
-            </span>
-            <span className="text-xs font-semibold text-slate-500">25% of cancellations</span>
-          </div>
-        </div>
+        <ChurnChart data={monthlyTrend} />
       </div>
     </div>
   );

@@ -150,29 +150,37 @@ export const AIHubPage = () => {
                 <div className="h-4 bg-slate-800 rounded w-full"></div>
                 <div className="h-4 bg-slate-800 rounded w-2/3"></div>
               </div>
-            ) : (
+            ) : analyticsData?.data ? (
               <div className="space-y-4">
                 <p className="text-sm text-slate-300 leading-relaxed">
                   {analyticsData?.data?.executiveSummary ||
                     analyticsData?.data?.summary ||
-                    (isSuperAdmin
-                      ? 'Multi-tenant ecosystem shows strong tenant adoption with high platform uptime and active corporate usage.'
-                      : 'Workforce metrics are optimal with balanced distribution across operational departments.')}
+                    'Analytics overview is available.'}
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                   <div className="p-3.5 bg-slate-800/50 border border-slate-700/60 rounded-xl">
                     <span className="text-xs text-slate-400">{isSuperAdmin ? 'Tenant Health' : 'Health Score'}</span>
-                    <p className="text-xl font-bold text-emerald-400">{analyticsData?.data?.healthScore || 96}/100</p>
+                    <p className="text-xl font-bold text-emerald-400">
+                      {analyticsData?.data?.healthScore !== undefined ? `${analyticsData.data.healthScore}/100` : 'N/A'}
+                    </p>
                   </div>
                   <div className="p-3.5 bg-slate-800/50 border border-slate-700/60 rounded-xl">
                     <span className="text-xs text-slate-400">{isSuperAdmin ? 'Churn Risk' : 'Overtime Risk'}</span>
-                    <p className="text-xl font-bold text-indigo-400">{isSuperAdmin ? 'VERY LOW' : (analyticsData?.data?.costEfficiency?.overtimeRisk || 'LOW')}</p>
+                    <p className="text-xl font-bold text-indigo-400">
+                      {analyticsData?.data?.costEfficiency?.overtimeRisk || analyticsData?.data?.churnRisk || 'NORMAL'}
+                    </p>
                   </div>
                   <div className="p-3.5 bg-slate-800/50 border border-slate-700/60 rounded-xl">
                     <span className="text-xs text-slate-400">{isSuperAdmin ? 'SLA Compliance' : 'Payroll Accuracy'}</span>
-                    <p className="text-xl font-bold text-amber-400">{isSuperAdmin ? '99.9%' : (analyticsData?.data?.costEfficiency?.payrollAccuracy || '99.8%')}</p>
+                    <p className="text-xl font-bold text-amber-400">
+                      {analyticsData?.data?.costEfficiency?.payrollAccuracy || analyticsData?.data?.slaCompliance || '100%'}
+                    </p>
                   </div>
                 </div>
+              </div>
+            ) : (
+              <div className="py-8 text-center text-slate-400 text-sm">
+                No analytics data available. Click &quot;Refresh AI Insights&quot; to generate an updated report.
               </div>
             )}
           </div>
@@ -182,33 +190,35 @@ export const AIHubPage = () => {
               <ShieldCheck className="w-5 h-5 text-emerald-400" />
               Strategic Priorities
             </h3>
-            <ul className="space-y-2.5 text-sm text-slate-300">
-              {(analyticsData?.data?.topStrategicPriorities || (isSuperAdmin ? [
-                'Optimize tenant provisioning pipeline and database indexing',
-                'Expand high-tier enterprise AI feature rollout',
-                'Monitor global subscription renewal conversions'
-              ] : [
-                'Automate shift roster re-balancing for peak periods',
-                'Implement milestone career recognition paths',
-                'Expand remote biometric punch auditing'
-              ])).map((priority, idx) => (
-                <li key={idx} className="flex items-start gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <span>{priority}</span>
-                </li>
-              ))}
-            </ul>
+            {analyticsLoading ? (
+              <div className="space-y-2 animate-pulse">
+                <div className="h-4 bg-slate-800 rounded w-full"></div>
+                <div className="h-4 bg-slate-800 rounded w-5/6"></div>
+                <div className="h-4 bg-slate-800 rounded w-4/6"></div>
+              </div>
+            ) : analyticsData?.data?.topStrategicPriorities && analyticsData.data.topStrategicPriorities.length > 0 ? (
+              <ul className="space-y-2.5 text-sm text-slate-300">
+                {analyticsData.data.topStrategicPriorities.map((priority, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                    <span>{priority}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-400">No strategic priorities registered currently.</p>
+            )}
           </div>
         </div>
       )}
 
-      {/* Tab 2: Forecast (Platform Predictions for Super Admin, Attendance Forecast for Company Admin) */}
+      {/* Tab 2: Forecast */}
       {activeTab === 'predictions' && (
         <div className="p-6 bg-slate-900/60 border border-slate-800 rounded-2xl space-y-6">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-semibold text-white">
-                {isSuperAdmin ? 'Platform Growth, Retention & Churn Forecast' : 'Monthly Attendance & Absenteeism Forecast'}
+                {isSuperAdmin ? 'Platform Growth & Retention Insights' : 'Monthly Attendance & Absenteeism Forecast'}
               </h3>
               <p className="text-xs text-slate-400">
                 {isSuperAdmin
@@ -216,29 +226,43 @@ export const AIHubPage = () => {
                   : 'Predictive modeling based on calendar holidays and historical shift logs'}
               </p>
             </div>
-            <span className="text-xs font-mono px-3 py-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 rounded-lg">
-              Forecast Accuracy: ~96%
-            </span>
+            {attendanceData?.data?.confidence && (
+              <span className="text-xs font-mono px-3 py-1 bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 rounded-lg">
+                Forecast Confidence: {attendanceData.data.confidence}%
+              </span>
+            )}
           </div>
 
-          {isSuperAdmin ? (
+          {attendanceLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 animate-pulse">
+              <div className="h-24 bg-slate-800/40 rounded-xl"></div>
+              <div className="h-24 bg-slate-800/40 rounded-xl"></div>
+              <div className="h-24 bg-slate-800/40 rounded-xl"></div>
+            </div>
+          ) : isSuperAdmin ? (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-4 bg-slate-800/40 border border-slate-700/60 rounded-xl">
                 <span className="text-xs text-slate-400">Tenant Retention Rate</span>
-                <p className="text-2xl font-bold text-white mt-1">98.4%</p>
-                <span className="text-xs text-emerald-400 mt-1 block">Expected annual cohort stability</span>
+                <p className="text-2xl font-bold text-white mt-1">
+                  {analyticsData?.data?.retentionRate !== undefined ? `${analyticsData.data.retentionRate}%` : 'N/A'}
+                </p>
+                <span className="text-xs text-emerald-400 mt-1 block">Live subscriber cohort stability</span>
               </div>
 
               <div className="p-4 bg-slate-800/40 border border-slate-700/60 rounded-xl">
-                <span className="text-xs text-slate-400">Revenue Growth Velocity</span>
-                <p className="text-2xl font-bold text-emerald-400 mt-1">+24.6%</p>
+                <span className="text-xs text-slate-400">MRR Growth Trend</span>
+                <p className="text-2xl font-bold text-emerald-400 mt-1">
+                  {analyticsData?.data?.revenueGrowthTrend !== undefined ? `${analyticsData.data.revenueGrowthTrend}%` : 'N/A'}
+                </p>
                 <span className="text-xs text-slate-400 mt-1 block">Projected MRR quarterly upside</span>
               </div>
 
               <div className="p-4 bg-slate-800/40 border border-slate-700/60 rounded-xl">
                 <span className="text-xs text-slate-400">Churn Probability</span>
-                <p className="text-2xl font-bold text-indigo-400 mt-1">1.2%</p>
-                <span className="text-xs text-slate-400 mt-1 block">Minimal subscriber exit risk</span>
+                <p className="text-2xl font-bold text-indigo-400 mt-1">
+                  {analyticsData?.data?.churnProbability !== undefined ? `${analyticsData.data.churnProbability}%` : 'N/A'}
+                </p>
+                <span className="text-xs text-slate-400 mt-1 block">Calculated subscriber exit risk</span>
               </div>
             </div>
           ) : (
@@ -246,21 +270,23 @@ export const AIHubPage = () => {
               <div className="p-4 bg-slate-800/40 border border-slate-700/60 rounded-xl">
                 <span className="text-xs text-slate-400">Expected Attendance</span>
                 <p className="text-2xl font-bold text-white mt-1">
-                  {attendanceData?.data?.expectedAverageAttendancePercentage || 94.8}%
+                  {attendanceData?.data?.expectedAverageAttendancePercentage !== undefined ? `${attendanceData.data.expectedAverageAttendancePercentage}%` : 'N/A'}
                 </p>
               </div>
 
               <div className="p-4 bg-slate-800/40 border border-slate-700/60 rounded-xl">
                 <span className="text-xs text-slate-400">Shift Coverage Risk</span>
                 <p className="text-2xl font-bold text-emerald-400 mt-1">
-                  {attendanceData?.data?.shiftCoverageRisk || 'LOW'}
+                  {attendanceData?.data?.shiftCoverageRisk || 'N/A'}
                 </p>
               </div>
 
               <div className="p-4 bg-slate-800/40 border border-slate-700/60 rounded-xl">
                 <span className="text-xs text-slate-400">Peak Absenteeism Risk Dates</span>
                 <p className="text-sm font-semibold text-amber-300 mt-2">
-                  {(attendanceData?.data?.peakAbsenteeismDates || ['Around national holidays']).join(', ')}
+                  {attendanceData?.data?.peakAbsenteeismDates?.length > 0
+                    ? attendanceData.data.peakAbsenteeismDates.join(', ')
+                    : 'None identified'}
                 </p>
               </div>
             </div>
@@ -275,14 +301,21 @@ export const AIHubPage = () => {
             <AlertTriangle className="w-5 h-5 text-amber-400" />
             Active Anomaly & Fraud Signals
           </h3>
-          <p className="text-sm text-slate-300">
-            {anomalyData?.data?.auditSummary || 'No critical payroll or geofence spoofing anomalies detected across active shifts.'}
-          </p>
+          {anomalyLoading ? (
+            <div className="space-y-2 animate-pulse">
+              <div className="h-4 bg-slate-800 rounded w-full"></div>
+              <div className="h-4 bg-slate-800 rounded w-3/4"></div>
+            </div>
+          ) : (
+            <p className="text-sm text-slate-300">
+              {anomalyData?.data?.auditSummary || 'No active critical payroll or geofence spoofing anomalies detected.'}
+            </p>
+          )}
 
           <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-emerald-400 flex-shrink-0" />
             <span className="text-xs text-emerald-200">
-              Geofencing and IP validation engines are active. Zero high-severity security breaches identified in the last 30 days.
+              Geofencing and IP validation engines are active. Live auditing continuous.
             </span>
           </div>
         </div>
@@ -290,34 +323,32 @@ export const AIHubPage = () => {
 
       {/* Tab 4: Recommendations */}
       {activeTab === 'recommendations' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(recsData?.data?.recommendations || [
-            {
-              category: 'COST_OPTIMIZATION',
-              title: 'Optimize Overtime Scheduling',
-              impact: 'HIGH',
-              effort: 'LOW',
-              description: 'Consolidate weekend support into rotating shifts to reduce 15% overtime spend.'
-            },
-            {
-              category: 'EMPLOYEE_ENGAGEMENT',
-              title: 'Automated Milestone Recognition',
-              impact: 'MEDIUM',
-              effort: 'LOW',
-              description: 'Enable automated anniversary and milestone bonuses to elevate retention.'
-            }
-          ]).map((rec, index) => (
-            <div key={index} className="p-5 bg-slate-900/60 border border-slate-800 rounded-2xl space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 rounded-md">
-                  {rec.category}
-                </span>
-                <span className="text-[11px] font-semibold text-emerald-400">Impact: {rec.impact}</span>
-              </div>
-              <h4 className="text-sm font-semibold text-white">{rec.title}</h4>
-              <p className="text-xs text-slate-300 leading-relaxed">{rec.description}</p>
+        <div>
+          {recsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
+              <div className="h-32 bg-slate-900/60 rounded-2xl"></div>
+              <div className="h-32 bg-slate-900/60 rounded-2xl"></div>
             </div>
-          ))}
+          ) : recsData?.data?.recommendations && recsData.data.recommendations.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {recsData.data.recommendations.map((rec, index) => (
+                <div key={index} className="p-5 bg-slate-900/60 border border-slate-800 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 rounded-md">
+                      {rec.category || 'GENERAL'}
+                    </span>
+                    <span className="text-[11px] font-semibold text-emerald-400">Impact: {rec.impact || 'MEDIUM'}</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-white">{rec.title}</h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">{rec.description}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center bg-slate-900/40 border border-slate-800 rounded-2xl text-slate-400 text-sm">
+              No recommendations generated yet.
+            </div>
+          )}
         </div>
       )}
     </div>

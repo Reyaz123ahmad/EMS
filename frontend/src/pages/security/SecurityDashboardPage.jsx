@@ -38,10 +38,10 @@ export function SecurityDashboardPage() {
 
       {/* Main Score & Posture Metric */}
       <SecurityScoreCard
-        score={scoreData?.score ?? dashboard?.securityScore ?? 100}
-        level={dashboard?.level || 'HIGH'}
+        score={Number(scoreData?.score ?? dashboard?.securityScore ?? 100)}
+        level={dashboard?.level || (signalsList.length === 0 ? 'OPTIMAL' : 'REVIEW')}
         totalSignals={signalsList.length}
-        deviceTrustRate={dashboard?.deviceTrustRate || 99}
+        deviceTrustRate={Number(dashboard?.deviceTrustRate ?? (signalsList.length === 0 ? 100 : Math.max(0, 100 - signalsList.length * 5)))}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -129,7 +129,6 @@ export const MonthlySummaryPage = () => {
           icon={Users}
           label="Present Days"
           value={stats.totalPresent || 0}
-          change={12.4}
           variant="emerald"
           subtitle="Total verified check-ins"
         />
@@ -137,7 +136,6 @@ export const MonthlySummaryPage = () => {
           icon={Clock}
           label="Total Hours"
           value={`${totalWorkedHours} hrs`}
-          change={5.2}
           variant="indigo"
           subtitle="Net productive shift duration"
         />
@@ -145,7 +143,6 @@ export const MonthlySummaryPage = () => {
           icon={TrendingUp}
           label="Overtime Hours"
           value={`${totalOvertimeHours} hrs`}
-          change={-2.1}
           variant="cyan"
           subtitle="Approved post-shift extensions"
         />
@@ -153,7 +150,6 @@ export const MonthlySummaryPage = () => {
           icon={AlertTriangle}
           label="Late / Half-Days"
           value={`${(stats.totalLate || 0) + (stats.totalHalfDay || 0)}`}
-          change={-15.0}
           isIncreasePositive={false}
           variant="amber"
           subtitle="Exceptions requiring audit"

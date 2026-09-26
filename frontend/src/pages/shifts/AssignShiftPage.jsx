@@ -5,6 +5,8 @@ import Input from '../../components/ui/Input';
 import { useShifts, useAssignShift } from '../../hooks/useShifts';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import api from '../../services/api';
 
 export default function AssignShiftPage() {
   const { user } = useAuthStore();
@@ -14,7 +16,25 @@ export default function AssignShiftPage() {
   const { data: shiftsData } = useShifts(companyId);
   const assignShift = useAssignShift();
 
-  const shifts = shiftsData?.data?.data || shiftsData?.data || [];
+  const { data: employeesData } = useQuery({
+    queryKey: ['employees', 'active'],
+    queryFn: async () => {
+      const res = await api.get('/employees', { params: { limit: 100, status: 'ACTIVE' } });
+      return res.data?.data || res.data || [];
+    }
+  });
+
+  const shifts = Array.isArray(shiftsData)
+    ? shiftsData
+    : Array.isArray(shiftsData?.shifts)
+    ? shiftsData.shifts
+    : Array.isArray(shiftsData?.data?.shifts)
+    ? shiftsData.data.shifts
+    : Array.isArray(shiftsData?.data)
+    ? shiftsData.data
+    : [];
+
+  const rawEmployees = employeesData?.employees || (Array.isArray(employeesData) ? employeesData : []);
 
   const [formData, setFormData] = useState({
     shiftId: '',
@@ -26,20 +46,47 @@ export default function AssignShiftPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const handleToggleEmployee = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+      employeeIds: prev.employeeIds.includes(id)
+        ? prev.employeeIds.filter((e) => e !== id)
+        : [...prev.employeeIds, id]
+    }));
+  };
+
+  const handleSelectAllEmployees = () => {
+    if (formData.employeeIds.length === rawEmployees.length) {
+      setFormData((prev) => ({ ...prev, employeeIds: [] }));
+    } else {
+      setFormData((prev) => ({ ...prev, employeeIds: rawEmployees.map((e) => e.id) }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSuccessMsg('');
     setErrorMsg('');
 
+    if (!formData.shiftId) {
+      setErrorMsg('Please select a work shift');
+      return;
+    }
+
     try {
+      // If no specific employees selected, assign to all
+      const targetEmployeeIds = formData.employeeIds.length > 0 
+        ? formData.employeeIds 
+        : rawEmployees.map((e) => e.id);
+
       await assignShift.mutateAsync({
         companyId,
         shiftId: formData.shiftId,
         effectiveFrom: formData.effectiveFrom,
         effectiveTo: formData.effectiveTo || null,
-        employeeIds: formData.employeeIds,
+        employeeIds: targetEmployeeIds,
       });
-      setSuccessMsg('Shift assigned successfully!');
+      setSuccessMsg(`Shift assigned successfully to ${targetEmployeeIds.length} employee(s)!`);
       setTimeout(() => navigate('/shifts'), 1500);
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Failed to assign shift');

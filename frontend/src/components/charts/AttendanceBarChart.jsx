@@ -10,18 +10,18 @@ import {
 } from 'recharts';
 
 export const AttendanceBarChart = ({ data = [] }) => {
-  const chartData = data && data.length > 0 ? data : [
-    { department: 'Engineering', presentPct: 94 },
-    { department: 'Design', presentPct: 90 },
-    { department: 'Marketing', presentPct: 86 },
-    { department: 'Operations', presentPct: 92 },
-    { department: 'HR & Legal', presentPct: 96 },
-  ];
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/50 text-xs text-slate-400">
+        No departmental attendance data logged
+      </div>
+    );
+  }
 
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.5} />
           <XAxis dataKey="department" stroke="#94a3b8" fontSize={11} tickLine={false} />
           <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} unit="%" />
@@ -46,3 +46,5 @@ export const AttendanceBarChart = ({ data = [] }) => {
     </div>
   );
 };
+
+export default AttendanceBarChart;
