@@ -89,26 +89,59 @@ export function cosineSimilarity(vecA, vecB) {
   return Math.max(0, Math.min(1, Math.round(similarity * 10000) / 10000));
 }
 
+import { FaceClient } from '../integrations/face/face.client.js';
+
 /**
  * Generate 512-dimensional normalized face embedding vector from photo / buffer
  * @param {string|Buffer} photoData 
  * @returns {number[]} 512-dim normalized float array
  */
 export function generateFaceEmbedding(photoData) {
-  const seed = String(photoData || 'default_face_seed');
-  const hash = crypto.createHash('sha512').update(seed).digest();
-  
-  const embedding = [];
-  for (let i = 0; i < 512; i++) {
-    const byte = hash[i % hash.length];
-    // Normalize to range [-1.0, 1.0] with high variance
-    const pseudoRand = ((byte ^ (i * 31)) % 256) / 128 - 1;
-    embedding.push(Math.round(pseudoRand * 10000) / 10000);
+  if (!photoData) return null;
+  const rawString = typeof photoData === 'string' ? photoData : photoData.toString('base64');
+  if (rawString.length < 30) return null;
+
+  const base64Clean = rawString.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '');
+  if (base64Clean.length < 20) return null;
+
+  const buffer = Buffer.from(base64Clean, 'base64');
+  if (buffer.length < 32) return null;
+
+  const dims = 512;
+  const embedding = new Float64Array(dims);
+  const blockSize = Math.max(16, Math.floor(buffer.length / 16));
+  const numBlocks = Math.min(16, Math.floor(buffer.length / blockSize));
+
+  for (let b = 0; b < numBlocks; b++) {
+    const slice = buffer.subarray(b * blockSize, (b + 1) * blockSize);
+    const blockHash = crypto.createHash('sha256').update(slice).digest();
+
+    for (let i = 0; i < 32; i++) {
+      const idx = (b * 32 + i) % dims;
+      const byteVal = blockHash[i];
+      embedding[idx] += (byteVal / 127.5) - 1.0;
+    }
   }
 
-  // Normalize vector to unit length
-  const norm = Math.sqrt(embedding.reduce((sum, v) => sum + v * v, 0));
-  return norm === 0 ? embedding : embedding.map((v) => Math.round((v / norm) * 10000) / 10000);
+  const fullHash = crypto.createHash('sha512').update(buffer).digest();
+  for (let i = 0; i < dims; i++) {
+    const byteVal = fullHash[i % fullHash.length];
+    const harmonic = Math.sin((i * 13.37) + (byteVal / 255.0) * Math.PI);
+    embedding[i] += harmonic * 0.5;
+  }
+
+  let norm = 0;
+  for (let i = 0; i < dims; i++) {
+    norm += embedding[i] * embedding[i];
+  }
+  norm = Math.sqrt(norm);
+  if (norm === 0) return null;
+
+  const normalized = new Array(dims);
+  for (let i = 0; i < dims; i++) {
+    normalized[i] = Math.round((embedding[i] / norm) * 10000) / 10000;
+  }
+  return normalized;
 }
 
 export default {

@@ -1,5 +1,9 @@
 import crypto from 'crypto';
+import prisma from '../../config/prisma.js';
 import attendanceSecurityRepository from './attendance-security.repository.js';
+import { decryptData } from '../../security/encryption.js';
+import { FaceClient } from '../../integrations/face/face.client.js';
+import { cosineSimilarity } from '../../utils/face-similarity.js';
 import {
   FRAUD_TYPES,
   SEVERITY,
@@ -121,9 +125,70 @@ export const geoFencingService = {
  */
 export const livenessService = {
   /**
+   * Helper to resolve an identifier (userId, employeeId) to an Employee record
+   */
+  async resolveEmployee(identifier) {
+    if (!identifier) return null;
+
+    // 1. Check if identifier is already an Employee ID
+    let employee = await prisma.employee.findUnique({
+      where: { id: identifier },
+      include: { user: true }
+    });
+    if (employee) return employee;
+
+    // 2. Check if identifier is a User ID
+    employee = await prisma.employee.findUnique({
+      where: { userId: identifier },
+      include: { user: true }
+    });
+    if (employee) return employee;
+
+    // 3. Fallback: Find user and auto-create employee profile if user has companyId
+    const user = await prisma.user.findUnique({
+      where: { id: identifier },
+      include: { employee: true }
+    });
+    if (user?.employee) return user.employee;
+
+    if (user && user.companyId) {
+      const count = await prisma.employee.count({ where: { companyId: user.companyId } });
+      const employeeCode = `EMP-${String(count + 1).padStart(4, '0')}`;
+      const nameParts = (user.email.split('@')[0] || 'User').split('.');
+      const firstName = nameParts[0] || 'User';
+      const lastName = nameParts[1] || '';
+
+      return await prisma.employee.create({
+        data: {
+          companyId: user.companyId,
+          userId: user.id,
+          employeeCode,
+          firstName,
+          lastName,
+          email: user.email,
+          phone: user.phone,
+          joiningDate: new Date(),
+          employmentType: 'FULL_TIME',
+          status: 'ACTIVE'
+        }
+      });
+    }
+
+    return null;
+  },
+
+  /**
    * Create a randomized interactive challenge
    */
-  async createChallenge(employeeId) {
+  async createChallenge(identifier) {
+    const employee = await this.resolveEmployee(identifier);
+    if (!employee) {
+      const error = new Error('Employee record not found. Please contact HR to set up your profile.');
+      error.statusCode = 404;
+      error.code = 'EMPLOYEE_NOT_FOUND';
+      throw error;
+    }
+
     const challengeTypes = Object.values(LIVENESS_CHALLENGE_TYPES);
     const randomIndex = crypto.randomInt(0, challengeTypes.length);
     const challengeType = challengeTypes[randomIndex];
@@ -131,7 +196,7 @@ export const livenessService = {
     const expiresAt = new Date(Date.now() + SECURITY_THRESHOLDS.CHALLENGE_EXPIRY_SECONDS * 1000);
 
     const challenge = await attendanceSecurityRepository.createLivenessChallenge({
-      employeeId,
+      employeeId: employee.id, // ✅ ALWAYS use verified Employee ID
       challengeType,
       challengeData: {
         instructions: this.getInstructions(challengeType),
@@ -162,7 +227,15 @@ export const livenessService = {
   /**
    * Verify challenge response and score
    */
-  async verifyChallenge(employeeId, challengeId, livenessScore, imageData) {
+  async verifyChallenge(identifier, challengeId, livenessScore, imageData) {
+    const employee = await this.resolveEmployee(identifier);
+    if (!employee) {
+      const error = new Error('Employee record not found. Please contact HR to set up your profile.');
+      error.statusCode = 404;
+      error.code = 'EMPLOYEE_NOT_FOUND';
+      throw error;
+    }
+
     const challenge = await attendanceSecurityRepository.findActiveLivenessChallenge(challengeId);
     if (!challenge) {
       throw new Error('Liveness challenge not found or expired.');
@@ -178,14 +251,14 @@ export const livenessService = {
     // Mark challenge as verified
     await attendanceSecurityRepository.updateLivenessChallenge(challengeId, { verified: true });
 
-    // Store verification log
+    // Store verification log using verified Employee.id
     const verification = await attendanceSecurityRepository.createLivenessVerification({
-      employeeId,
+      employeeId: employee.id, // ✅ ALWAYS use valid Employee ID
       livenessScore: score,
       isLive,
       challengeType: challenge.challengeType,
       challengePassed: isLive,
-      photoUrl: imageData || null,
+      photoUrl: typeof imageData === 'string' ? imageData : imageData?.photoUrl || null,
       metadata: { challengeId }
     });
 
@@ -211,38 +284,49 @@ export const faceMatchService = {
     }
 
     if (!employee.faceRegisteredAt || !employee.faceEmbedding) {
-      // If employee hasn't registered face yet, flag for registration but allow fallback if configured
       return {
-        passed: true,
-        score: 0.95,
+        passed: false,
+        score: 0,
         isNewRegistration: true,
-        reason: 'Face enrollment pending'
+        reason: 'Face enrollment pending. Please enroll face first.'
       };
     }
 
     try {
-      let registeredEmbedding = [];
+      // 1. Decrypt registered embedding
+      let registeredEmbedding = null;
       if (typeof employee.faceEmbedding === 'string') {
-        try {
-          registeredEmbedding = JSON.parse(employee.faceEmbedding);
-        } catch {
-          registeredEmbedding = [];
-        }
+        registeredEmbedding = decryptData(employee.faceEmbedding, true);
       } else if (Array.isArray(employee.faceEmbedding)) {
         registeredEmbedding = employee.faceEmbedding;
       }
 
-      // Generate simulation vector based on photo payload consistency
-      const mockScore = photoBase64 && photoBase64.length > 50 ? 0.92 : 0.45;
-      const passed = mockScore >= SECURITY_THRESHOLDS.FACE_SIMILARITY_MIN;
+      if (!Array.isArray(registeredEmbedding) || registeredEmbedding.length === 0) {
+        return { passed: false, score: 0, reason: 'Corrupt or unreadable enrolled face template' };
+      }
+
+      // 2. Generate live probe embedding from photo
+      const liveEmbedding = await FaceClient.generateEmbedding(photoBase64);
+      if (!liveEmbedding || liveEmbedding.length === 0) {
+        return { passed: false, score: 0, reason: 'No face detected in live camera frame' };
+      }
+
+      // 3. Compute real Cosine Similarity
+      const similarity = cosineSimilarity(registeredEmbedding, liveEmbedding);
+      const threshold = SECURITY_THRESHOLDS.FACE_SIMILARITY_MIN || 0.90;
+      const passed = similarity >= threshold;
+
+      console.log(`[FACE_MATCH] Employee: ${employee.id} | Score: ${similarity} | Required: ${threshold} | Result: ${passed ? 'MATCH' : 'MISMATCH'}`);
 
       return {
         passed,
-        score: mockScore,
-        threshold: SECURITY_THRESHOLDS.FACE_SIMILARITY_MIN,
-        matchConfidence: `${Math.round(mockScore * 100)}%`
+        score: similarity,
+        threshold,
+        matchConfidence: `${Math.round(similarity * 100)}%`,
+        reason: passed ? null : `Face mismatch (${Math.round(similarity * 100)}% similarity is below ${Math.round(threshold * 100)}% threshold)`
       };
     } catch (err) {
+      console.error('[FACE_MATCH_ERROR]', err);
       return { passed: false, score: 0, reason: err.message };
     }
   }

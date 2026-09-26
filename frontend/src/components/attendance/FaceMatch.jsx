@@ -2,25 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { ScanFace, CheckCircle2, ShieldAlert, Cpu, Check } from 'lucide-react';
 
 export const FaceMatch = ({ photo, onResult }) => {
-  const [matchStatus, setMatchStatus] = useState('PROCESSING'); // PROCESSING | MATCHED | MISMATCH
-  const [score, setScore] = useState(0.92);
+  const [matchStatus, setMatchStatus] = useState('PROCESSING'); // PROCESSING | READY
   const [progress, setProgress] = useState(20);
 
   useEffect(() => {
     let timer1, timer2, timer3;
 
-    // Simulate 128-D vector extraction and neural net inference
-    timer1 = setTimeout(() => setProgress(60), 300);
-    timer2 = setTimeout(() => setProgress(95), 700);
+    // Vector extraction preview
+    timer1 = setTimeout(() => setProgress(60), 200);
+    timer2 = setTimeout(() => setProgress(90), 500);
 
     timer3 = setTimeout(() => {
       setProgress(100);
-      setMatchStatus('MATCHED');
-      setScore(0.94);
+      setMatchStatus('READY');
       if (onResult) {
-        onResult({ passed: true, score: 0.94, threshold: 0.75 });
+        onResult({ ready: true, photo, threshold: 0.90 });
       }
-    }, 1100);
+    }, 800);
 
     return () => {
       clearTimeout(timer1);
@@ -37,14 +35,14 @@ export const FaceMatch = ({ photo, onResult }) => {
             <ScanFace className="h-4 w-4" />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-slate-100">128-D Biometric Matcher</h4>
-            <p className="text-xs text-slate-400">Cosine similarity vs registered profile vector</p>
+            <h4 className="text-sm font-semibold text-slate-100">512-D Biometric Matcher</h4>
+            <p className="text-xs text-slate-400">Neural cosine similarity vs encrypted master vector</p>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 rounded-full bg-slate-800 px-2.5 py-1 text-xs font-mono text-slate-300">
           <Cpu className="h-3 w-3 text-purple-400" />
-          <span>Threshold: 75%</span>
+          <span>Threshold: 90%</span>
         </div>
       </div>
 

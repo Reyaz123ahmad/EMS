@@ -33,7 +33,7 @@ export const GEO_CONSTANTS = {
 };
 
 export const SECURITY_THRESHOLDS = {
-  FACE_SIMILARITY_MIN: 0.70,
+  FACE_SIMILARITY_MIN: 0.90,
   LIVENESS_SCORE_MIN: 0.75,
   CHALLENGE_EXPIRY_SECONDS: 120 // 2 minutes to complete challenge
 };

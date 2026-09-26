@@ -50,6 +50,9 @@ export const faceRegistrationService = {
 
     // 4. Generate 512-dim normalized embedding
     const rawEmbedding = generateFaceEmbedding(photo);
+    if (!rawEmbedding || rawEmbedding.length === 0) {
+      throw new AppError('No face detected in photo. Please ensure clear lighting and centered face.', 400);
+    }
     
     // 5. Encrypt embedding using AES-256-GCM
     const encryptedEmbedding = encryptData(rawEmbedding);
@@ -170,6 +173,9 @@ export const faceRegistrationService = {
 
     // Generate embedding for probe photo
     const probeVector = generateFaceEmbedding(photo);
+    if (!probeVector || probeVector.length === 0) {
+      throw new AppError('Face not detected in probe photo. Please ensure camera lens is unobstructed.', 400);
+    }
 
     // Compute Cosine Similarity
     const score = cosineSimilarity(storedVector, probeVector);

@@ -20,7 +20,8 @@ export const attendanceSecurityController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
-      const employeeId = value?.employeeId || req.user?.employee?.id || req.user?.id;
+      const userId = req.user?.id || req.user?.userId;
+      const employeeId = value?.employeeId || req.user?.employee?.id || userId;
       const challenge = await livenessService.createChallenge(employeeId);
       res.status(200).json({ status: 'ok', data: challenge });
     } catch (err) {
@@ -38,7 +39,8 @@ export const attendanceSecurityController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
-      const employeeId = value.employeeId || req.user?.employee?.id || req.user?.id;
+      const userId = req.user?.id || req.user?.userId;
+      const employeeId = value?.employeeId || req.user?.employee?.id || userId;
       const result = await livenessService.verifyChallenge(
         employeeId,
         value.challengeId,
