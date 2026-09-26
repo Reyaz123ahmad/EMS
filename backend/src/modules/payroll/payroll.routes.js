@@ -31,8 +31,9 @@ router.post('/runs/:id/send-slips', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SU
 
 // Query Runs & Slips
 router.get('/runs', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listRuns);
-router.get('/runs/:id', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.getRunDetail);
 router.get('/slips', payrollController.listSlips);
+router.get('/slips/:id/download', payrollController.downloadSlip);
+router.get('/slips/:id/pdf', payrollController.downloadSlip);
 router.get('/stats', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.getStats);
 
 export default router;

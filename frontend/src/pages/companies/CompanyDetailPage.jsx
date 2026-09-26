@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useCompany } from '../../hooks/useCompany.js';
+import useAuthStore from '../../store/auth.store.js';
 import { Card } from '../../components/ui/Card.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Spinner } from '../../components/ui/Spinner.jsx';
@@ -9,6 +10,8 @@ import { Tabs } from '../../components/ui/Tabs.jsx';
 export function CompanyDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const { data, isLoading } = useCompany(id);
 
   const company = data?.data?.company;
@@ -50,7 +53,9 @@ export function CompanyDetailPage() {
                 {company.status || subscription.status || 'ACTIVE'}
               </span>
             </div>
-            <p className="text-sm text-slate-400 mt-1 font-mono">{company.domain} • {company.email}</p>
+            <p className="text-sm text-slate-400 mt-1 font-mono">
+              <span className="text-blue-400 font-bold">{company.companyCode || 'COMP-ORG'}</span> • {company.domain} • {company.email}
+            </p>
           </div>
         </div>
 
@@ -62,11 +67,13 @@ export function CompanyDetailPage() {
           >
             Configure Settings
           </Button>
-          <Link to="/employees/create">
-            <Button className="bg-blue-600 hover:bg-blue-500">
-              Add Employee
-            </Button>
-          </Link>
+          {!isSuperAdmin && (
+            <Link to="/employees/create">
+              <Button className="bg-blue-600 hover:bg-blue-500">
+                Add Employee
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -122,8 +129,8 @@ export function CompanyDetailPage() {
                   <p className="font-semibold text-slate-200 mt-1">{new Date(company.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div>
-                  <span className="text-slate-400">Multi-tenant Schema ID:</span>
-                  <p className="font-mono text-xs text-slate-300 mt-1">{company.id}</p>
+                  <span className="text-slate-400">Company Code:</span>
+                  <p className="font-mono text-xs text-indigo-400 font-bold mt-1">{company.companyCode || 'COMP-ORG'}</p>
                 </div>
               </div>
             )}

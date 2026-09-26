@@ -64,6 +64,26 @@ export function PaymentsPage() {
   const successfulPayments = rawPayments.filter(p => p.status === 'SUCCESS').length;
   const failedPayments = rawPayments.filter(p => p.status === 'FAILED').length;
 
+  const handleDownload = async (paymentId) => {
+    try {
+      toast.info('Downloading payment receipt...');
+      const response = await api.get(`/payments/${paymentId}/receipt`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `receipt-${paymentId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Receipt downloaded successfully');
+    } catch (error) {
+      toast.error('Download failed');
+    }
+  };
+
   const columns = [
     {
       header: 'Transaction / Order',
@@ -72,7 +92,7 @@ export function PaymentsPage() {
         <div className="space-y-0.5">
           <div className="font-mono text-xs font-semibold text-slate-100 flex items-center gap-1.5">
             <DollarSign className="w-3.5 h-3.5 text-blue-400" />
-            {row.razorpayOrderId || row.id.slice(0, 16)}
+            {row.razorpayOrderId || (row.companyCode ? `${row.companyCode}-PAY` : row.id.slice(0, 16))}
           </div>
           {row.razorpayPaymentId && (
             <div className="font-mono text-[11px] text-slate-400">
@@ -91,7 +111,7 @@ export function PaymentsPage() {
             {row.subscription?.company?.name || 'Platform Tenant'}
           </div>
           <div className="text-slate-400 text-[11px]">
-            Plan: <span className="text-indigo-400 font-semibold">{row.subscription?.plan?.name || 'Pro Plan'}</span>
+            Code: <span className="text-slate-300 font-mono">{row.subscription?.company?.companyCode || 'COMP-ORG'}</span> | Plan: <span className="text-indigo-400 font-semibold">{row.subscription?.plan?.name || 'Pro Plan'}</span>
           </div>
         </div>
       )
@@ -101,7 +121,7 @@ export function PaymentsPage() {
       key: 'amount',
       render: (row) => (
         <div className="font-semibold text-sm text-slate-100 font-mono">
-          ${Number(row.amount || 0).toFixed(2)}
+          Rs. {Number(row.amount || 0).toLocaleString('en-IN')}
         </div>
       )
     },
@@ -155,7 +175,7 @@ export function PaymentsPage() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => toast.success(`Receipt downloaded for transaction ${row.id.slice(0, 8)}`)}
+            onClick={() => handleDownload(row.id)}
             className="text-xs border-slate-700 hover:bg-slate-800"
           >
             <DownloadCloud className="w-3.5 h-3.5 mr-1" /> Receipt

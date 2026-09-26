@@ -12,6 +12,9 @@ export function SecurityDashboardPage() {
   const { data: signals = [] } = useFraudSignals({ limit: 4 });
   const { data: events = [] } = useSecurityEvents({ limit: 5 });
 
+  const signalsList = Array.isArray(signals) ? signals : (Array.isArray(signals?.signals) ? signals.signals : []);
+  const eventsList = Array.isArray(events) ? events : (Array.isArray(events?.events) ? events.events : []);
+
   return (
     <div className="max-w-7xl mx-auto space-y-8 py-6 px-4 sm:px-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -37,7 +40,7 @@ export function SecurityDashboardPage() {
       <SecurityScoreCard
         score={scoreData?.score || dashboard?.securityScore || 92}
         level={dashboard?.level || 'HIGH'}
-        totalSignals={signals.length}
+        totalSignals={signalsList.length}
         deviceTrustRate={dashboard?.deviceTrustRate || 99}
       />
 
@@ -50,17 +53,17 @@ export function SecurityDashboardPage() {
               Recent Flagged Signals
             </h2>
             <Link to="/security/fraud-signals" className="text-xs font-semibold text-indigo-600 hover:underline">
-              View All ({signals.length})
+              View All ({signalsList.length})
             </Link>
           </div>
 
-          {signals.length === 0 ? (
+          {signalsList.length === 0 ? (
             <div className="p-8 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-slate-400">
               No active fraud signals detected. All biometric punches verified.
             </div>
           ) : (
             <div className="space-y-3">
-              {signals.slice(0, 3).map((sig) => (
+              {signalsList.slice(0, 3).map((sig) => (
                 <FraudSignalCard key={sig.id} signal={sig} />
               ))}
             </div>
@@ -80,7 +83,7 @@ export function SecurityDashboardPage() {
           </div>
 
           <div className="space-y-2.5">
-            {events.slice(0, 5).map((evt, idx) => (
+            {eventsList.slice(0, 5).map((evt, idx) => (
               <SecurityEventCard key={evt.id || idx} event={evt} />
             ))}
           </div>

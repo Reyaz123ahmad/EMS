@@ -51,9 +51,19 @@ export function InvoicesPage() {
 
   const handleDownload = async (invoice) => {
     try {
-      toast.info(`Generating invoice PDF for #${invoice.invoiceNumber || invoice.id.slice(0, 8)}...`);
-      const res = await api.get(`/invoices/${invoice.id}/download`);
-      toast.success('Invoice generated successfully!');
+      toast.info(`Downloading invoice #${invoice.invoiceNumber || invoice.id.slice(0, 8)}...`);
+      const response = await api.get(`/invoices/${invoice.id}/download`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `invoice-${invoice.invoiceNumber || invoice.id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Invoice downloaded successfully');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to download invoice PDF.');
     }

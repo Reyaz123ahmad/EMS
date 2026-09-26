@@ -11,5 +11,7 @@ router.post('/generate', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 
 router.post('/export', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), reportsController.exportReport);
 router.get('/stats', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), reportsController.getReportStats);
 router.get('/history', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), reportsController.getReportHistory);
+router.get('/download', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), reportsController.downloadReport);
+router.get('/:id/download', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), reportsController.downloadReport);
 
 export default router;

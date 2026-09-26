@@ -5,6 +5,8 @@ import Button from '../../components/ui/Button';
 import SalarySlipCard from '../../components/payroll/SalarySlipCard';
 import { useSalarySlips } from '../../hooks/usePayroll';
 import { useAuthStore } from '../../store/authStore';
+import api from '../../services/api';
+import { toast } from 'sonner';
 
 export default function SalarySlipsPage() {
   const { user } = useAuthStore();
@@ -27,9 +29,24 @@ export default function SalarySlipsPage() {
     return empName.includes(search.toLowerCase());
   });
 
-  const handleDownloadPdf = (slipId) => {
-    // Open direct API download route or notify
-    window.open(`/api/v1/payroll/slips/${slipId}/pdf`, '_blank');
+  const handleDownloadPdf = async (slipId) => {
+    try {
+      toast.info('Downloading salary slip PDF...');
+      const response = await api.get(`/payroll/slips/${slipId}/download`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `salary-slip-${slipId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Salary slip downloaded successfully');
+    } catch (error) {
+      toast.error('Download failed');
+    }
   };
 
   const handleSendEmail = (slipId) => {

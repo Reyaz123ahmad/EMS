@@ -13,7 +13,8 @@ export function requireRole(...allowedRoles) {
     }
 
     const userRole = req.user.role;
-    if (userRole === 'SUPER_ADMIN' || roles.includes(userRole)) {
+    const userRoles = Array.isArray(req.user.roles) ? req.user.roles : [userRole];
+    if (userRole === 'SUPER_ADMIN' || userRoles.includes('SUPER_ADMIN') || roles.some(r => userRoles.includes(r))) {
       return next();
     }
 

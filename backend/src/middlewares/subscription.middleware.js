@@ -6,7 +6,7 @@ import prisma from '../config/prisma.js';
 export async function requireActiveSubscription(req, res, next) {
   try {
     // Super Admins bypass subscription checks
-    if (req.user?.role === 'SUPER_ADMIN') {
+    if (req.user?.role === 'SUPER_ADMIN' || req.user?.roles?.includes('SUPER_ADMIN')) {
       return next();
     }
 

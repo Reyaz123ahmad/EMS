@@ -116,8 +116,8 @@ export function EmployeeDetailPage() {
                   </p>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-xs uppercase font-semibold">System User ID</span>
-                  <p className="font-mono text-xs text-slate-400 mt-1">{employee.userId || employee.id}</p>
+                  <span className="text-slate-400 text-xs uppercase font-semibold">Employee Code</span>
+                  <p className="font-mono text-xs text-indigo-400 font-bold mt-1">{employee.employeeCode || 'MIND-EMP-0001'}</p>
                 </div>
               </div>
             )}

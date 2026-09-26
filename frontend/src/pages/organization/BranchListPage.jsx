@@ -76,7 +76,7 @@ export function BranchListPage() {
           <div className="font-semibold text-slate-100 hover:text-blue-400 transition-colors">
             {r.name}
           </div>
-          <div className="text-xs text-slate-400 font-mono">{r.code || 'NO-CODE'}</div>
+          <div className="text-xs text-slate-400 font-mono">{r.branchCode || r.code || 'MIND-BR-0001'}</div>
         </div>
       )
     },

@@ -33,7 +33,10 @@ export const advancedSecurityService = {
 
   async getFraudSignals(params = {}) {
     const response = await api.get('/security/fraud-signals', { params });
-    return response.data?.data || [];
+    const data = response.data?.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.signals)) return data.signals;
+    return [];
   },
 
   async reviewFraudSignal(signalId, data) {
@@ -43,12 +46,18 @@ export const advancedSecurityService = {
 
   async getSecurityEvents(params = {}) {
     const response = await api.get('/security/events', { params });
-    return response.data?.data || [];
+    const data = response.data?.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.events)) return data.events;
+    return [];
   },
 
   async getAuditLogs(params = {}) {
     const response = await api.get('/security/audit-logs', { params });
-    return response.data?.data || [];
+    const data = response.data?.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.logs)) return data.logs;
+    return [];
   },
 
   async exportAuditLogs(params = {}) {

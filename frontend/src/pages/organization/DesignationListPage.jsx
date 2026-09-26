@@ -59,7 +59,7 @@ export function DesignationListPage() {
           <div className="font-semibold text-slate-100 hover:text-blue-400 transition-colors">
             {r.name}
           </div>
-          <div className="text-xs text-slate-400 font-mono">{r.code || 'NO-CODE'}</div>
+          <div className="text-xs text-slate-400 font-mono">{r.designationCode || r.code || 'MIND-DESG-0001'}</div>
         </div>
       )
     },

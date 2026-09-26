@@ -109,7 +109,9 @@ export function CompanySettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white">Company Settings</h1>
-          <p className="text-sm text-slate-400 mt-1">Configure company-wide policies and feature parameters.</p>
+          <p className="text-sm text-slate-400 mt-1">
+            Configure company-wide policies for <span className="font-mono text-indigo-400 font-semibold">{data?.data?.company?.companyCode || data?.data?.companyCode || 'COMP-ORG'}</span>
+          </p>
         </div>
         <Button variant="outline" onClick={() => navigate(`/companies/${id}`)}>
           Back to Details

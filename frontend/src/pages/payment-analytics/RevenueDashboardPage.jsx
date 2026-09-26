@@ -114,16 +114,22 @@ export function RevenueDashboardPage() {
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Revenue Breakdown by Tier</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {planRevenue.length > 0 ? (
-            planRevenue.map((p, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
-                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{p.planName}</span>
-                <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1 flex items-center">
-                  <IndianRupee className="w-4 h-4" />
-                  {Number(p.amount).toLocaleString('en-IN')}
-                </h4>
-                <span className="text-xs text-slate-400">{p.subscriptionCount} active subscribers</span>
-              </div>
-            ))
+            planRevenue.map((p, idx) => {
+              const amountVal = Number(p.amount ?? p.revenue ?? 0);
+              const subscribersVal = Number(p.subscribers ?? p.subscriptionCount ?? 0);
+              return (
+                <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{p.planName || 'Plan'}</span>
+                  <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1 flex items-center">
+                    <IndianRupee className="w-4 h-4" />
+                    {(isNaN(amountVal) ? 0 : amountVal).toLocaleString('en-IN')}
+                  </h4>
+                  <span className="text-xs text-slate-400">
+                    {isNaN(subscribersVal) ? 0 : subscribersVal} active subscribers
+                  </span>
+                </div>
+              );
+            })
           ) : (
             <>
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">

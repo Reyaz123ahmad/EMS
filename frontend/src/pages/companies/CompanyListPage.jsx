@@ -52,7 +52,7 @@ export function CompanyListPage() {
             <div className="font-semibold text-slate-100 hover:text-blue-400 transition-colors">
               {row.name}
             </div>
-            <div className="text-xs text-slate-400 font-mono">{row.domain || 'no-domain'}</div>
+            <div className="text-xs text-slate-400 font-mono">{row.companyCode || row.domain || 'COMP-ORG'}</div>
           </div>
         </div>
       )
