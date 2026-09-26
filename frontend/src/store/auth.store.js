@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import authService from '../services/auth.service.js';
 
 const storedUser = localStorage.getItem('user');
 const storedAccessToken = localStorage.getItem('accessToken');
@@ -51,6 +52,24 @@ export const useAuthStore = create((set) => ({
       refreshToken: null,
       isAuthenticated: false
     });
+  },
+
+  logout: async () => {
+    try {
+      await authService.logout();
+    } catch (e) {
+      console.warn('Logout error in auth store:', e);
+    } finally {
+      localStorage.removeItem('user');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      set({
+        user: null,
+        accessToken: null,
+        refreshToken: null,
+        isAuthenticated: false
+      });
+    }
   }
 }));
 

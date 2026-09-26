@@ -4,7 +4,8 @@ import {
   securitySettingsSchema,
   fraudReviewSchema,
   validateIpSchema,
-  detectVpnSchema
+  detectVpnSchema,
+  securityScoreSchema
 } from './advanced-security.validator.js';
 import { sendSuccess } from '../../utils/response.js';
 
@@ -44,12 +45,23 @@ export const advancedSecurityController = {
 
   getSecurityScore: async (req, res, next) => {
     try {
-      const { employeeId } = req.query;
-      const result = await advancedSecurityService.getSecurityScore({
+      const value = await securityScoreSchema.validateAsync(req.query).catch(() => req.query);
+      const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
+      const companyId = isSuperAdmin ? (value.companyId || null) : (req.user?.companyId || req.user?.company?.id);
+      const { employeeId, dateRange, period } = value;
+
+      if (!companyId) {
+        const score = await advancedSecurityService.getPlatformSecurityScore({ dateRange, period });
+        return sendSuccess(res, score, 'Platform security score retrieved');
+      }
+
+      const score = await advancedSecurityService.getSecurityScore({
         employeeId,
-        companyId: req.user.companyId
+        companyId,
+        dateRange,
+        period
       });
-      return sendSuccess(res, result, 'Security score evaluated');
+      return sendSuccess(res, score, 'Security score evaluated');
     } catch (err) {
       next(err);
     }

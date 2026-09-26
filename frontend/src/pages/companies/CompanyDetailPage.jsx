@@ -11,7 +11,7 @@ export function CompanyDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.userRoles?.[0]?.role?.name === 'SUPER_ADMIN' || user?.roles?.includes('SUPER_ADMIN');
   const { data, isLoading } = useCompany(id);
 
   const company = data?.data?.company;
@@ -60,13 +60,15 @@ export function CompanyDetailPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={() => navigate(`/companies/${id}/settings`)}
-            className="border-slate-700"
-          >
-            Configure Settings
-          </Button>
+          {!isSuperAdmin && (
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/companies/${id}/settings`)}
+              className="border-slate-700"
+            >
+              Configure Settings
+            </Button>
+          )}
           {!isSuperAdmin && (
             <Link to="/employees/create">
               <Button className="bg-blue-600 hover:bg-blue-500">

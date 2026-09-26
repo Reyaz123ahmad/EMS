@@ -13,8 +13,10 @@ router.post('/reset-password', authController.resetPassword);
 router.post('/verify-otp', authController.verifyOTP);
 router.post('/send-otp', otpRateLimit, authController.sendOTP);
 
+// Logout (can be called with or without auth token)
+router.post('/logout', authController.logout);
+
 // Protected routes
-router.post('/logout', authenticate, authController.logout);
 router.get('/me', authenticate, authController.getMe);
 router.put('/change-password', authenticate, authController.changePassword);
 

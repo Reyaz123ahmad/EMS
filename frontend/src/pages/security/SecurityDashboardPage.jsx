@@ -38,7 +38,7 @@ export function SecurityDashboardPage() {
 
       {/* Main Score & Posture Metric */}
       <SecurityScoreCard
-        score={scoreData?.score || dashboard?.securityScore || 92}
+        score={scoreData?.score ?? dashboard?.securityScore ?? 100}
         level={dashboard?.level || 'HIGH'}
         totalSignals={signalsList.length}
         deviceTrustRate={dashboard?.deviceTrustRate || 99}

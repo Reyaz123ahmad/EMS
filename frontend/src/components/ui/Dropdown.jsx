@@ -90,4 +90,8 @@ export const DropdownDivider = () => (
   <div className="my-1.5 h-px bg-slate-100 dark:bg-slate-800" />
 );
 
+Dropdown.Item = DropdownItem;
+Dropdown.Divider = DropdownDivider;
+Dropdown.Separator = DropdownDivider;
+
 export default Dropdown;

@@ -5,11 +5,20 @@ import useAuthStore from '../../store/auth.store.js';
 
 export function SubscriptionExpiredPage() {
   const navigate = useNavigate();
-  const { logout, user } = useAuthStore();
+  const { logout, clearAuth, user } = useAuthStore();
 
   const handleLogout = async () => {
-    if (logout) await logout();
-    navigate('/login');
+    try {
+      if (logout) {
+        await logout();
+      } else if (clearAuth) {
+        clearAuth();
+      }
+    } catch (err) {
+      console.warn('Logout error:', err);
+    } finally {
+      navigate('/login', { replace: true });
+    }
   };
 
   return (

@@ -656,7 +656,32 @@ export const companiesService = {
       err.statusCode = 404;
       throw err;
     }
-    return companiesRepository.deleteCompany(id);
+
+    const users = await prisma.user.findMany({ where: { companyId: id }, select: { id: true } });
+    const userIds = users.map((u) => u.id);
+
+    if (userIds.length > 0) {
+      await prisma.userRole.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.session.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.loginLog.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.notification.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.securityEvent.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.auditLog.deleteMany({ where: { userId: { in: userIds } } });
+    }
+
+    await prisma.auditLog.deleteMany({ where: { entityId: id } });
+    await prisma.attendanceLog.deleteMany({ where: { companyId: id } });
+    await prisma.leaveRequest.deleteMany({ where: { employee: { companyId: id } } });
+    await prisma.employee.deleteMany({ where: { companyId: id } });
+    await prisma.user.deleteMany({ where: { companyId: id } });
+    await prisma.biometricDevice.deleteMany({ where: { companyId: id } });
+    await prisma.department.deleteMany({ where: { companyId: id } });
+    await prisma.branch.deleteMany({ where: { companyId: id } });
+    await prisma.subscription.deleteMany({ where: { companyId: id } });
+    await prisma.role.deleteMany({ where: { companyId: id } });
+
+    await prisma.company.deleteMany({ where: { id } });
+    return { id };
   }
 };
 

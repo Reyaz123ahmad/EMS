@@ -144,36 +144,78 @@ export const advancedSecurityService = {
   /**
    * 5. Calculate Employee / Company Security Health Score (0 - 100)
    */
-  getSecurityScore: async ({ employeeId, companyId }) => {
+  getSecurityScore: async ({ employeeId, companyId, dateRange, period } = {}) => {
+    if (!companyId) {
+      return advancedSecurityService.getPlatformSecurityScore({ dateRange, period });
+    }
+
     let score = 100;
     const deductions = [];
 
     const where = { companyId };
     if (employeeId) where.employeeId = employeeId;
 
-    const [fraudCount, failedAttestations] = await Promise.all([
-      prisma.fraudSignal.count({ where }),
+    const [fraudCount, failedAttestations, criticalEvents, highEvents, totalEvents] = await Promise.all([
+      prisma.fraudSignal.count({ where }).catch(() => 0),
       employeeId
         ? 0
-        : prisma.deviceAttestation.count({ where: { passed: false } })
+        : prisma.deviceAttestation.count({ where: { passed: false, employee: { companyId } } }).catch(() => 0),
+      prisma.securityEvent.count({ where: { companyId, severity: 'CRITICAL' } }).catch(() => 0),
+      prisma.securityEvent.count({ where: { companyId, severity: 'HIGH' } }).catch(() => 0),
+      prisma.securityEvent.count({ where: { companyId } }).catch(() => 0)
     ]);
 
-    if (fraudCount > 0) {
-      const deduction = Math.min(40, fraudCount * 10);
-      score -= deduction;
-      deductions.push(`-${deduction} pts: ${fraudCount} fraud signals logged`);
-    }
+    score -= criticalEvents * 10;
+    score -= highEvents * 5;
+    score -= fraudCount * 2;
+    score = Math.max(0, Math.min(100, score));
 
-    if (failedAttestations > 0) {
-      const deduction = Math.min(30, failedAttestations * 15);
-      score -= deduction;
-      deductions.push(`-${deduction} pts: ${failedAttestations} failed device attestations`);
+    if (fraudCount > 0) {
+      deductions.push(`-${fraudCount * 2} pts: ${fraudCount} fraud signals logged`);
+    }
+    if (criticalEvents > 0) {
+      deductions.push(`-${criticalEvents * 10} pts: ${criticalEvents} critical security events`);
     }
 
     return {
-      score: Math.max(0, score),
+      score,
       grade: score >= 90 ? 'A+' : score >= 75 ? 'A' : score >= 60 ? 'B' : 'CRITICAL',
+      totalEvents,
+      criticalEvents,
+      highEvents,
+      fraudSignals: fraudCount,
       deductions,
+      companyId,
+      evaluatedAt: new Date().toISOString()
+    };
+  },
+
+  /**
+   * 5b. Calculate Platform Security Health Score for Super Admin
+   */
+  getPlatformSecurityScore: async ({ dateRange, period } = {}) => {
+    const [totalEvents, criticalEvents, highEvents, fraudSignals] = await Promise.all([
+      prisma.securityEvent.count().catch(() => 0),
+      prisma.securityEvent.count({ where: { severity: 'CRITICAL' } }).catch(() => 0),
+      prisma.securityEvent.count({ where: { severity: 'HIGH' } }).catch(() => 0),
+      prisma.fraudSignal.count().catch(() => 0)
+    ]);
+
+    let score = 100;
+    score -= criticalEvents * 10;
+    score -= highEvents * 5;
+    score -= fraudSignals * 2;
+    score = Math.max(0, Math.min(100, score));
+
+    return {
+      score,
+      grade: score >= 90 ? 'A+' : score >= 75 ? 'A' : score >= 60 ? 'B' : 'CRITICAL',
+      totalEvents,
+      criticalEvents,
+      highEvents,
+      fraudSignals,
+      isPlatformAdmin: true,
+      deductions: criticalEvents > 0 ? [`-${criticalEvents * 10} pts from critical events`] : [],
       evaluatedAt: new Date().toISOString()
     };
   },

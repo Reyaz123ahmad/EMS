@@ -4,14 +4,25 @@ import useAuthStore from '../../store/auth.store';
 import Avatar from '../ui/Avatar';
 import Dropdown, { DropdownItem, DropdownDivider } from '../ui/Dropdown';
 import { User, Settings, Shield, LogOut, ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
 
 export const UserDropdown = () => {
-  const { user, logout } = useAuthStore();
+  const { user, logout, clearAuth } = useAuthStore();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    try {
+      if (logout) {
+        await logout();
+      } else if (clearAuth) {
+        clearAuth();
+      }
+      toast.success('Logged out successfully');
+    } catch (err) {
+      console.warn('Logout error:', err);
+    } finally {
+      navigate('/login', { replace: true });
+    }
   };
 
   const primaryRole = user?.roles?.[0] || 'User';

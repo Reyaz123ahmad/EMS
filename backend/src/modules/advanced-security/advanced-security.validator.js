@@ -45,11 +45,19 @@ export const detectVpnSchema = Joi.object({
   ipAddress: Joi.string().required()
 });
 
+export const securityScoreSchema = Joi.object({
+  companyId: Joi.string().uuid().optional().allow(null, ''),
+  employeeId: Joi.string().uuid().optional().allow(null, ''),
+  dateRange: Joi.string().optional().allow(''),
+  period: Joi.string().valid('daily', 'weekly', 'monthly', 'yearly').optional().allow('')
+});
+
 export default {
   deviceAttestationSchema,
   ipWhitelistSchema,
   securitySettingsSchema,
   fraudReviewSchema,
   validateIpSchema,
-  detectVpnSchema
+  detectVpnSchema,
+  securityScoreSchema
 };

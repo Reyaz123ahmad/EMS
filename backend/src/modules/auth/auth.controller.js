@@ -40,10 +40,13 @@ export const authController = {
   async logout(req, res, next) {
     try {
       const refreshToken = req.body?.refreshToken || req.headers['x-refresh-token'];
-      await authService.logout({ refreshToken });
-      res.status(200).json({ status: 'ok', message: 'Logged out successfully' });
+      if (refreshToken) {
+        await authService.logout({ refreshToken }).catch(() => {});
+      }
+      return res.status(200).json({ status: 'ok', message: 'Logged out successfully' });
     } catch (err) {
-      next(err);
+      // Even on error, return success (client should clear)
+      return res.status(200).json({ status: 'ok', message: 'Logged out' });
     }
   },
 

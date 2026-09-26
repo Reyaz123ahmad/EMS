@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { MoreVertical, Eye, Edit, Power, PowerOff, Ban, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useCompanies } from '../../hooks/useCompany.js';
+import companyService from '../../services/company.service.js';
 import { DataTable } from '../../components/ui/DataTable.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Card } from '../../components/ui/Card.jsx';
 import { Input } from '../../components/ui/Input.jsx';
+import Dropdown, { DropdownItem, DropdownDivider } from '../../components/ui/Dropdown.jsx';
 
 export function CompanyListPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -23,21 +28,49 @@ export function CompanyListPage() {
   const companies = data?.data?.companies || [];
   const pagination = data?.data?.pagination || { page: 1, limit: 10, total: 0, totalPages: 1 };
 
-  const queryClient = useQueryClient();
-  const [actionLoadingId, setActionLoadingId] = useState(null);
-
-  const handleAction = async (actionFn, id, confirmMsg = null) => {
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
-    try {
-      setActionLoadingId(id);
-      await actionFn(id);
+  const activateMutation = useMutation({
+    mutationFn: (id) => companyService.activateCompany(id),
+    onSuccess: () => {
+      toast.success('Company activated successfully');
       queryClient.invalidateQueries({ queryKey: ['companies'] });
-    } catch (err) {
-      alert(err.response?.data?.message || err.message || 'Operation failed');
-    } finally {
-      setActionLoadingId(null);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to activate company');
     }
-  };
+  });
+
+  const deactivateMutation = useMutation({
+    mutationFn: (id) => companyService.deactivateCompany(id),
+    onSuccess: () => {
+      toast.success('Company deactivated successfully');
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to deactivate company');
+    }
+  });
+
+  const suspendMutation = useMutation({
+    mutationFn: (id) => companyService.suspendCompany(id),
+    onSuccess: () => {
+      toast.success('Company suspended successfully');
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to suspend company');
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => companyService.deleteCompany(id),
+    onSuccess: () => {
+      toast.success('Company deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to delete company');
+    }
+  });
 
   const columns = [
     {
@@ -106,61 +139,77 @@ export function CompanyListPage() {
       align: 'right',
       render: (row) => {
         const isCurrentActive = row.status === 'ACTIVE';
-        const isLoadingThis = actionLoadingId === row.id;
 
         return (
-          <div className="flex items-center justify-end gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="xs"
-              onClick={() => navigate(`/companies/${row.id}`)}
-              className="text-slate-300 hover:text-white hover:bg-slate-800 text-xs px-2 py-1"
+          <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+            <Dropdown
+              align="right"
+              width="w-48"
+              trigger={
+                <button
+                  type="button"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  aria-label="Actions"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+              }
             >
-              View
-            </Button>
-            
-            {!isCurrentActive ? (
-              <Button
-                variant="outline"
-                size="xs"
-                disabled={isLoadingThis}
-                onClick={() => handleAction(companyService.activateCompany, row.id)}
-                className="border-emerald-700/50 text-emerald-400 hover:bg-emerald-950/40 text-xs px-2 py-1"
+              <DropdownItem
+                icon={Eye}
+                onClick={() => navigate(`/companies/${row.id}`)}
               >
-                Activate
-              </Button>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  disabled={isLoadingThis}
-                  onClick={() => handleAction(companyService.deactivateCompany, row.id)}
-                  className="border-amber-700/50 text-amber-400 hover:bg-amber-950/40 text-xs px-2 py-1"
-                >
-                  Deactivate
-                </Button>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  disabled={isLoadingThis}
-                  onClick={() => handleAction(companyService.suspendCompany, row.id)}
-                  className="border-red-700/50 text-red-400 hover:bg-red-950/40 text-xs px-2 py-1"
-                >
-                  Suspend
-                </Button>
-              </>
-            )}
+                View Details
+              </DropdownItem>
 
-            <Button
-              variant="ghost"
-              size="xs"
-              disabled={isLoadingThis}
-              onClick={() => handleAction(companyService.deleteCompany, row.id, `Are you sure you want to permanently delete ${row.name}?`)}
-              className="text-red-400 hover:text-red-300 hover:bg-red-950/30 text-xs px-2 py-1"
-            >
-              Delete
-            </Button>
+              <DropdownItem
+                icon={Edit}
+                onClick={() => navigate(`/companies/${row.id}/edit`)}
+              >
+                Edit Company
+              </DropdownItem>
+
+              {!isCurrentActive ? (
+                <DropdownItem
+                  icon={Power}
+                  className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30"
+                  onClick={() => activateMutation.mutate(row.id)}
+                >
+                  Activate
+                </DropdownItem>
+              ) : (
+                <>
+                  <DropdownItem
+                    icon={PowerOff}
+                    className="text-amber-400 hover:text-amber-300 hover:bg-amber-950/30"
+                    onClick={() => deactivateMutation.mutate(row.id)}
+                  >
+                    Deactivate
+                  </DropdownItem>
+                  <DropdownItem
+                    icon={Ban}
+                    className="text-orange-400 hover:text-orange-300 hover:bg-orange-950/30"
+                    onClick={() => suspendMutation.mutate(row.id)}
+                  >
+                    Suspend
+                  </DropdownItem>
+                </>
+              )}
+
+              <DropdownDivider />
+
+              <DropdownItem
+                icon={Trash2}
+                danger
+                onClick={() => {
+                  if (window.confirm(`Are you sure you want to permanently delete ${row.name}? This cannot be undone.`)) {
+                    deleteMutation.mutate(row.id);
+                  }
+                }}
+              >
+                Delete Company
+              </DropdownItem>
+            </Dropdown>
           </div>
         );
       }
