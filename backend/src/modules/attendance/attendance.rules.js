@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../config/prisma.js';
 import { DEFAULT_SHIFT_RULES } from './attendance.constants.js';
-
-const prisma = new PrismaClient();
 
 export const attendanceRules = {
   /**

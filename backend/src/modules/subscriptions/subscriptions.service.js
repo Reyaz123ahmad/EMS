@@ -38,10 +38,12 @@ export const subscriptionsService = {
   async getCurrentSubscription(companyId) {
     if (!companyId) {
       return {
-        status: 'ACTIVE',
-        plan: { name: 'Platform Super Admin', features: { all: true } },
-        daysRemaining: 999,
-        isExpired: false
+        isPlatformAdmin: true,
+        message: 'Platform Super Admin does not require a subscription',
+        subscription: null,
+        plan: null,
+        invoices: [],
+        payments: []
       };
     }
 
@@ -378,3 +380,19 @@ export const subscriptionsService = {
     };
   },
 };
+
+export const {
+  getPlans,
+  getPlanById,
+  createPlan,
+  updatePlan,
+  deletePlan,
+  getCurrentSubscription,
+  createCheckoutSession,
+  verifyPaymentAndUpgrade,
+  cancelSubscription,
+  extendTrial,
+  cancelTrial
+} = subscriptionsService;
+
+export default subscriptionsService;

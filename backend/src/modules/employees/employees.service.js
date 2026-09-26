@@ -295,7 +295,11 @@ export const employeesService = {
    */
   async getEmployeeById(id) {
     const employee = await employeesRepository.findEmployeeById(id);
-    if (!employee) throw new Error('Employee not found');
+    if (!employee) {
+      const error = new Error('Employee not found');
+      error.statusCode = 404;
+      throw error;
+    }
     return employee;
   },
 

@@ -56,17 +56,12 @@ export const Sidebar = ({
       case 'SUPER_ADMIN':
         return [
           { label: 'Dashboard', to: '/dashboard/super-admin', icon: LayoutDashboard },
-          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Companies', to: '/companies', icon: Building2 },
-          {
-            label: 'Subscriptions',
-            icon: CreditCard,
-            children: [
-              { label: 'Plans & Pricing', to: '/subscription/plans' },
-              { label: 'Current Plan', to: '/subscription/current' },
-              { label: 'Billing History', to: '/subscription/history' }
-            ]
-          },
+          { label: 'Plans & Pricing', to: '/subscription/plans', icon: CreditCard },
+          { label: 'Payments', to: '/payments', icon: DollarSign },
+          { label: 'Invoices', to: '/invoices', icon: Receipt },
+          { label: 'Refunds Management', to: '/admin/refunds', icon: RotateCcw },
+          { label: 'Coupons & Promos', to: '/coupons', icon: Tag },
           {
             label: 'Payment Analytics',
             icon: TrendingUp,
@@ -77,21 +72,17 @@ export const Sidebar = ({
               { label: 'Disputes & Refunds', to: '/payment-analytics/refunds' }
             ]
           },
-          { label: 'Refunds Queue', to: '/admin/refunds', icon: RotateCcw },
-          { label: 'Coupons & Promos', to: '/coupons', icon: Tag },
-          { label: 'Queue Monitor', to: '/admin/queues', icon: Cpu },
           {
-            label: 'Advanced Security',
+            label: 'Platform Security',
             icon: ShieldAlert,
             children: [
               { label: 'Security Dashboard', to: '/security/dashboard' },
-              { label: 'Fraud Signals', to: '/security/fraud-signals' },
               { label: 'Security Events', to: '/security/events' },
-              { label: 'Audit Logs', to: '/security/audit-logs' },
-              { label: 'Blocked Employees', to: '/security/blocked-employees' }
+              { label: 'Audit Logs', to: '/security/audit-logs' }
             ]
           },
-          { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
+          { label: 'Queue Monitor', to: '/admin/queues', icon: Cpu },
+          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Settings', to: '/settings/general', icon: Settings }
         ];
       case 'COMPANY_ADMIN':

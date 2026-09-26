@@ -67,12 +67,13 @@ export const initSocket = async (httpServer) => {
       }
 
       const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET);
-      if (!decoded || !decoded.userId) {
+      const userId = decoded.userId || decoded.sub || decoded.id;
+      if (!decoded || !userId) {
         return next(new Error('Authentication error: Invalid token payload'));
       }
 
       const user = await prisma.user.findUnique({
-        where: { id: decoded.userId },
+        where: { id: userId },
         include: {
           userRoles: {
             include: {
@@ -86,11 +87,15 @@ export const initSocket = async (httpServer) => {
         return next(new Error('Authentication error: User not active or not found'));
       }
 
+      const roles = (user.userRoles && user.userRoles.length > 0)
+        ? user.userRoles.map((ur) => ur.role?.name || ur.role)
+        : [user.role || decoded.role || 'USER'];
+
       socket.user = {
         id: user.id,
         email: user.email,
-        companyId: user.companyId,
-        roles: user.userRoles.map((ur) => ur.role.name)
+        companyId: user.companyId || null,
+        roles: roles.filter(Boolean)
       };
 
       next();
@@ -108,14 +113,19 @@ export const initSocket = async (httpServer) => {
       // Join user specific room
       socket.join(`user:${user.id}`);
 
-      // Join company specific room
+      // Join global role rooms
+      if (Array.isArray(user.roles)) {
+        user.roles.forEach((role) => {
+          if (role) socket.join(`role:${role}`);
+        });
+      }
+
+      // Join company specific room & company role rooms if company exists
       if (user.companyId) {
         socket.join(`company:${user.companyId}`);
-        // Join role specific rooms within company
         if (Array.isArray(user.roles)) {
           user.roles.forEach((role) => {
-            socket.join(`role:${role}`);
-            socket.join(`company:${user.companyId}:role:${role}`);
+            if (role) socket.join(`company:${user.companyId}:role:${role}`);
           });
         }
       }

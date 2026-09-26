@@ -20,6 +20,7 @@ router.put('/plans/:id', validate(planSchema), subscriptionsController.updatePla
 
 // Protected subscription routes
 router.use(authenticate);
+router.get('/platform-status', subscriptionsController.getPlatformStatus);
 router.get('/current', subscriptionsController.getCurrentSubscription);
 router.post('/orders', validate(createOrderSchema), subscriptionsController.createOrder);
 router.post('/verify', validate(verifyPaymentSchema), subscriptionsController.verifyPayment);

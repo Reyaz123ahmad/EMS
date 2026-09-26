@@ -37,6 +37,11 @@ import healthRoutes from '../modules/health/health.routes.js';
 import aiRoutes from '../modules/ai/ai.routes.js';
 import { getPrometheusMetrics, metricsMiddleware } from '../modules/monitoring/metrics.js';
 import { sanitizeInput } from '../middlewares/security.middleware.js';
+import { authenticate } from '../middlewares/auth.middleware.js';
+import { requireCompany } from '../middlewares/tenant.middleware.js';
+import { requireRole } from '../middlewares/role.middleware.js';
+import { successResponse } from '../utils/response.js';
+import prisma from '../config/prisma.js';
 
 const router = Router();
 
@@ -50,112 +55,296 @@ router.use('/health', healthRoutes);
 // Prometheus Metrics Exporter
 router.get('/metrics', getPrometheusMetrics);
 
-// Auth Module Routes
+// Auth Module Routes (Open to public / authenticated users)
 router.use('/auth', authRoutes);
 
-// Company Module Routes
+// ================= PLATFORM-LEVEL MODULES (SUPER_ADMIN ACCESSIBLE) =================
 router.use('/companies', companyRoutes);
-
-// Employee Module Routes
-router.use('/employees', employeeRoutes);
-
-// Organization Module Routes
-router.use('/branches', branchRoutes);
-router.use('/departments', departmentRoutes);
-router.use('/designations', designationRoutes);
-
-// Document Management Routes
-router.use('/documents', documentRoutes);
-
-// Reports Module Routes
-router.use('/reports', reportRoutes);
-
-// Attendance Module Routes
-router.use('/attendance', attendanceRoutes);
-
-// Leave Management Routes
-router.use('/leave', leaveRoutes);
-
-// Payroll Management Routes
-router.use('/payroll', payrollRoutes);
-
-// Overtime Management Routes
-router.use('/overtime', overtimeRoutes);
-
-// Shifts & Rosters Routes
-router.use('/shifts', shiftsRoutes);
-router.use('/rosters', rostersRoutes);
-
-// Holiday Calendars & Holidays Routes
-router.use('/holiday-calendars', holidayRoutes);
-router.use('/holidays', holidayRoutes);
-
-// Attendance Security & Biometrics Routes
-router.use('/attendance-security', attendanceSecurityRoutes);
-
-// Biometric Cards, Devices & Punches Routes
-router.use('/biometric/cards', biometricCardsRoutes);
-router.use('/biometric/devices', biometricDevicesRoutes);
-router.use('/biometric', devicePunchesRoutes);
-
-// Face Registration & Enrollment Routes
-router.use('/face', faceRegistrationRoutes);
-
-// Fingerprint Attendance & Hardware Sync Routes
-router.use('/finger', fingerAttendanceRoutes);
-
-// Advanced Security, Attestation & Fraud Review Routes
-router.use('/security', advancedSecurityRoutes);
-
-// Notifications Routes
-router.use('/notifications', notificationRoutes);
-
-// Subscriptions & Plans Routes
 router.use('/subscriptions', subscriptionsRoutes);
 router.use('/plans', subscriptionsRoutes);
-
-// Approvals & Workflows Routes
-router.use('/approvals', approvalsRoutes);
-router.use('/workflows', approvalsRoutes);
-router.use('/requests', approvalsRoutes);
-
-// Assets Management Routes
-router.use('/assets', assetsRoutes);
-
-// Emergency Attendance Routes
-router.use('/emergency-attendance', emergencyAttendanceRoutes);
-
-// Admin Queue Management
-router.use('/admin/queues', queueMonitorRoutes);
-
-// Phase 5B Modules
-router.use('/refunds', refundsRoutes);
 router.use('/payments', paymentsRoutes);
 router.use('/invoices', invoicesRoutes);
-router.use('/payment-analytics', paymentAnalyticsRoutes);
+router.use('/refunds', refundsRoutes);
 router.use('/coupons', couponsRoutes);
-router.use('/client-portal', clientPortalRoutes);
-router.use('/client', clientPortalRoutes);
+router.use('/payment-analytics', paymentAnalyticsRoutes);
+router.use('/admin/queues', queueMonitorRoutes);
+router.use('/security', advancedSecurityRoutes);
 router.use('/ai', aiRoutes);
+router.use('/notifications', notificationRoutes);
 
-// Dashboard Aliases
-router.get('/dashboard/super-admin', (req, res) => res.json({ status: 'ok', data: { role: 'SUPER_ADMIN', activeCompanies: 1, totalRevenue: 9999 } }));
-router.get('/dashboard/company-admin', (req, res) => res.json({ status: 'ok', data: { role: 'COMPANY_ADMIN', activeEmployees: 5, totalBranches: 1 } }));
-router.get('/hr-manager-dashboard/metrics', (req, res) => res.json({ status: 'ok', data: { pendingLeaves: 0, presentToday: 4, lateCount: 0 } }));
-router.get('/manager-dashboard/team-summary', (req, res) => res.json({ status: 'ok', data: { teamSize: 3, pendingApprovals: 0 } }));
-router.get('/employee-dashboard/summary', (req, res) => res.json({ status: 'ok', data: { attendanceStatus: 'PRESENT', leaveBalance: 12 } }));
-router.get('/employee-dashboard/attendance', (req, res) => res.json({ status: 'ok', data: { daysPresent: 22, daysAbsent: 0 } }));
-router.get('/employee-dashboard/leave', (req, res) => res.json({ status: 'ok', data: { annual: 10, sick: 5, casual: 3 } }));
-router.get('/employee-dashboard/tasks', (req, res) => res.json({ status: 'ok', data: { assigned: 3, completed: 2 } }));
-router.get('/roles', (req, res) => res.json({ status: 'ok', data: ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'CLIENT'] }));
-router.get('/permissions', (req, res) => res.json({ status: 'ok', data: ['READ', 'WRITE', 'DELETE', 'ADMIN'] }));
-router.get('/users', (req, res) => res.json({ status: 'ok', data: { total: 7 } }));
-router.get('/projects', (req, res) => res.json({ status: 'ok', data: [] }));
-router.get('/clients', (req, res) => res.json({ status: 'ok', data: [] }));
-router.get('/tasks', (req, res) => res.json({ status: 'ok', data: [] }));
-router.get('/performance/cycles', (req, res) => res.json({ status: 'ok', data: [] }));
-router.get('/performance/reviews', (req, res) => res.json({ status: 'ok', data: [] }));
-router.get('/certificates/templates', (req, res) => res.json({ status: 'ok', data: [] }));
-router.get('/onboarding/status', (req, res) => res.json({ status: 'ok', data: { status: 'COMPLETED' } }));
+// Platform-Level Super Admin Dashboard API
+router.get('/dashboard/super-admin', authenticate, requireRole('SUPER_ADMIN'), async (req, res, next) => {
+  try {
+    const [totalCompanies, activeCompanies, totalUsers, totalSubscriptions, recentPayments, recentCompanies] = await Promise.all([
+      prisma.company.count(),
+      prisma.company.count({ where: { status: 'ACTIVE' } }),
+      prisma.user.count(),
+      prisma.subscription.count({ where: { status: 'ACTIVE' } }),
+      prisma.paymentTransaction.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { subscription: { include: { company: true, plan: true } } }
+      }),
+      prisma.company.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { subscription: { include: { plan: true } } }
+      })
+    ]);
+
+    const totalRevResult = await prisma.paymentTransaction.aggregate({
+      where: { status: 'SUCCESS' },
+      _sum: { amount: true }
+    });
+    const totalRevenue = Number(totalRevResult._sum.amount || 0);
+
+    return successResponse(res, {
+      role: 'SUPER_ADMIN',
+      totalCompanies,
+      activeCompanies,
+      totalUsers,
+      totalSubscriptions,
+      totalRevenue,
+      mrr: Math.round(totalRevenue / 12),
+      arr: totalRevenue,
+      recentPayments,
+      recentCompanies
+    }, 'Super Admin platform metrics retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/roles', authenticate, (req, res) => {
+  return successResponse(res, ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'CLIENT'], 'Roles retrieved');
+});
+
+router.get('/permissions', authenticate, (req, res) => {
+  return successResponse(res, ['READ', 'WRITE', 'DELETE', 'ADMIN'], 'Permissions retrieved');
+});
+
+router.get('/users', authenticate, requireRole('SUPER_ADMIN'), async (req, res, next) => {
+  try {
+    const total = await prisma.user.count();
+    const users = await prisma.user.findMany({
+      take: 20,
+      select: { id: true, email: true, role: true, status: true, companyId: true, createdAt: true }
+    });
+    return successResponse(res, { total, users }, 'Platform users retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ================= COMPANY-INTERNAL MODULES (RESTRICTED VIA requireCompany) =================
+// Super Admin is blocked on all these routes with 403 PLATFORM_ADMIN_NOT_ALLOWED
+
+router.use('/employees', authenticate, requireCompany, employeeRoutes);
+router.use('/branches', authenticate, requireCompany, branchRoutes);
+router.use('/departments', authenticate, requireCompany, departmentRoutes);
+router.use('/designations', authenticate, requireCompany, designationRoutes);
+router.use('/documents', authenticate, requireCompany, documentRoutes);
+router.use('/reports', authenticate, requireCompany, reportRoutes);
+router.use('/attendance', authenticate, requireCompany, attendanceRoutes);
+router.use('/leave', authenticate, requireCompany, leaveRoutes);
+router.use('/payroll', authenticate, requireCompany, payrollRoutes);
+router.use('/overtime', authenticate, requireCompany, overtimeRoutes);
+router.use('/shifts', authenticate, requireCompany, shiftsRoutes);
+router.use('/rosters', authenticate, requireCompany, rostersRoutes);
+router.use('/holiday-calendars', authenticate, requireCompany, holidayRoutes);
+router.use('/holidays', authenticate, requireCompany, holidayRoutes);
+router.use('/attendance-security', authenticate, requireCompany, attendanceSecurityRoutes);
+router.use('/biometric/cards', authenticate, requireCompany, biometricCardsRoutes);
+router.use('/biometric/devices', authenticate, requireCompany, biometricDevicesRoutes);
+router.use('/biometric', authenticate, requireCompany, devicePunchesRoutes);
+router.use('/face', authenticate, requireCompany, faceRegistrationRoutes);
+router.use('/finger', authenticate, requireCompany, fingerAttendanceRoutes);
+router.use('/approvals', authenticate, requireCompany, approvalsRoutes);
+router.use('/workflows', authenticate, requireCompany, approvalsRoutes);
+router.use('/requests', authenticate, requireCompany, approvalsRoutes);
+router.use('/assets', authenticate, requireCompany, assetsRoutes);
+router.use('/emergency-attendance', authenticate, requireCompany, emergencyAttendanceRoutes);
+router.use('/client-portal', authenticate, requireCompany, clientPortalRoutes);
+router.use('/client', authenticate, requireCompany, clientPortalRoutes);
+
+// Company-level dashboard & detail routes
+router.get('/dashboard/company-admin', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const [activeEmployees, totalBranches, totalDepartments, presentToday] = await Promise.all([
+      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }),
+      prisma.branch.count({ where: { companyId } }),
+      prisma.department.count({ where: { companyId } }),
+      prisma.attendanceLog.count({
+        where: {
+          companyId,
+          attendanceDate: new Date(new Date().toISOString().split('T')[0]),
+          status: 'PRESENT'
+        }
+      })
+    ]);
+    return successResponse(res, {
+      role: 'COMPANY_ADMIN',
+      activeEmployees,
+      totalBranches,
+      totalDepartments,
+      presentToday
+    }, 'Company admin dashboard retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/hr-manager-dashboard/metrics', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const [pendingLeaves, presentToday, lateCount] = await Promise.all([
+      prisma.leaveRequest.count({ where: { employee: { companyId }, status: 'PENDING' } }),
+      prisma.attendanceLog.count({ where: { companyId, status: 'PRESENT' } }),
+      prisma.attendanceLog.count({ where: { companyId, isLate: true } })
+    ]);
+    return successResponse(res, { pendingLeaves, presentToday, lateCount }, 'HR Manager metrics retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/manager-dashboard/team-summary', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const [teamSize, pendingApprovals] = await Promise.all([
+      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }),
+      prisma.approvalRequest.count({ where: { status: 'PENDING' } })
+    ]);
+    return successResponse(res, { teamSize, pendingApprovals }, 'Team summary retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/employee-dashboard/summary', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const employee = await prisma.employee.findFirst({ where: { userId: req.user.id } });
+    const today = new Date(new Date().toISOString().split('T')[0]);
+    const attendance = employee ? await prisma.attendanceLog.findUnique({
+      where: { employeeId_attendanceDate: { employeeId: employee.id, attendanceDate: today } }
+    }) : null;
+
+    return successResponse(res, {
+      attendanceStatus: attendance?.status || 'NOT_CHECKED_IN',
+      checkInTime: attendance?.checkInAt || null,
+      checkOutTime: attendance?.checkOutAt || null
+    }, 'Employee dashboard summary retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/employee-dashboard/attendance', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const employee = await prisma.employee.findFirst({ where: { userId: req.user.id } });
+    const count = employee ? await prisma.attendanceLog.count({
+      where: { employeeId: employee.id, status: 'PRESENT' }
+    }) : 0;
+    return successResponse(res, { daysPresent: count, daysAbsent: 0 }, 'Attendance stats retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/employee-dashboard/leave', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const employee = await prisma.employee.findFirst({ where: { userId: req.user.id } });
+    const balances = employee ? await prisma.leaveBalance.findMany({
+      where: { employeeId: employee.id },
+      include: { leaveType: true }
+    }) : [];
+    return successResponse(res, balances, 'Leave balance retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/employee-dashboard/tasks', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const employee = await prisma.employee.findFirst({ where: { userId: req.user.id } });
+    const tasks = employee ? await prisma.task.findMany({
+      where: { employeeId: employee.id }
+    }) : [];
+    return successResponse(res, tasks, 'Employee tasks retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/projects', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const projects = await prisma.project.findMany({
+      where: { companyId: req.user.companyId }
+    });
+    return successResponse(res, projects, 'Projects retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/clients', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const clients = await prisma.client.findMany({
+      where: { companyId: req.user.companyId }
+    });
+    return successResponse(res, clients, 'Clients retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/tasks', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { companyId: req.user.companyId }
+    });
+    return successResponse(res, tasks, 'Tasks retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/performance/cycles', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const cycles = await prisma.performanceCycle.findMany({
+      where: { companyId: req.user.companyId }
+    });
+    return successResponse(res, cycles, 'Performance cycles retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/performance/reviews', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const reviews = await prisma.performanceReview.findMany({
+      where: { employee: { companyId: req.user.companyId } }
+    });
+    return successResponse(res, reviews, 'Performance reviews retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/certificates/templates', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const templates = await prisma.certificateTemplate.findMany({
+      where: { companyId: req.user.companyId }
+    });
+    return successResponse(res, templates, 'Certificate templates retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/onboarding/status', authenticate, requireCompany, (req, res) => {
+  return successResponse(res, { status: 'COMPLETED' }, 'Onboarding status retrieved');
+});
 
 export default router;

@@ -1,0 +1,2398 @@
+[
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:42:59.421Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:42:59.421Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/dashboard/super-admin",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:42:59.421Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:42:59.421Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:42:59.421Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:04.880Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:04.880Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/dashboard/super-admin",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:04.881Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:04.881Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:04.881Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:05.831Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:05.831Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/companies?search=&status=&page=1&limit=10",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:05.831Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:05.831Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:05.832Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:06.673Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:06.673Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/plans",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:06.673Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/current",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:06.674Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:06.674Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:06.674Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:07.534Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:07.535Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/refunds/all?status=&refundType=&search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:07.535Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/refunds/stats",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:07.535Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:07.535Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:07.535Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:08.358Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:08.358Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/admin/queues/stats",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:08.358Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/admin/queues/health",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:08.358Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:08.358Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:08.358Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:09.238Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:09.238Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/dashboard",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:09.239Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/security-score",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:09.239Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/fraud-signals?limit=4",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:09.239Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/events?limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:09.239Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:09.239Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:09.239Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:10.206Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:10.206Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/events",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:10.206Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:10.206Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:10.206Z",
+    "status": 403,
+    "ok": false
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.022Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.022Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/audit-logs",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.022Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.022Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.022Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.863Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.863Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/payment-analytics/revenue?startDate=&endDate=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.863Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/payment-analytics/mrr",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.863Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/payment-analytics/arr",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.863Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/payment-analytics/revenue-by-plan",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.863Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.863Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:11.863Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:12.713Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:12.714Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/coupons?search=&status=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:12.714Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/coupons/stats",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:12.714Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:12.714Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:12.714Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:13.526Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:13.526Z",
+    "status": 200,
+    "ok": true
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:13.526Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:13.526Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:14.510Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:14.510Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:14.510Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:14.510Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.230Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.230Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/refunds/all?status=&refundType=&search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.230Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/refunds/stats",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.231Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.231Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.231Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.703Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.703Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/dashboard/super-admin",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.703Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.703Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:15.703Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:23.991Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:23.992Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:23.992Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:23.992Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:25.468Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:25.469Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:25.469Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:25.469Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:26.472Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:26.472Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/employees?search=&status=&page=1&limit=10",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:26.472Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:26.472Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:26.472Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:27.615Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:27.615Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/attendance/today",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:27.615Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:27.616Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:27.616Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:28.324Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:28.324Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/attendance/logs?page=1&limit=10&startDate=2026-09-01&endDate=2026-09-30&status=&search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:28.324Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:28.325Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:28.325Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.149Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.149Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/attendance/stats?date=2026-09-26",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.150Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.150Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.150Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.899Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.899Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/leave/requests?companyId=29ba6047-ac9b-4520-8b49-67d041da9325",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.899Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.899Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:29.900Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:30.691Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:30.692Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/payroll/runs?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&year=2026",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:30.692Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:30.692Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:30.692Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:31.590Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:31.590Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/shifts",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:31.590Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:31.590Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:31.590Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:32.516Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:32.516Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/holiday-calendars/calendars",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:32.516Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/holiday-calendars/calendar-view?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&year=2026",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:32.516Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:32.516Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:32.516Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:33.309Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:33.309Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/branches?search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:33.309Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:33.309Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:33.309Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.121Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.121Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/departments?search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.121Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.121Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.121Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.883Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.883Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/designations?search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.883Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.883Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:34.883Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:35.661Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:35.661Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/documents?search=&status=&type=&page=1&limit=10",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:35.661Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:35.661Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:35.661Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:36.500Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:36.500Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/departments",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:36.500Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/branches",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:36.500Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:36.500Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:36.500Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:37.720Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:37.721Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/current",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:37.721Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/stats",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:37.721Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/check-expiry",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:37.721Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:37.721Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:37.721Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:38.583Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:38.584Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/plans",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:38.584Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/current",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:38.584Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:38.584Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:38.584Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:39.336Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:39.337Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/refunds?status=&search=&startDate=&endDate=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:39.337Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/refunds/stats",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:39.337Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:39.337Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:39.337Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.108Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.109Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/dashboard",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.109Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/security-score",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.109Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/fraud-signals?limit=4",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.109Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/security/events?limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.109Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.109Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.109Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.888Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.888Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/companies/29ba6047-ac9b-4520-8b49-67d041da9325/settings/general",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.889Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.889Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:40.889Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:41.831Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:41.831Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:41.831Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:41.831Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:42.652Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:42.652Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/plans",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:42.653Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/subscriptions/current",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:42.653Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:42.653Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:42.653Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:51.074Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:51.074Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:51.074Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:51.076Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:52.712Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:52.713Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:52.714Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:52.714Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:53.668Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:53.669Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/employees?search=&status=&page=1&limit=10",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:53.669Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:53.669Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:53.669Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:54.793Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:54.794Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/attendance/today",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:54.794Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:54.794Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:54.794Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:55.430Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:55.430Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/attendance/logs?page=1&limit=10&startDate=2026-09-01&endDate=2026-09-30&status=&search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:55.430Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:55.430Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:55.430Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:56.231Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:56.231Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/leave/requests?companyId=29ba6047-ac9b-4520-8b49-67d041da9325",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:56.231Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:56.231Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:56.231Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.071Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.071Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/leave/calendar?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&month=9&year=2026",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.072Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.072Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.072Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.865Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.865Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/shifts",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.865Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.865Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:57.865Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:58.732Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:58.732Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/shifts",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:58.732Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:58.732Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:58.732Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:59.529Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:59.529Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/holiday-calendars/calendars",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:59.530Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/holiday-calendars/calendar-view?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&year=2026",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:59.530Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:59.530Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:43:59.530Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:00.381Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:00.382Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/documents?search=&status=&type=&page=1&limit=10",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:00.382Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:00.382Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:00.382Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.132Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.132Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/departments",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.132Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/branches",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.132Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.132Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.132Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.987Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.988Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.988Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:01.988Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:10.131Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:10.131Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:10.131Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:10.131Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:11.435Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:11.436Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:11.436Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:11.436Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:12.417Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:12.418Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/employees?search=&status=&page=1&limit=10",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:12.418Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:12.418Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:12.418Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:13.360Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:13.360Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/attendance/today",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:13.360Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:13.360Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:13.360Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.183Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.183Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/attendance/logs?page=1&limit=10&startDate=2026-09-01&endDate=2026-09-30&status=&search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.183Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.183Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.183Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.961Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.962Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/leave/requests?companyId=29ba6047-ac9b-4520-8b49-67d041da9325",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.962Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.962Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:14.962Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:15.790Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:15.790Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/shifts",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:15.790Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:15.790Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:15.790Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:16.651Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:16.651Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/documents?search=&status=&type=&page=1&limit=10",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:16.651Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:16.651Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:16.651Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:17.480Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:17.480Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:17.480Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:17.480Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:25.656Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:25.656Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:25.656Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:25.656Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:27.351Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:27.351Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:27.351Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:27.351Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:28.316Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:28.316Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/attendance/logs?page=1&limit=10&startDate=2026-09-01&endDate=2026-09-30&status=&search=",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:28.316Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:28.316Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:28.316Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.189Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.189Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/leave/requests?companyId=29ba6047-ac9b-4520-8b49-67d041da9325",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.189Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.189Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.189Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.969Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.969Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/approvals/pending",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.969Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.969Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:29.969Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:30.831Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:30.831Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:30.831Z"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:30.831Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:39.343Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:39.343Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:39.343Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:39.345Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:40.773Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:40.775Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:40.775Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:40.775Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:41.808Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:41.809Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/attendance/today",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:41.809Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:41.809Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:41.809Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:42.711Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:42.712Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/leave/types",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:42.712Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/leave/balances?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&employeeId=d99af43f-6499-4119-8f84-b18c8ca62151&year=2026",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:42.712Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:42.712Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:42.712Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:43.587Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:43.588Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/leave/balances?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&year=2026",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:43.588Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:43.588Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:43.588Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:44.403Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:44.403Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/payroll/slips?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&year=2026",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:44.403Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:44.403Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:44.403Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:45.274Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:45.274Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/employees?limit=100",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:45.274Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:45.274Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:45.274Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:46.029Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:46.029Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:46.029Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:46.029Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:53.300Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:53.300Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:53.300Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:53.300Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:55.178Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:55.178Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:55.178Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:55.178Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:58.408Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:58.408Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications/unread-count",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:58.408Z"
+  },
+  {
+    "role": "CLIENT",
+    "url": "http://localhost:5000/api/v1/notifications?page=1&limit=5",
+    "method": "GET",
+    "timestamp": "2026-09-26T05:44:58.408Z"
+  }
+]

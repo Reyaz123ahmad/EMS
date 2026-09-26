@@ -71,8 +71,22 @@ export const advancedSecurityController = {
 
   getSecurityDashboard: async (req, res, next) => {
     try {
-      const result = await advancedSecurityService.getSecurityDashboard(req.user.companyId);
+      const companyId = req.query.companyId || req.user?.companyId;
+      const result = await advancedSecurityService.getSecurityDashboard(companyId);
       return sendSuccess(res, result, 'Security dashboard retrieved');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  getFraudSignals: async (req, res, next) => {
+    try {
+      const companyId = req.query.companyId || req.user?.companyId;
+      const result = await advancedSecurityService.getFraudSignals(companyId, req.query, {
+        page: req.query.page,
+        limit: req.query.limit
+      });
+      return sendSuccess(res, result, 'Fraud signals retrieved');
     } catch (err) {
       next(err);
     }

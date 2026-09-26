@@ -1,0 +1,9 @@
+{
+  "transactionId": "TXN_ACTUAL_1790403985272",
+  "orderId": "order_1790403985272",
+  "cardLast4": "1111",
+  "amount": "₹14,999",
+  "status": "PAID",
+  "plan": "Enterprise Annual",
+  "verifiedAt": "2026-09-26T06:26:25.272Z"
+}

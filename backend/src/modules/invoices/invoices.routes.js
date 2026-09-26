@@ -7,7 +7,7 @@ const router = Router();
 
 router.use(authenticate);
 
-// List invoices
+// List invoices (Platform-level view for Super Admin, company-level for Company Admin)
 router.get('/', requireRole('COMPANY_ADMIN', 'SUPER_ADMIN'), controller.listInvoices);
 
 // Download invoice PDF
@@ -15,5 +15,8 @@ router.get('/:id/download', requireRole('COMPANY_ADMIN', 'SUPER_ADMIN'), control
 
 // Send invoice email
 router.post('/:id/send-email', requireRole('COMPANY_ADMIN', 'SUPER_ADMIN'), controller.sendInvoiceEmail);
+
+// Get single invoice by ID
+router.get('/:id', requireRole('COMPANY_ADMIN', 'SUPER_ADMIN'), controller.getInvoiceById);
 
 export default router;

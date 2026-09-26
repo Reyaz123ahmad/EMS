@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   Building2,
   CreditCard,
@@ -9,13 +10,14 @@ import {
   Calendar,
   ShieldCheck,
   CheckCircle,
-  Activity
+  Activity,
+  AlertCircle
 } from 'lucide-react';
+import api from '../../services/api';
 import StatsCard from '../../components/dashboard/StatsCard';
 import ChartCard from '../../components/dashboard/ChartCard';
 import RevenueChart from '../../components/dashboard/RevenueChart';
 import CompanyGrowthChart from '../../components/dashboard/CompanyGrowthChart';
-import AttendancePieChart from '../../components/dashboard/AttendancePieChart';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import DataTable from '../../components/ui/DataTable';
@@ -23,28 +25,61 @@ import DataTable from '../../components/ui/DataTable';
 export const SuperAdminDashboard = () => {
   const [dateRange, setDateRange] = useState('30d');
 
-  const recentCompanies = [
-    { id: '1', name: 'Acme Corp', tier: 'ENTERPRISE', employees: 450, status: 'ACTIVE', joined: '2026-08-12' },
-    { id: '2', name: 'TechFlow Systems', tier: 'PRO', employees: 120, status: 'ACTIVE', joined: '2026-08-18' },
-    { id: '3', name: 'Global Logistics Ltd', tier: 'ENTERPRISE', employees: 1200, status: 'ACTIVE', joined: '2026-08-25' },
-    { id: '4', name: 'Nexura Digital', tier: 'BASIC', employees: 45, status: 'TRIAL', joined: '2026-09-02' },
-    { id: '5', name: 'CloudScale Inc', tier: 'PRO', employees: 85, status: 'ACTIVE', joined: '2026-09-10' }
-  ];
+  const { data: dashboardData, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['superAdminDashboard'],
+    queryFn: async () => {
+      const response = await api.get('/dashboard/super-admin');
+      return response.data?.data || response.data;
+    }
+  });
 
-  const recentPayments = [
-    { id: 'TXN-9021', company: 'Global Logistics Ltd', amount: '₹1,50,000', plan: 'Enterprise Annual', status: 'SUCCESS', date: '2026-09-24' },
-    { id: 'TXN-9020', company: 'Acme Corp', amount: '₹85,000', plan: 'Enterprise Monthly', status: 'SUCCESS', date: '2026-09-22' },
-    { id: 'TXN-9019', company: 'TechFlow Systems', amount: '₹35,000', plan: 'Pro Monthly', status: 'SUCCESS', date: '2026-09-20' },
-    { id: 'TXN-9018', company: 'CloudScale Inc', amount: '₹35,000', plan: 'Pro Monthly', status: 'SUCCESS', date: '2026-09-18' }
-  ];
+  const recentCompanies = (dashboardData?.recentCompanies || []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    tier: c.subscription?.plan?.name || c.subscriptions?.[0]?.plan?.name || 'TRIAL',
+    status: c.status || 'ACTIVE',
+    joined: new Date(c.createdAt).toLocaleDateString()
+  }));
+
+  const recentPayments = (dashboardData?.recentPayments || []).map((p) => ({
+    id: p.id || p.transactionId || 'TXN',
+    company: p.subscription?.company?.name || 'Enterprise Tenant',
+    plan: p.subscription?.plan?.name || 'Enterprise Annual',
+    amount: `₹${(Number(p.amount) || 0).toLocaleString('en-IN')}`,
+    status: p.status || 'PAID',
+    date: new Date(p.createdAt).toLocaleDateString()
+  }));
 
   const companyColumns = [
     { header: 'Company Name', accessorKey: 'name', cell: (info) => <span className="font-bold text-slate-900 dark:text-slate-100">{info.getValue()}</span> },
     { header: 'Tier Plan', accessorKey: 'tier', cell: (info) => <Badge variant={info.getValue() === 'ENTERPRISE' ? 'primary' : 'secondary'} size="sm">{info.getValue()}</Badge> },
-    { header: 'Employees', accessorKey: 'employees', cell: (info) => <span>{info.getValue()} Active</span> },
     { header: 'Status', accessorKey: 'status', cell: (info) => <Badge variant={info.getValue() === 'ACTIVE' ? 'success' : 'warning'} dot size="sm">{info.getValue()}</Badge> },
     { header: 'Joined', accessorKey: 'joined' }
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Loading Platform Metrics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <AlertCircle className="h-10 w-10 text-rose-500" />
+          <p className="text-base font-bold text-slate-800 dark:text-slate-200">Failed to load platform metrics</p>
+          <p className="text-xs text-slate-500">{error?.message || 'Server error occurred'}</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-in fade-in-0 duration-200">
@@ -83,32 +118,32 @@ export const SuperAdminDashboard = () => {
         <StatsCard
           icon={Building2}
           label="Total Tenants"
-          value="142"
-          change="+18%"
+          value={String(dashboardData?.totalCompanies || 0)}
+          change={`${dashboardData?.activeCompanies || 0} active`}
           changeType="increase"
           variant="indigo"
         />
         <StatsCard
           icon={CreditCard}
           label="Active Subscriptions"
-          value="128"
-          change="+12%"
+          value={String(dashboardData?.totalSubscriptions || 0)}
+          change="Platform active"
           changeType="increase"
           variant="emerald"
         />
         <StatsCard
           icon={TrendingUp}
-          label="Monthly Revenue"
-          value="₹34.5L"
-          change="+24.2%"
+          label="Total Platform Revenue"
+          value={`₹${(Number(dashboardData?.totalRevenue) || 0).toLocaleString('en-IN')}`}
+          change={`MRR: ₹${(Number(dashboardData?.mrr) || 0).toLocaleString('en-IN')}`}
           changeType="increase"
           variant="sky"
         />
         <StatsCard
           icon={Users}
           label="Total Platform Users"
-          value="18,450"
-          change="+8.5%"
+          value={String(dashboardData?.totalUsers || 0)}
+          change="Across all tenants"
           changeType="increase"
           variant="violet"
         />
@@ -140,10 +175,14 @@ export const SuperAdminDashboard = () => {
               Recently Onboarded Companies
             </h3>
             <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer">
-              View all 142
+              Total: {dashboardData?.totalCompanies || 0}
             </span>
           </div>
-          <DataTable columns={companyColumns} data={recentCompanies} />
+          {recentCompanies.length > 0 ? (
+            <DataTable columns={companyColumns} data={recentCompanies} />
+          ) : (
+            <div className="py-8 text-center text-xs text-slate-500">No companies onboarded yet</div>
+          )}
         </div>
 
         {/* System Health Widget */}
@@ -177,15 +216,19 @@ export const SuperAdminDashboard = () => {
               Recent Transactions
             </h4>
             <div className="space-y-2">
-              {recentPayments.map((p) => (
-                <div key={p.id} className="flex items-center justify-between text-xs p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                  <div>
-                    <p className="font-semibold text-slate-800 dark:text-slate-200">{p.company}</p>
-                    <p className="text-[10px] text-slate-400">{p.plan}</p>
+              {recentPayments.length > 0 ? (
+                recentPayments.map((p, idx) => (
+                  <div key={p.id || idx} className="flex items-center justify-between text-xs p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                    <div>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200">{p.company}</p>
+                      <p className="text-[10px] text-slate-400">{p.plan}</p>
+                    </div>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{p.amount}</span>
                   </div>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{p.amount}</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-[11px] text-slate-500 py-2">No recent transactions</p>
+              )}
             </div>
           </div>
         </div>

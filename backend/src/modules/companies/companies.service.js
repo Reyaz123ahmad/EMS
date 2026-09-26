@@ -5,9 +5,7 @@ import { hashPassword } from '../../security/password.js';
 import { addOTPEmail, addCredentialsEmail } from '../../queues/email.queue.js';
 import { COMPANY_SETTINGS_DEFAULTS, DEFAULT_TRIAL_DAYS } from './companies.constants.js';
 import { generateCompanyCode, generateBranchCode, generateDepartmentCode, generateEmployeeCode } from '../../utils/id-generator.js';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../../config/prisma.js';
 
 function parseSessionData(rawData) {
   if (!rawData) return null;

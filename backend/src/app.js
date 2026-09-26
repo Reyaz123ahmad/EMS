@@ -46,25 +46,21 @@ try {
   logger.warn({ err: err.message }, 'Could not mount Bull Board dashboard UI');
 }
 
+import errorHandler from './middlewares/error.middleware.js';
+
 // API Routes
 app.use('/api/v1', routes);
 
 // 404 Handler
 app.use((req, res, next) => {
   res.status(404).json({
+    success: false,
     status: 'error',
     message: `Cannot ${req.method} ${req.originalUrl}`
   });
 });
 
 // Global Error Handler
-app.use((err, req, res, next) => {
-  logger.error({ err }, 'Unhandled application error');
-  const statusCode = err.statusCode || err.status || 500;
-  res.status(statusCode).json({
-    status: 'error',
-    message: err.message || 'Internal Server Error'
-  });
-});
+app.use(errorHandler);
 
 export default app;

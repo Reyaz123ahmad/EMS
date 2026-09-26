@@ -1,10 +1,11 @@
 import { subscriptionsService } from './subscriptions.service.js';
+import { successResponse } from '../../utils/response.js';
 
 export const subscriptionsController = {
   async getPlans(req, res, next) {
     try {
       const plans = await subscriptionsService.getPlans();
-      res.status(200).json({ status: 'SUCCESS', data: plans });
+      return successResponse(res, plans, 'Plans retrieved successfully');
     } catch (err) {
       next(err);
     }
@@ -13,8 +14,29 @@ export const subscriptionsController = {
   async getCurrentSubscription(req, res, next) {
     try {
       const companyId = req.query.companyId || req.user?.companyId;
+      if (!companyId) {
+        return successResponse(res, {
+          isPlatformAdmin: true,
+          message: 'Platform Super Admin does not require a subscription',
+          subscription: null,
+          plan: null,
+          invoices: [],
+          payments: []
+        }, 'Platform admin status');
+      }
       const data = await subscriptionsService.getCurrentSubscription(companyId);
-      res.status(200).json({ status: 'SUCCESS', data });
+      return successResponse(res, data, 'Subscription retrieved successfully');
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getPlatformStatus(req, res, next) {
+    try {
+      return successResponse(res, {
+        isPlatformAdmin: true,
+        message: 'Platform Super Admin does not require a subscription'
+      }, 'Platform admin status');
     } catch (err) {
       next(err);
     }

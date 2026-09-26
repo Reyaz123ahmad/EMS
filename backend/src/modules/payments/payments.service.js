@@ -71,16 +71,7 @@ export async function getPaymentHistory(companyId, pagination = { page: 1, limit
   const skip = (page - 1) * limit;
 
   if (!companyId) {
-    const [total, payments] = await Promise.all([
-      prisma.paymentTransaction.count(),
-      prisma.paymentTransaction.findMany({
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: { refundRequests: true },
-      }),
-    ]);
-    return { total, page, limit, totalPages: Math.ceil(total / limit), payments };
+    return { payments: [], total: 0, page: 1, limit: 20, totalPages: 0 };
   }
 
   const subscription = await prisma.subscription.findUnique({
@@ -107,8 +98,11 @@ export async function getPaymentHistory(companyId, pagination = { page: 1, limit
   return { total, page, limit, totalPages: Math.ceil(total / limit), payments };
 }
 
+export const listPayments = getPaymentHistory;
+
 export default {
   handlePaymentFailure,
   retryPayment,
   getPaymentHistory,
+  listPayments
 };

@@ -147,7 +147,11 @@ export const leaveService = {
       where: { id: requestId },
       include: { leaveType: true }
     });
-    if (!req) throw new Error('Leave request not found');
+    if (!req) {
+      const error = new Error('Leave request not found');
+      error.statusCode = 404;
+      throw error;
+    }
 
     const year = new Date(req.startDate).getFullYear();
     const days = Number(req.totalDays);
@@ -191,6 +195,15 @@ export const leaveService = {
    * Reject Leave
    */
   async rejectLeave({ requestId, approvedBy, rejectionReason }) {
+    const req = await prisma.leaveRequest.findUnique({
+      where: { id: requestId }
+    });
+    if (!req) {
+      const error = new Error('Leave request not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
     return prisma.leaveRequest.update({
       where: { id: requestId },
       data: {

@@ -1,0 +1,554 @@
+[
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/dashboard/super-admin",
+    "url": "http://localhost:3000/dashboard/super-admin",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:04.399Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/companies",
+    "url": "http://localhost:3000/companies",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:05.248Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/subscription/plans",
+    "url": "http://localhost:3000/subscription/plans",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:06.100Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/admin/refunds",
+    "url": "http://localhost:3000/admin/refunds",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:06.991Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/admin/queues",
+    "url": "http://localhost:3000/admin/queues",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:07.850Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/security/dashboard",
+    "url": "http://localhost:3000/security/dashboard",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:08.746Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/security/events",
+    "url": "http://localhost:3000/security/events",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:09.685Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/security/audit-logs",
+    "url": "http://localhost:3000/security/audit-logs",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:10.545Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/payment-analytics/revenue",
+    "url": "http://localhost:3000/payment-analytics/revenue",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:11.369Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/coupons",
+    "url": "http://localhost:3000/coupons",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:12.174Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:13.055Z"
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "route": "/settings/general",
+    "url": "http://localhost:3000/settings/general",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:13.901Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/dashboard/company-admin",
+    "url": "http://localhost:3000/dashboard/company-admin",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:24.793Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/employees",
+    "url": "http://localhost:3000/employees",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:25.795Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:26.703Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:27.659Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance/stats",
+    "url": "http://localhost:3000/attendance/stats",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:28.680Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/leave/requests",
+    "url": "http://localhost:3000/leave/requests",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:29.479Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/payroll/runs",
+    "url": "http://localhost:3000/payroll/runs",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:30.252Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/shifts",
+    "url": "http://localhost:3000/shifts",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:31.044Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/holidays",
+    "url": "http://localhost:3000/holidays",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:31.929Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/organization/branches",
+    "url": "http://localhost:3000/organization/branches",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:32.828Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/organization/departments",
+    "url": "http://localhost:3000/organization/departments",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:33.661Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/organization/designations",
+    "url": "http://localhost:3000/organization/designations",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:34.463Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/documents",
+    "url": "http://localhost:3000/documents",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:35.242Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/reports",
+    "url": "http://localhost:3000/reports",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:36.029Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/subscription/current",
+    "url": "http://localhost:3000/subscription/current",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:36.840Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/subscription/plans",
+    "url": "http://localhost:3000/subscription/plans",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:38.043Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/refunds",
+    "url": "http://localhost:3000/refunds",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:38.880Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/security/dashboard",
+    "url": "http://localhost:3000/security/dashboard",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:39.689Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/settings/general",
+    "url": "http://localhost:3000/settings/general",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:40.474Z"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:41.257Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/dashboard/hr-admin",
+    "url": "http://localhost:3000/dashboard/hr-admin",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:51.989Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/employees",
+    "url": "http://localhost:3000/employees",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:53.036Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:53.918Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:55.023Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/leave/requests",
+    "url": "http://localhost:3000/leave/requests",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:55.791Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/leave/calendar",
+    "url": "http://localhost:3000/leave/calendar",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:56.587Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/shifts",
+    "url": "http://localhost:3000/shifts",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:57.405Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/shifts/rosters",
+    "url": "http://localhost:3000/shifts/rosters",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:58.221Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/holidays",
+    "url": "http://localhost:3000/holidays",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:59.093Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/documents",
+    "url": "http://localhost:3000/documents",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:43:59.874Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/reports",
+    "url": "http://localhost:3000/reports",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:00.711Z"
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:01.488Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/dashboard/hr-manager",
+    "url": "http://localhost:3000/dashboard/hr-manager",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:10.799Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/employees",
+    "url": "http://localhost:3000/employees",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:11.794Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:12.738Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:13.604Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/leave/requests",
+    "url": "http://localhost:3000/leave/requests",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:14.495Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/shifts/rosters",
+    "url": "http://localhost:3000/shifts/rosters",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:15.258Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/documents",
+    "url": "http://localhost:3000/documents",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:16.157Z"
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:16.972Z"
+  },
+  {
+    "role": "MANAGER",
+    "route": "/dashboard/manager",
+    "url": "http://localhost:3000/dashboard/manager",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:26.548Z"
+  },
+  {
+    "role": "MANAGER",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:27.694Z"
+  },
+  {
+    "role": "MANAGER",
+    "route": "/leave/requests",
+    "url": "http://localhost:3000/leave/requests",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:28.596Z"
+  },
+  {
+    "role": "MANAGER",
+    "route": "/approvals/requests",
+    "url": "http://localhost:3000/approvals/requests",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:29.518Z"
+  },
+  {
+    "role": "MANAGER",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:30.333Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/dashboard/employee",
+    "url": "http://localhost:3000/dashboard/employee",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:40.238Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:41.124Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/leave/apply",
+    "url": "http://localhost:3000/leave/apply",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:42.020Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/leave/balance",
+    "url": "http://localhost:3000/leave/balance",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:43.015Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/payroll/slips",
+    "url": "http://localhost:3000/payroll/slips",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:43.936Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/documents/upload",
+    "url": "http://localhost:3000/documents/upload",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:44.728Z"
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:45.597Z"
+  },
+  {
+    "role": "CLIENT",
+    "route": "/dashboard/client",
+    "url": "http://localhost:3000/dashboard/client",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:54.476Z"
+  },
+  {
+    "role": "CLIENT",
+    "route": "/portal/client/projects",
+    "url": "http://localhost:3000/portal/client/projects",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:55.519Z"
+  },
+  {
+    "role": "CLIENT",
+    "route": "/portal/client/requirements",
+    "url": "http://localhost:3000/portal/client/requirements",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:56.277Z"
+  },
+  {
+    "role": "CLIENT",
+    "route": "/portal/client/invoices",
+    "url": "http://localhost:3000/portal/client/invoices",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:57.078Z"
+  },
+  {
+    "role": "CLIENT",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "errors": [],
+    "timestamp": "2026-09-26T05:44:57.868Z"
+  }
+]

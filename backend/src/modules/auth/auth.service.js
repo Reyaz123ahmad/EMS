@@ -304,7 +304,9 @@ export const authService = {
   async verifyOTP({ email, otp, purpose = 'DEFAULT' }) {
     const otpRecord = await authRepository.getOTP(email, purpose);
     if (!otpRecord || otpRecord.otp !== String(otp).trim()) {
-      throw new Error('Invalid or expired OTP code');
+      const error = new Error('Invalid or expired OTP code');
+      error.statusCode = 400;
+      throw error;
     }
     await authRepository.deleteOTP(email, purpose);
     return { verified: true };

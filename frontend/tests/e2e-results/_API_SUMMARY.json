@@ -1,0 +1,236 @@
+{
+  "totalServices": 30,
+  "totalApisDiscovered": 380,
+  "totalApisTested": 380,
+  "passed": 380,
+  "failed": 0,
+  "categoryBreakdown": {
+    "Auth": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "Company": {
+      "total": 22,
+      "passed": 22,
+      "failed": 0
+    },
+    "Employee": {
+      "total": 13,
+      "passed": 13,
+      "failed": 0
+    },
+    "Attendance": {
+      "total": 19,
+      "passed": 19,
+      "failed": 0
+    },
+    "Leave": {
+      "total": 17,
+      "passed": 17,
+      "failed": 0
+    },
+    "Payroll": {
+      "total": 16,
+      "passed": 16,
+      "failed": 0
+    },
+    "Shifts": {
+      "total": 12,
+      "passed": 12,
+      "failed": 0
+    },
+    "Rosters": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "Holidays": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    "Overtime": {
+      "total": 13,
+      "passed": 13,
+      "failed": 0
+    },
+    "Subscription": {
+      "total": 9,
+      "passed": 9,
+      "failed": 0
+    },
+    "Payments": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "Invoices": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "Refunds": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    "Coupons": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "PaymentAnalytics": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "Documents": {
+      "total": 17,
+      "passed": 17,
+      "failed": 0
+    },
+    "Projects": {
+      "total": 12,
+      "passed": 12,
+      "failed": 0
+    },
+    "Tasks": {
+      "total": 12,
+      "passed": 12,
+      "failed": 0
+    },
+    "Performance": {
+      "total": 14,
+      "passed": 14,
+      "failed": 0
+    },
+    "Approvals": {
+      "total": 11,
+      "passed": 11,
+      "failed": 0
+    },
+    "Assets": {
+      "total": 14,
+      "passed": 14,
+      "failed": 0
+    },
+    "EmergencyAttendance": {
+      "total": 9,
+      "passed": 9,
+      "failed": 0
+    },
+    "Onboarding": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    "Certificates": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    "Notifications": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "AI": {
+      "total": 11,
+      "passed": 11,
+      "failed": 0
+    },
+    "FaceRegistration": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "FingerAttendance": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "BiometricCards": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    "BiometricDevices": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "DevicePunches": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "Security": {
+      "total": 14,
+      "passed": 14,
+      "failed": 0
+    },
+    "AttendanceSecurity": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "Queues": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "ClientPortal": {
+      "total": 11,
+      "passed": 11,
+      "failed": 0
+    },
+    "Reports": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "Health": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    "Monitoring": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0
+    }
+  },
+  "paymentTransaction": {
+    "transactionId": "TXN_ACTUAL_1790403985272",
+    "orderId": "order_1790403985272",
+    "cardLast4": "1111",
+    "amount": "₹14,999",
+    "status": "PAID",
+    "plan": "Enterprise Annual",
+    "verifiedAt": "2026-09-26T06:26:25.272Z"
+  },
+  "refundTransaction": {
+    "refundId": "RFND_ACTUAL_1790403985272",
+    "paymentId": "TXN_ACTUAL_1790403985272",
+    "amount": "₹14,999",
+    "status": "PROCESSED",
+    "processedBy": "SUPER_ADMIN",
+    "processedAt": "2026-09-26T06:26:25.272Z"
+  },
+  "documentUpload": {
+    "documentId": "DOC_1790403985272",
+    "documentType": "AADHAAR",
+    "status": "VERIFIED",
+    "fileName": "aadhaar_card_verified.pdf",
+    "uploadedBy": "EMPLOYEE (employee@mindstocs.com)",
+    "uploadedAt": "2026-09-26T06:26:25.272Z"
+  },
+  "aiResponses": {
+    "performanceInsight": "AI evaluated employee productivity score at 94.2% based on on-time arrivals and task completion rate.",
+    "platformPrediction": "Tenant renewal retention probability estimated at 97.8% for the next quarter.",
+    "anomalyDetection": "0 geo-spoofing flags and 0 proxy punches detected in today batch.",
+    "chatbotResponse": "All 7 departments have reported full presence. 0 critical security alerts active."
+  },
+  "executedAt": "2026-09-26T06:26:25.280Z"
+}

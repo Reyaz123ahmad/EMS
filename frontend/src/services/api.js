@@ -114,9 +114,16 @@ api.interceptors.response.use(
     }
 
     if (status === 403) {
-      toast.error(`Access Denied: ${message}`);
-    } else if (status >= 500) {
-      toast.error(`Server Error: ${message}`);
+      if (error.response?.data?.code === 'PLATFORM_ADMIN_NOT_ALLOWED') {
+        toast.error('This feature is only available for company users.');
+        if (window.location.pathname !== '/dashboard/super-admin') {
+          window.location.href = '/dashboard/super-admin';
+        }
+      } else {
+        toast.error(typeof message === 'string' && message.length < 200 ? message : 'Access Denied');
+      }
+    } else if (status >= 400 && status !== 401 && status !== 402) {
+      toast.error(typeof message === 'string' && message.length < 200 ? message : 'Something went wrong. Please try again.');
     }
 
     return Promise.reject(error);

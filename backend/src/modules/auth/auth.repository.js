@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../config/prisma.js';
 import redis from '../../config/redis.js';
 import { OTP_EXPIRY_MINUTES } from './auth.constants.js';
-
-const prisma = new PrismaClient();
 
 export const authRepository = {
   /**
