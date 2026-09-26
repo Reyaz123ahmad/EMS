@@ -33,13 +33,26 @@ export default function LeaveRequestsPage() {
   const rejectLeave = useRejectLeave();
   const bulkApprove = useBulkApproveLeave();
 
-  const requests = requestsData?.data?.data || requestsData?.data || [];
+  const requests = Array.isArray(requestsData)
+    ? requestsData
+    : Array.isArray(requestsData?.requests)
+    ? requestsData.requests
+    : Array.isArray(requestsData?.data?.requests)
+    ? requestsData.data.requests
+    : Array.isArray(requestsData?.data?.data)
+    ? requestsData.data.data
+    : Array.isArray(requestsData?.data)
+    ? requestsData.data
+    : [];
 
-  const filteredRequests = requests.filter((r) => {
-    const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
-    const typeName = (r.leaveType?.name || '').toLowerCase();
-    return empName.includes(search.toLowerCase()) || typeName.includes(search.toLowerCase());
-  });
+  const filteredRequests = Array.isArray(requests)
+    ? requests.filter((r) => {
+        if (!r) return false;
+        const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
+        const typeName = (r.leaveType?.name || '').toLowerCase();
+        return empName.includes(search.toLowerCase()) || typeName.includes(search.toLowerCase());
+      })
+    : [];
 
   const handleOpenReview = (req) => {
     setSelectedRequest(req);

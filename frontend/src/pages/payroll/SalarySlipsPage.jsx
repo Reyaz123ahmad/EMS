@@ -22,12 +22,24 @@ export default function SalarySlipsPage() {
     year: Number(year),
   });
 
-  const slips = slipsData?.data?.data || slipsData?.data || [];
+  const slips = Array.isArray(slipsData)
+    ? slipsData
+    : Array.isArray(slipsData?.slips)
+    ? slipsData.slips
+    : Array.isArray(slipsData?.data?.slips)
+    ? slipsData.data.slips
+    : Array.isArray(slipsData?.data)
+    ? slipsData.data
+    : [];
 
-  const filteredSlips = slips.filter((s) => {
-    const empName = `${s.employee?.firstName || ''} ${s.employee?.lastName || ''}`.toLowerCase();
-    return empName.includes(search.toLowerCase());
-  });
+  const filteredSlips = Array.isArray(slips)
+    ? slips.filter((s) => {
+        if (!s) return false;
+        const emp = s.employee || s.payrollItem?.employee;
+        const empName = `${emp?.firstName || ''} ${emp?.lastName || ''} ${s.slipNumber || ''}`.toLowerCase();
+        return empName.includes(search.toLowerCase());
+      })
+    : [];
 
   const handleDownloadPdf = async (slipId) => {
     try {

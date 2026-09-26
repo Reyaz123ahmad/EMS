@@ -9,7 +9,15 @@ export default function BulkRegisterFacePage() {
   const bulkRegisterMutation = useBulkRegisterFace();
   const navigate = useNavigate();
 
-  const employees = pendingData?.data?.employees || [];
+  const employees = Array.isArray(pendingData)
+    ? pendingData
+    : Array.isArray(pendingData?.employees)
+    ? pendingData.employees
+    : Array.isArray(pendingData?.data?.employees)
+    ? pendingData.data.employees
+    : Array.isArray(pendingData?.data)
+    ? pendingData.data
+    : [];
 
   const toggleSelectAll = () => {
     if (selectedIds.length === employees.length) {

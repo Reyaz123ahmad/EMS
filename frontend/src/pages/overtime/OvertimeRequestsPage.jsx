@@ -29,7 +29,17 @@ export default function OvertimeRequestsPage() {
   const rejectOt = useRejectOvertime();
   const bulkApprove = useBulkApproveOvertime();
 
-  const requests = requestsData?.data?.data || requestsData?.data || [];
+  const requests = Array.isArray(requestsData)
+    ? requestsData
+    : Array.isArray(requestsData?.requests)
+    ? requestsData.requests
+    : Array.isArray(requestsData?.data?.requests)
+    ? requestsData.data.requests
+    : Array.isArray(requestsData?.data?.data)
+    ? requestsData.data.data
+    : Array.isArray(requestsData?.data)
+    ? requestsData.data
+    : [];
 
   const handleOpenReview = (req) => {
     setSelectedReq(req);

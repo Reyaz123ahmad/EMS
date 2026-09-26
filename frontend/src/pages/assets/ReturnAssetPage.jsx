@@ -6,7 +6,14 @@ import { toast } from 'sonner';
 
 export function ReturnAssetPage() {
   const navigate = useNavigate();
-  const { data: assets = [] } = useAssets();
+  const { data: assetsData } = useAssets();
+  const assets = Array.isArray(assetsData)
+    ? assetsData
+    : Array.isArray(assetsData?.assets)
+    ? assetsData.assets
+    : Array.isArray(assetsData?.data)
+    ? assetsData.data
+    : [];
   const { mutateAsync: returnAsset, isPending: isReturning } = useReturnAsset();
 
   const [assetId, setAssetId] = useState('');

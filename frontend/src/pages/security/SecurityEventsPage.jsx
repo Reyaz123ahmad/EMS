@@ -5,11 +5,20 @@ import { Activity, Search, Shield } from 'lucide-react';
 
 export function SecurityEventsPage() {
   const [search, setSearch] = useState('');
-  const { data: events = [], isLoading } = useSecurityEvents();
+  const { data: eventsData, isLoading } = useSecurityEvents();
+  const events = Array.isArray(eventsData)
+    ? eventsData
+    : Array.isArray(eventsData?.events)
+    ? eventsData.events
+    : Array.isArray(eventsData?.data)
+    ? eventsData.data
+    : [];
 
-  const filteredEvents = events.filter((e) =>
-    search ? (e.description || e.eventType || '').toLowerCase().includes(search.toLowerCase()) : true
-  );
+  const filteredEvents = Array.isArray(events)
+    ? events.filter((e) =>
+        search ? (e?.description || e?.eventType || '').toLowerCase().includes(search.toLowerCase()) : true
+      )
+    : [];
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 py-6 px-4 sm:px-6">

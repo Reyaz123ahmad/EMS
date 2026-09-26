@@ -20,12 +20,25 @@ export default function OvertimeRecordsPage() {
     status: statusFilter || undefined,
   });
 
-  const records = recordsData?.data?.data || recordsData?.data || [];
+  const records = Array.isArray(recordsData)
+    ? recordsData
+    : Array.isArray(recordsData?.records)
+    ? recordsData.records
+    : Array.isArray(recordsData?.data?.records)
+    ? recordsData.data.records
+    : Array.isArray(recordsData?.data?.data)
+    ? recordsData.data.data
+    : Array.isArray(recordsData?.data)
+    ? recordsData.data
+    : [];
 
-  const filteredRecords = records.filter((r) => {
-    const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
-    return empName.includes(search.toLowerCase());
-  });
+  const filteredRecords = Array.isArray(records)
+    ? records.filter((r) => {
+        if (!r) return false;
+        const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
+        return empName.includes(search.toLowerCase());
+      })
+    : [];
 
   const columns = [
     {

@@ -10,9 +10,16 @@ export function EmergencyRequestsPage() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [actionType, setActionType] = useState('APPROVE');
 
-  const { data: requests = [], isLoading } = useEmergencyRequests(
+  const { data: requestsData, isLoading } = useEmergencyRequests(
     statusFilter !== 'ALL' ? { status: statusFilter } : {}
   );
+  const requests = Array.isArray(requestsData)
+    ? requestsData
+    : Array.isArray(requestsData?.requests)
+    ? requestsData.requests
+    : Array.isArray(requestsData?.data)
+    ? requestsData.data
+    : [];
   const { mutateAsync: approveReq, isPending: isApproving } = useApproveEmergency();
   const { mutateAsync: rejectReq, isPending: isRejecting } = useRejectEmergency();
   const { mutateAsync: bulkApprove, isPending: isBulkApproving } = useBulkApproveEmergency();

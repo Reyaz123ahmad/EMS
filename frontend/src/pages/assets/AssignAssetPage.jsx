@@ -6,7 +6,14 @@ import { toast } from 'sonner';
 
 export function AssignAssetPage() {
   const navigate = useNavigate();
-  const { data: assets = [] } = useAssets({ isActive: true });
+  const { data: assetsData } = useAssets({ isActive: true });
+  const assets = Array.isArray(assetsData)
+    ? assetsData
+    : Array.isArray(assetsData?.assets)
+    ? assetsData.assets
+    : Array.isArray(assetsData?.data)
+    ? assetsData.data
+    : [];
   const { mutateAsync: assignAsset, isPending: isAssigning } = useAssignAsset();
 
   const [assetId, setAssetId] = useState('');

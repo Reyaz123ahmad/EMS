@@ -19,13 +19,26 @@ export default function LeaveBalancePage() {
     year,
   });
 
-  const balances = balanceData?.data?.data || balanceData?.data || [];
+  const balances = Array.isArray(balanceData)
+    ? balanceData
+    : Array.isArray(balanceData?.balances)
+    ? balanceData.balances
+    : Array.isArray(balanceData?.data?.balances)
+    ? balanceData.data.balances
+    : Array.isArray(balanceData?.data?.data)
+    ? balanceData.data.data
+    : Array.isArray(balanceData?.data)
+    ? balanceData.data
+    : [];
 
-  const filteredBalances = balances.filter((b) => {
-    const empName = `${b.employee?.firstName || ''} ${b.employee?.lastName || ''}`.toLowerCase();
-    const typeName = (b.leaveType?.name || '').toLowerCase();
-    return empName.includes(search.toLowerCase()) || typeName.includes(search.toLowerCase());
-  });
+  const filteredBalances = Array.isArray(balances)
+    ? balances.filter((b) => {
+        if (!b) return false;
+        const empName = `${b.employee?.firstName || ''} ${b.employee?.lastName || ''}`.toLowerCase();
+        const typeName = (b.leaveType?.name || '').toLowerCase();
+        return empName.includes(search.toLowerCase()) || typeName.includes(search.toLowerCase());
+      })
+    : [];
 
   const columns = [
     {
