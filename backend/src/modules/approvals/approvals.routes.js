@@ -25,6 +25,8 @@ router.delete('/workflows/:id', approvalsController.deleteWorkflow);
 router.get('/requests', approvalsController.getRequests);
 router.post('/requests', validate(createApprovalRequestSchema), approvalsController.createRequest);
 router.post('/requests/:id/action', validate(actOnRequestSchema), approvalsController.actOnRequest);
+router.post('/requests/:id/approve', approvalsController.approveRequest);
+router.post('/requests/:id/reject', approvalsController.rejectRequest);
 router.get('/pending', approvalsController.getPendingApprovals);
 router.get('/history', approvalsController.getApprovalHistory);
 router.get('/stats', approvalsController.getApprovalStats);

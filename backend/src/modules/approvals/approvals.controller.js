@@ -107,6 +107,36 @@ export const approvalsController = {
     }
   },
 
+  async approveRequest(req, res) {
+    try {
+      const actedBy = req.user?.id || req.body?.actedBy;
+      const request = await approvalsService.actOnRequest({
+        requestId: req.params.id,
+        action: 'APPROVE',
+        notes: req.body?.notes || 'Approved via dashboard',
+        actedBy,
+      });
+      return sendSuccess(res, request, 'Request approved successfully');
+    } catch (err) {
+      return sendError(res, err.message, 400);
+    }
+  },
+
+  async rejectRequest(req, res) {
+    try {
+      const actedBy = req.user?.id || req.body?.actedBy;
+      const request = await approvalsService.actOnRequest({
+        requestId: req.params.id,
+        action: 'REJECT',
+        notes: req.body?.notes || 'Rejected via dashboard',
+        actedBy,
+      });
+      return sendSuccess(res, request, 'Request rejected successfully');
+    } catch (err) {
+      return sendError(res, err.message, 400);
+    }
+  },
+
   async getPendingApprovals(req, res) {
     try {
       const userId = req.user?.id || req.query.userId;

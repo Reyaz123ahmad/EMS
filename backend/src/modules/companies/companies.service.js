@@ -647,7 +647,7 @@ export const companiesService = {
   },
 
   /**
-   * Delete company
+   * Delete company and all associated child entities
    */
   async deleteCompany(id) {
     const company = await companiesRepository.findCompanyById(id);
@@ -657,29 +657,108 @@ export const companiesService = {
       throw err;
     }
 
+    const employees = await prisma.employee.findMany({ where: { companyId: id }, select: { id: true } });
+    const employeeIds = employees.map((e) => e.id);
+
     const users = await prisma.user.findMany({ where: { companyId: id }, select: { id: true } });
     const userIds = users.map((u) => u.id);
 
-    if (userIds.length > 0) {
-      await prisma.userRole.deleteMany({ where: { userId: { in: userIds } } });
-      await prisma.session.deleteMany({ where: { userId: { in: userIds } } });
-      await prisma.loginLog.deleteMany({ where: { userId: { in: userIds } } });
-      await prisma.notification.deleteMany({ where: { userId: { in: userIds } } });
-      await prisma.securityEvent.deleteMany({ where: { userId: { in: userIds } } });
-      await prisma.auditLog.deleteMany({ where: { userId: { in: userIds } } });
+    // 1. Biometrics & Devices
+    if (employeeIds.length > 0) {
+      await prisma.deviceChangeRequest.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.employeeDevice.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.fingerEnrollment.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.faceRegistrationLog.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.livenessVerification.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.fraudSignal.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.attendanceBreak.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.leaveBalance.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.leaveRequest.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.employeeCard.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.employeeDocument.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.employeeCertificate.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.employeeSalaryStructure.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.payrollItem.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.task.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.projectMember.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.emergencyAttendance.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.performanceReview.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.goal.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.assetAssignment.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.shiftAssignment.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.roster.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.weeklyOffAssignment.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.overtimeRecord.deleteMany({ where: { employeeId: { in: employeeIds } } });
+      await prisma.overtimeRequest.deleteMany({ where: { employeeId: { in: employeeIds } } });
     }
 
-    await prisma.auditLog.deleteMany({ where: { entityId: id } });
+    await prisma.devicePunch.deleteMany({ where: { companyId: id } });
     await prisma.attendanceLog.deleteMany({ where: { companyId: id } });
-    await prisma.leaveRequest.deleteMany({ where: { employee: { companyId: id } } });
-    await prisma.employee.deleteMany({ where: { companyId: id } });
-    await prisma.user.deleteMany({ where: { companyId: id } });
+    await prisma.leaveType.deleteMany({ where: { companyId: id } });
+    await prisma.overtimeRule.deleteMany({ where: { companyId: id } });
+    await prisma.breakRule.deleteMany({ where: { companyId: id } });
+    await prisma.shift.deleteMany({ where: { companyId: id } });
+    await prisma.weeklyOffRule.deleteMany({ where: { companyId: id } });
+    await prisma.holidayCalendar.deleteMany({ where: { companyId: id } });
+    await prisma.salaryComponent.deleteMany({ where: { companyId: id } });
+    await prisma.payrollRun.deleteMany({ where: { companyId: id } });
+    await prisma.project.deleteMany({ where: { companyId: id } });
+    await prisma.client.deleteMany({ where: { companyId: id } });
+    await prisma.asset.deleteMany({ where: { companyId: id } });
+    await prisma.reportHistory.deleteMany({ where: { companyId: id } });
     await prisma.biometricDevice.deleteMany({ where: { companyId: id } });
+
+    // 2. Employees, Users & Roles
+    await prisma.employee.deleteMany({ where: { companyId: id } });
+    if (userIds.length > 0) {
+      await prisma.loginLog.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.auditLog.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.notification.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.securityEvent.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.userRole.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.session.deleteMany({ where: { userId: { in: userIds } } });
+    }
+    await prisma.user.deleteMany({ where: { companyId: id } });
+
+    await prisma.designation.deleteMany({ where: { companyId: id } });
     await prisma.department.deleteMany({ where: { companyId: id } });
     await prisma.branch.deleteMany({ where: { companyId: id } });
-    await prisma.subscription.deleteMany({ where: { companyId: id } });
+
+    await prisma.rolePermission.deleteMany({ where: { role: { companyId: id } } });
     await prisma.role.deleteMany({ where: { companyId: id } });
 
+    await prisma.auditLog.deleteMany({ where: { entityId: id } });
+    await prisma.securityEvent.deleteMany({ where: { companyId: id } });
+
+    // 3. Subscriptions & Payments
+    const subscriptions = await prisma.subscription.findMany({ where: { companyId: id }, select: { id: true } });
+    const subIds = subscriptions.map((s) => s.id);
+    if (subIds.length > 0) {
+      const payments = await prisma.paymentTransaction.findMany({ where: { subscriptionId: { in: subIds } }, select: { id: true } });
+      const paymentIds = payments.map((p) => p.id);
+      if (paymentIds.length > 0) {
+        await prisma.refundRequest.deleteMany({ where: { paymentId: { in: paymentIds } } });
+        await prisma.paymentTransaction.deleteMany({ where: { id: { in: paymentIds } } });
+      }
+      await prisma.invoice.deleteMany({ where: { subscriptionId: { in: subIds } } });
+      await prisma.subscription.deleteMany({ where: { id: { in: subIds } } });
+    }
+
+    await prisma.refundRequest.deleteMany({ where: { companyId: id } });
+    await prisma.coupon.deleteMany({ where: { companyId: id } });
+
+    // 4. Approvals, Notifications & AI Logs
+    const workflows = await prisma.approvalWorkflow.findMany({ where: { companyId: id }, select: { id: true } });
+    const workflowIds = workflows.map((w) => w.id);
+    if (workflowIds.length > 0) {
+      await prisma.approvalRequest.deleteMany({ where: { workflowId: { in: workflowIds } } });
+    }
+    await prisma.approvalWorkflow.deleteMany({ where: { companyId: id } });
+    await prisma.aIInsight.deleteMany({ where: { companyId: id } });
+    await prisma.aIUsageLog.deleteMany({ where: { companyId: id } });
+    await prisma.notificationTemplate.deleteMany({ where: { companyId: id } });
+
+    // 5. Finally delete Company
     await prisma.company.deleteMany({ where: { id } });
     return { id };
   }

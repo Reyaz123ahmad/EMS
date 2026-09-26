@@ -6,24 +6,57 @@ import {
   FileCheck2,
   Clock,
   Camera,
-  CheckCircle2
+  AlertCircle
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import StatsCard from '../../components/dashboard/StatsCard';
 import ChartCard from '../../components/dashboard/ChartCard';
 import AttendanceTrendChart from '../../components/dashboard/AttendanceTrendChart';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
-import { useNavigate } from 'react-router-dom';
 
 export const HRManagerDashboard = () => {
   const navigate = useNavigate();
 
-  const teamMembers = [
-    { name: 'Rahul Sharma', code: 'EMP001', role: 'Frontend Engineer', status: 'PRESENT', inTime: '09:05 AM', method: 'Face' },
-    { name: 'Pooja Verma', code: 'EMP002', role: 'UI/UX Designer', status: 'PRESENT', inTime: '09:12 AM', method: 'QR Card' },
-    { name: 'Amit Roy', code: 'EMP003', role: 'Backend Developer', status: 'LATE', inTime: '09:48 AM', method: 'Finger' },
-    { name: 'Siddharth Sen', code: 'EMP004', role: 'QA Lead', status: 'ON_LEAVE', inTime: '-', method: '-' }
-  ];
+  const { data: dashboardData, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['hrManagerDashboard'],
+    queryFn: async () => {
+      const response = await api.get('/dashboard/hr-manager');
+      return response.data?.data || response.data;
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Loading HR Operations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <AlertCircle className="h-10 w-10 text-rose-500" />
+          <p className="text-base font-bold text-slate-800 dark:text-slate-200">Failed to load operations metrics</p>
+          <p className="text-xs text-slate-500">{error?.message || 'Server error occurred'}</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>Try Again</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const teamSize = dashboardData?.teamSize || 0;
+  const presentToday = dashboardData?.presentToday || 0;
+  const lateToday = dashboardData?.lateToday || 0;
+  const pendingApprovals = dashboardData?.pendingApprovals || 0;
+  const teamMembers = dashboardData?.teamMembers || [];
 
   return (
     <div className="space-y-6 animate-in fade-in-0 duration-200">
@@ -52,31 +85,31 @@ export const HRManagerDashboard = () => {
         <StatsCard
           icon={Users}
           label="Assigned Team"
-          value="42"
-          change="3 departments"
+          value={String(teamSize)}
+          change="Department workforce"
           variant="indigo"
         />
         <StatsCard
           icon={UserCheck}
           label="Team Present"
-          value="38"
-          change="90.4%"
+          value={String(presentToday)}
+          change={teamSize > 0 ? `${Math.round((presentToday / teamSize) * 100)}%` : '0%'}
           changeType="increase"
           variant="emerald"
         />
         <StatsCard
           icon={Clock}
           label="Late Today"
-          value="3"
-          change="Average 18 min"
+          value={String(lateToday)}
+          change={lateToday > 0 ? 'Punctuality check' : 'On time'}
           changeType="neutral"
           variant="amber"
         />
         <StatsCard
           icon={FileCheck2}
           label="Pending Team Approvals"
-          value="4"
-          change="2 leave, 2 overtime"
+          value={String(pendingApprovals)}
+          change="Action required"
           variant="sky"
         />
       </div>
@@ -100,21 +133,25 @@ export const HRManagerDashboard = () => {
           </h3>
 
           <div className="space-y-3">
-            {teamMembers.map((m) => (
-              <div key={m.code} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs">
-                <div>
-                  <h4 className="font-bold text-slate-900 dark:text-slate-100">{m.name}</h4>
-                  <p className="text-slate-500 text-[11px]">{m.role} • {m.code}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">Punch: {m.inTime} ({m.method})</p>
+            {teamMembers.length === 0 ? (
+              <div className="py-8 text-center text-xs text-slate-500">No team members registered.</div>
+            ) : (
+              teamMembers.map((m) => (
+                <div key={m.id || m.code} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-xs">
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-slate-100">{m.name}</h4>
+                    <p className="text-slate-500 text-[11px]">{m.role} • {m.code}</p>
+                    <p className="text-[10px] text-slate-400 mt-1">Punch: {m.inTime} ({m.method})</p>
+                  </div>
+                  <Badge
+                    variant={m.status === 'PRESENT' ? 'success' : m.status === 'LATE' ? 'warning' : 'danger'}
+                    size="sm"
+                  >
+                    {m.status}
+                  </Badge>
                 </div>
-                <Badge
-                  variant={m.status === 'PRESENT' ? 'success' : m.status === 'LATE' ? 'warning' : 'danger'}
-                  size="sm"
-                >
-                  {m.status}
-                </Badge>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

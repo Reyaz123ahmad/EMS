@@ -41,6 +41,16 @@ export const approvalsService = {
     return response.data?.data;
   },
 
+  async approveRequest(requestId, notes = '') {
+    const response = await api.post(`/approvals/requests/${requestId}/approve`, { notes });
+    return response.data?.data;
+  },
+
+  async rejectRequest(requestId, notes = '') {
+    const response = await api.post(`/approvals/requests/${requestId}/reject`, { notes });
+    return response.data?.data;
+  },
+
   async getPendingApprovals(params = {}) {
     const response = await api.get('/approvals/pending', { params });
     return response.data?.data || [];

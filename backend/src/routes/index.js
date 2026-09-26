@@ -171,25 +171,301 @@ router.use('/client', authenticate, requireCompany, clientPortalRoutes);
 router.get('/dashboard/company-admin', authenticate, requireCompany, async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
-    const [activeEmployees, totalBranches, totalDepartments, presentToday] = await Promise.all([
-      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }),
-      prisma.branch.count({ where: { companyId } }),
-      prisma.department.count({ where: { companyId } }),
-      prisma.attendanceLog.count({
-        where: {
-          companyId,
-          attendanceDate: new Date(new Date().toISOString().split('T')[0]),
-          status: 'PRESENT'
-        }
-      })
-    ]);
-    return successResponse(res, {
-      role: 'COMPANY_ADMIN',
+    const today = new Date(new Date().toISOString().split('T')[0]);
+
+    const [
+      totalEmployees,
       activeEmployees,
       totalBranches,
       totalDepartments,
-      presentToday
+      presentToday,
+      lateToday,
+      onLeaveToday,
+      pendingApprovals,
+      recentActivity
+    ] = await Promise.all([
+      prisma.employee.count({ where: { companyId } }).catch(() => 0),
+      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
+      prisma.branch.count({ where: { companyId } }).catch(() => 0),
+      prisma.department.count({ where: { companyId } }).catch(() => 0),
+      prisma.attendanceLog.count({
+        where: {
+          companyId,
+          attendanceDate: today,
+          status: 'PRESENT'
+        }
+      }).catch(() => 0),
+      prisma.attendanceLog.count({
+        where: {
+          companyId,
+          attendanceDate: today,
+          isLate: true
+        }
+      }).catch(() => 0),
+      prisma.leaveRequest.count({
+        where: {
+          employee: { companyId },
+          status: 'APPROVED',
+          startDate: { lte: new Date() },
+          endDate: { gte: new Date() }
+        }
+      }).catch(() => 0),
+      prisma.approvalRequest.findMany({
+        where: { workflow: { companyId }, status: 'PENDING' },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { workflow: true }
+      }).catch(() => []),
+      prisma.auditLog.findMany({
+        where: { user: { companyId } },
+        take: 10,
+        orderBy: { createdAt: 'desc' }
+      }).catch(() => [])
+    ]);
+
+    const absentToday = Math.max(0, activeEmployees - presentToday - onLeaveToday);
+
+    return successResponse(res, {
+      role: 'COMPANY_ADMIN',
+      totalEmployees,
+      activeEmployees,
+      totalBranches,
+      totalDepartments,
+      presentToday,
+      lateToday,
+      onLeaveToday,
+      absentToday,
+      pendingApprovals,
+      recentActivity
     }, 'Company admin dashboard retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/dashboard/hr-admin', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const today = new Date(new Date().toISOString().split('T')[0]);
+
+    const [
+      totalEmployees,
+      presentToday,
+      onLeaveToday,
+      pendingLeaves,
+      pendingDocs,
+      pendingApprovals
+    ] = await Promise.all([
+      prisma.employee.count({ where: { companyId } }).catch(() => 0),
+      prisma.attendanceLog.count({
+        where: { companyId, attendanceDate: today, status: 'PRESENT' }
+      }).catch(() => 0),
+      prisma.leaveRequest.count({
+        where: {
+          employee: { companyId },
+          status: 'APPROVED',
+          startDate: { lte: new Date() },
+          endDate: { gte: new Date() }
+        }
+      }).catch(() => 0),
+      prisma.leaveRequest.findMany({
+        where: { employee: { companyId }, status: 'PENDING' },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { employee: true, leaveType: true }
+      }).catch(() => []),
+      prisma.employeeDocument.findMany({
+        where: { employee: { companyId }, status: 'PENDING' },
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { employee: true }
+      }).catch(() => []),
+      prisma.approvalRequest.count({
+        where: { workflow: { companyId }, status: 'PENDING' }
+      }).catch(() => 0)
+    ]);
+
+    return successResponse(res, {
+      totalEmployees,
+      presentToday,
+      onLeaveToday,
+      pendingLeaves,
+      pendingDocs,
+      pendingApprovals
+    }, 'HR Admin dashboard retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/dashboard/hr-manager', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const today = new Date(new Date().toISOString().split('T')[0]);
+
+    const [teamSize, presentToday, lateToday, pendingApprovals, teamMembers] = await Promise.all([
+      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
+      prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, status: 'PRESENT' } }).catch(() => 0),
+      prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, isLate: true } }).catch(() => 0),
+      prisma.approvalRequest.count({ where: { workflow: { companyId }, status: 'PENDING' } }).catch(() => 0),
+      prisma.employee.findMany({
+        where: { companyId },
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          department: true,
+          designation: true,
+          attendanceLogs: {
+            where: { attendanceDate: today },
+            take: 1
+          }
+        }
+      }).catch(() => [])
+    ]);
+
+    const formattedMembers = teamMembers.map(m => {
+      const att = m.attendanceLogs?.[0];
+      return {
+        id: m.id,
+        name: `${m.firstName} ${m.lastName}`,
+        code: m.employeeCode,
+        role: m.designation?.name || 'Staff',
+        status: att?.status || (m.status === 'ACTIVE' ? 'ABSENT' : m.status),
+        inTime: att?.checkInAt ? new Date(att.checkInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-',
+        method: att?.attendanceMethod || (m.faceRegisteredAt ? 'Face' : 'Manual')
+      };
+    });
+
+    return successResponse(res, {
+      teamSize,
+      presentToday,
+      lateToday,
+      pendingApprovals,
+      teamMembers: formattedMembers
+    }, 'HR Manager dashboard metrics retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/dashboard/manager', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const today = new Date(new Date().toISOString().split('T')[0]);
+
+    const [directReports, presentToday, pendingApprovals, tasks, teamMembers] = await Promise.all([
+      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
+      prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, status: 'PRESENT' } }).catch(() => 0),
+      prisma.approvalRequest.count({ where: { workflow: { companyId }, status: 'PENDING' } }).catch(() => 0),
+      prisma.task.findMany({ where: { companyId }, take: 5, orderBy: { createdAt: 'desc' } }).catch(() => []),
+      prisma.employee.findMany({
+        where: { companyId },
+        take: 10,
+        include: {
+          attendanceLogs: { where: { attendanceDate: today }, take: 1 }
+        }
+      }).catch(() => [])
+    ]);
+
+    const formattedTeam = teamMembers.map(m => {
+      const att = m.attendanceLogs?.[0];
+      return {
+        id: m.id,
+        name: `${m.firstName} ${m.lastName}`,
+        code: m.employeeCode,
+        status: att?.status || (m.status === 'ACTIVE' ? 'ABSENT' : m.status),
+        inTime: att?.checkInAt ? new Date(att.checkInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-',
+        worked: att?.totalWorkedMinutes ? `${Math.floor(att.totalWorkedMinutes / 60)}h ${att.totalWorkedMinutes % 60}m` : '-'
+      };
+    });
+
+    return successResponse(res, {
+      directReports,
+      presentToday,
+      pendingTasks: tasks.length,
+      pendingApprovals,
+      tasks,
+      teamAttendance: formattedTeam
+    }, 'Manager dashboard retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/dashboard/employee', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const employee = await prisma.employee.findFirst({
+      where: { userId: req.user.id }
+    });
+
+    const today = new Date(new Date().toISOString().split('T')[0]);
+
+    const [todayAttendance, monthlyAttendanceCount, leaveBalances, holidays, recentPayroll] = await Promise.all([
+      employee ? prisma.attendanceLog.findUnique({
+        where: { employeeId_attendanceDate: { employeeId: employee.id, attendanceDate: today } }
+      }).catch(() => null) : null,
+      employee ? prisma.attendanceLog.count({
+        where: { employeeId: employee.id, status: 'PRESENT' }
+      }).catch(() => 0) : 0,
+      employee ? prisma.leaveBalance.findMany({
+        where: { employeeId: employee.id },
+        include: { leaveType: true }
+      }).catch(() => []) : [],
+      prisma.festivalHoliday.findMany({
+        where: { calendar: { companyId: req.user.companyId }, date: { gte: new Date() } },
+        take: 5,
+        orderBy: { date: 'asc' }
+      }).catch(() => []),
+      employee ? prisma.payrollItem.findMany({
+        where: { employeeId: employee.id },
+        take: 3,
+        orderBy: { createdAt: 'desc' },
+        include: { payrollRun: true, salarySlip: true }
+      }).catch(() => []) : []
+    ]);
+
+    const totalLeaveRemaining = leaveBalances.reduce((sum, b) => sum + Number(b.remainingDays || 0), 0);
+
+    return successResponse(res, {
+      isCheckedIn: Boolean(todayAttendance?.checkInAt && !todayAttendance?.checkOutAt),
+      checkInTime: todayAttendance?.checkInAt || null,
+      checkOutTime: todayAttendance?.checkOutAt || null,
+      workMinutesToday: todayAttendance?.totalWorkedMinutes || 0,
+      monthlyAttendanceCount,
+      totalLeaveRemaining,
+      leaveBalances,
+      upcomingHolidays: holidays,
+      recentPayslips: recentPayroll
+    }, 'Employee dashboard summary retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/dashboard/client', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const [projects, invoices] = await Promise.all([
+      prisma.project.findMany({
+        where: { companyId },
+        take: 5,
+        orderBy: { createdAt: 'desc' }
+      }).catch(() => []),
+      prisma.invoice.findMany({
+        where: { subscription: { companyId } },
+        take: 5,
+        orderBy: { createdAt: 'desc' }
+      }).catch(() => [])
+    ]);
+
+    const totalInvoiced = invoices.reduce((sum, inv) => sum + Number(inv.total || inv.amount || 0), 0);
+
+    return successResponse(res, {
+      activeProjects: projects.length,
+      projects,
+      invoices,
+      totalInvoiced
+    }, 'Client dashboard retrieved');
   } catch (err) {
     next(err);
   }

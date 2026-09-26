@@ -65,14 +65,17 @@ export const updateEmployeeSchema = Joi.object({
 });
 
 export const employeeFiltersSchema = Joi.object({
-  departmentId: Joi.string().optional(),
-  designationId: Joi.string().optional(),
-  branchId: Joi.string().optional(),
-  status: Joi.string().optional(),
-  search: Joi.string().optional(),
-  employeeCode: Joi.string().optional(),
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(10)
+  departmentId: Joi.string().optional().allow('', null),
+  designationId: Joi.string().optional().allow('', null),
+  branchId: Joi.string().optional().allow('', null),
+  status: Joi.string()
+    .valid('ACTIVE', 'INACTIVE', 'TERMINATED', 'RESIGNED', 'ON_LEAVE', 'EXPIRED', 'SUSPENDED')
+    .optional()
+    .allow('', null),
+  search: Joi.string().optional().allow('', null),
+  employeeCode: Joi.string().optional().allow('', null),
+  page: Joi.number().integer().min(1).optional().default(1),
+  limit: Joi.number().integer().min(1).max(100).optional().default(10)
 });
 
 export default {

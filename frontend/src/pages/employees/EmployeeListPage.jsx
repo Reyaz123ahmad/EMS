@@ -17,12 +17,14 @@ export function EmployeeListPage() {
   const [page, setPage] = useState(1);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
 
-  const { data, isLoading } = useEmployees({
-    search,
-    status: statusFilter,
+  const queryParams = {
     page,
-    limit: 10
-  });
+    limit: 10,
+    ...(search.trim() ? { search: search.trim() } : {}),
+    ...(statusFilter ? { status: statusFilter } : {})
+  };
+
+  const { data, isLoading } = useEmployees(queryParams);
 
   const deleteEmployeeMutation = useDeleteEmployee();
 

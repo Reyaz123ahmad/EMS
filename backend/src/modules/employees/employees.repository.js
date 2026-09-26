@@ -83,18 +83,18 @@ export const employeesRepository = {
     if (companyId) {
       where.companyId = companyId;
     }
-    if (departmentId) where.departmentId = departmentId;
-    if (designationId) where.designationId = designationId;
-    if (branchId) where.branchId = branchId;
-    if (status) where.status = status;
-    if (employeeCode) where.employeeCode = { contains: employeeCode, mode: 'insensitive' };
+    if (departmentId && departmentId !== '') where.departmentId = departmentId;
+    if (designationId && designationId !== '') where.designationId = designationId;
+    if (branchId && branchId !== '') where.branchId = branchId;
+    if (status && status !== '') where.status = status;
+    if (employeeCode && employeeCode !== '') where.employeeCode = { contains: employeeCode, mode: 'insensitive' };
 
-    if (search) {
+    if (search && search.trim() !== '') {
       where.OR = [
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { employeeCode: { contains: search, mode: 'insensitive' } }
+        { firstName: { contains: search.trim(), mode: 'insensitive' } },
+        { lastName: { contains: search.trim(), mode: 'insensitive' } },
+        { email: { contains: search.trim(), mode: 'insensitive' } },
+        { employeeCode: { contains: search.trim(), mode: 'insensitive' } }
       ];
     }
 
