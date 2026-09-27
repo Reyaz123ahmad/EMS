@@ -9,6 +9,7 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage.jsx';
 import TwoFactorPage from './pages/auth/TwoFactorPage.jsx';
 import UnauthorizedPage from './pages/UnauthorizedPage.jsx';
 import SubscriptionExpiredPage from './pages/subscription/SubscriptionExpiredPage.jsx';
+import LiveLocationPage from './pages/LiveLocationPage.jsx';
 
 import DashboardLayout from './layouts/DashboardLayout.jsx';
 import DashboardRouter from './routes/DashboardRouter.jsx';
@@ -224,9 +225,10 @@ export default function App() {
         <Route path="/2fa" element={<TwoFactorPage />} />
       </Route>
 
-      {/* Standalone Status Pages */}
+      {/* Standalone Status & Utility Pages */}
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/subscription-expired" element={<SubscriptionExpiredPage />} />
+      <Route path="/live-location" element={<LiveLocationPage />} />
 
       {/* Protected Dashboard & Operations Pages */}
       <Route
