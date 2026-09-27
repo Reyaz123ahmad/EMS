@@ -134,6 +134,8 @@ import VerifyQRPage from './pages/VerifyQRPage.jsx';
 import FaceRegisterPage from './pages/face/RegisterFacePage.jsx';
 import BulkRegisterFacePage from './pages/face/BulkRegisterFacePage.jsx';
 import FaceStatusPage from './pages/face/FaceStatusPage.jsx';
+import FaceRegistrationStatusPage from './pages/face/FaceRegistrationStatusPage.jsx';
+import FaceApprovalsPage from './pages/face/FaceApprovalsPage.jsx';
 import FaceStatsPage from './pages/face/FaceStatsPage.jsx';
 
 // Finger Attendance Module Pages
@@ -165,6 +167,7 @@ import ApprovalHistoryPage from './pages/approvals/ApprovalHistoryPage.jsx';
 
 // Assets Module Pages
 import AssetListPage from './pages/assets/AssetListPage.jsx';
+import CreateAssetPage from './pages/assets/CreateAssetPage.jsx';
 import AssetDetailPage from './pages/assets/AssetDetailPage.jsx';
 import AssignAssetPage from './pages/assets/AssignAssetPage.jsx';
 import ReturnAssetPage from './pages/assets/ReturnAssetPage.jsx';
@@ -337,6 +340,7 @@ export default function App() {
         <Route path="/payroll/salary-structure" element={<SalaryStructurePage />} />
         <Route path="/payroll/run" element={<PayrollRunPage />} />
         <Route path="/payroll/runs" element={<PayrollRunsListPage />} />
+        <Route path="/payroll/batches" element={<PayrollRunsListPage />} />
         <Route path="/payroll/runs/:id" element={<PayrollDetailPage />} />
         <Route path="/payroll/slips" element={<SalarySlipsPage />} />
         <Route path="/payroll/employee/:id" element={<EmployeeSalaryPage />} />
@@ -347,6 +351,7 @@ export default function App() {
         <Route path="/overtime/apply" element={<ApplyOvertimePage />} />
         <Route path="/overtime/requests" element={<OvertimeRequestsPage />} />
         <Route path="/overtime/stats" element={<OvertimeStatsPage />} />
+        <Route path="/overtime/analytics" element={<OvertimeStatsPage />} />
 
         {/* Shift & Roster Routes */}
         <Route path="/shifts" element={<ShiftListPage />} />
@@ -354,6 +359,8 @@ export default function App() {
         <Route path="/shifts/assign" element={<AssignShiftPage />} />
         <Route path="/shifts/:id" element={<ShiftDetailPage />} />
         <Route path="/my-shift" element={<MyShiftPage />} />
+        <Route path="/shifts/rosters" element={<RosterListPage />} />
+        <Route path="/shifts/generate" element={<GenerateRosterPage />} />
         <Route path="/rosters" element={<RosterListPage />} />
         <Route path="/rosters/generate" element={<GenerateRosterPage />} />
         <Route path="/rosters/calendar" element={<RosterCalendarPage />} />
@@ -374,7 +381,9 @@ export default function App() {
         <Route path="/face-registration" element={<FaceRegisterPage />} />
         <Route path="/face/register" element={<FaceRegisterPage />} />
         <Route path="/face/bulk-register" element={<BulkRegisterFacePage />} />
-        <Route path="/face/status" element={<FaceStatusPage />} />
+        <Route path="/face/status" element={<FaceRegistrationStatusPage />} />
+        <Route path="/face/approvals" element={<FaceApprovalsPage />} />
+        <Route path="/face/directory" element={<FaceStatusPage />} />
         <Route path="/face/stats" element={<FaceStatsPage />} />
 
         {/* Finger Attendance Routes */}
@@ -402,6 +411,7 @@ export default function App() {
 
         {/* Assets Routes */}
         <Route path="/assets" element={<AssetListPage />} />
+        <Route path="/assets/create" element={<CreateAssetPage />} />
         <Route path="/assets/:id" element={<AssetDetailPage />} />
         <Route path="/assets/assign" element={<AssignAssetPage />} />
         <Route path="/assets/return" element={<ReturnAssetPage />} />

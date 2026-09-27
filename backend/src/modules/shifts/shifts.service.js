@@ -1,9 +1,23 @@
 import { prisma } from '../../config/prisma.js';
 
 export const shiftsService = {
-  async listShifts(companyId) {
-    return prisma.shift.findMany({
-      where: { companyId },
+  async listShifts(arg1, arg2) {
+    let companyId, filters = {};
+    if (typeof arg1 === 'object' && arg1 !== null) {
+      companyId = arg1.companyId;
+      filters = arg1.filters || {};
+    } else {
+      companyId = arg1;
+      filters = arg2 || {};
+    }
+
+    const where = { companyId };
+    if (filters.isActive !== undefined) {
+      where.isActive = filters.isActive === 'true' || filters.isActive === true;
+    }
+
+    const shifts = await prisma.shift.findMany({
+      where,
       include: {
         _count: {
           select: { shiftAssignments: true, rosters: true }
@@ -11,6 +25,8 @@ export const shiftsService = {
       },
       orderBy: { createdAt: 'desc' }
     });
+
+    return shifts;
   },
 
   async getShiftById(id) {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAssets, useAssetStats, useCreateAsset, useBulkImportAssets } from '../../hooks/useAssets.js';
+import { useAssets, useAssetStats, useCreateAsset, useAssetCategories } from '../../hooks/useAssets.js';
 import AssetCard from '../../components/assets/AssetCard.jsx';
 import { Laptop, Plus, Upload, Download, Filter, Search } from 'lucide-react';
 import { toast } from 'sonner';
@@ -16,12 +16,14 @@ export function AssetListPage() {
     category: categoryFilter,
   });
   const { data: stats } = useAssetStats();
+  const { data: rawCategories = [] } = useAssetCategories();
+  const categories = Array.isArray(rawCategories) ? rawCategories : [];
   const { mutateAsync: createAsset, isPending: isCreating } = useCreateAsset();
 
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    category: 'Electronics',
+    category: 'Laptops',
     purchasePrice: '',
     condition: 'NEW',
   });
@@ -111,6 +113,19 @@ export function AssetListPage() {
             className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600"
           />
         </div>
+
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium"
+        >
+          <option value="">All Categories</option>
+          {categories.map((cat, idx) => (
+            <option key={idx} value={typeof cat === 'object' ? cat.name || cat.category : cat}>
+              {typeof cat === 'object' ? cat.name || cat.category : cat}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Assets Grid */}
@@ -147,7 +162,7 @@ export function AssetListPage() {
             <h3 className="font-bold text-lg text-slate-900 dark:text-white">Add New Asset</h3>
             <form onSubmit={handleCreate} className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Asset Name</label>
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Asset Name *</label>
                 <input
                   type="text"
                   required
@@ -159,7 +174,7 @@ export function AssetListPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Asset Tag / Code</label>
+                <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Asset Tag / Code *</label>
                 <input
                   type="text"
                   required
@@ -172,14 +187,22 @@ export function AssetListPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Category</label>
-                  <input
-                    type="text"
+                  <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Category *</label>
+                  <select
                     value={formData.category}
+                    required
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    placeholder="Electronics"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2.5 text-xs"
-                  />
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-2.5 text-xs font-medium"
+                  >
+                    {categories.map((cat, idx) => {
+                      const val = typeof cat === 'object' ? cat.name || cat.category : cat;
+                      return (
+                        <option key={idx} value={val}>
+                          {val}
+                        </option>
+                      );
+                    })}
+                  </select>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-slate-800 dark:text-slate-200">Condition</label>

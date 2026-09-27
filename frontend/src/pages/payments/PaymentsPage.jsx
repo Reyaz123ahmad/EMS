@@ -86,6 +86,19 @@ export function PaymentsPage() {
 
   const columns = [
     {
+      header: 'Type',
+      key: 'type',
+      render: (row) => (
+        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+          isSuperAdmin 
+            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' 
+            : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+        }`}>
+          {isSuperAdmin ? 'REVENUE' : 'EXPENSE'}
+        </span>
+      )
+    },
+    {
       header: 'Transaction / Order',
       key: 'id',
       render: (row) => (
@@ -103,15 +116,21 @@ export function PaymentsPage() {
       )
     },
     {
-      header: 'Company / Organization',
+      header: isSuperAdmin ? 'Company / Organization' : 'Plan / Subscription',
       key: 'company',
       render: (row) => (
         <div className="text-xs">
           <div className="font-medium text-slate-200">
-            {row.subscription?.company?.name || 'Platform Tenant'}
+            {isSuperAdmin 
+              ? (row.subscription?.company?.name || 'Platform Tenant') 
+              : (row.subscription?.plan?.name || 'Enterprise SaaS Plan')}
           </div>
           <div className="text-slate-400 text-[11px]">
-            Code: <span className="text-slate-300 font-mono">{row.subscription?.company?.companyCode || 'COMP-ORG'}</span> | Plan: <span className="text-indigo-400 font-semibold">{row.subscription?.plan?.name || 'Pro Plan'}</span>
+            {isSuperAdmin ? (
+              <>Code: <span className="text-slate-300 font-mono">{row.subscription?.company?.companyCode || 'COMP-ORG'}</span> | Plan: <span className="text-indigo-400 font-semibold">{row.subscription?.plan?.name || 'Pro Plan'}</span></>
+            ) : (
+              <>Billed to: <span className="text-slate-300">{row.subscription?.company?.name || 'My Organization'}</span></>
+            )}
           </div>
         </div>
       )

@@ -21,6 +21,8 @@ function renderWithProviders(ui) {
   );
 }
 
+import HolidayCalendar from '../components/holidays/HolidayCalendar.jsx';
+
 describe('Holiday Calendar UI Modules', () => {
   it('renders Holiday Calendar Year Page', () => {
     renderWithProviders(<HolidayCalendarPage />);
@@ -38,5 +40,31 @@ describe('Holiday Calendar UI Modules', () => {
     renderWithProviders(<HolidayAssignmentPage />);
     expect(screen.getByText(/Holiday Eligibility & Allocation/i)).toBeInTheDocument();
     expect(screen.getByText(/Assign Holiday Quota/i)).toBeInTheDocument();
+  });
+
+  it('safely renders HolidayCalendar component when holidays is undefined, null, or an object', () => {
+    // Undefined
+    const { unmount: u1 } = render(<HolidayCalendar year={2026} holidays={undefined} />);
+    expect(screen.getByText(/Annual Public Holiday Schedule/i)).toBeInTheDocument();
+    u1();
+
+    // Null
+    const { unmount: u2 } = render(<HolidayCalendar year={2026} holidays={null} />);
+    expect(screen.getByText(/Annual Public Holiday Schedule/i)).toBeInTheDocument();
+    u2();
+
+    // Plain Object
+    const { unmount: u3 } = render(<HolidayCalendar year={2026} holidays={{}} />);
+    expect(screen.getByText(/Annual Public Holiday Schedule/i)).toBeInTheDocument();
+    u3();
+
+    // Valid array with holidays
+    render(
+      <HolidayCalendar
+        year={2026}
+        holidays={[{ id: 'h1', name: 'Republic Day', date: '2026-01-26', isOptional: false }]}
+      />
+    );
+    expect(screen.getByText('Republic Day')).toBeInTheDocument();
   });
 });

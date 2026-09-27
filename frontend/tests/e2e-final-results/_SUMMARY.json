@@ -1,0 +1,14 @@
+{
+  "totalRoles": 6,
+  "totalPages": 177,
+  "totalButtons": 1031,
+  "totalForms": 53,
+  "totalPassedPages": 177,
+  "totalFailedPages": 0,
+  "totalErrorPages": 0,
+  "totalConsoleErrors": 52,
+  "totalNetworkErrors": 30,
+  "totalMissingPages": 0,
+  "totalBrokenButtons": 0,
+  "executedAt": "2026-09-27T08:22:11.640Z"
+}

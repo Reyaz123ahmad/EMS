@@ -3,22 +3,39 @@ import api from './api.js';
 export const leaveService = {
   async getLeaveTypes() {
     const response = await api.get('/leave/types');
-    return response.data;
+    const data = response.data?.data || response.data;
+
+    // Return array
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.types)) return data.types;
+    if (Array.isArray(data?.data)) return data.data;
+
+    return [];
   },
 
-  async createLeaveType(data) {
-    const response = await api.post('/leave/types', data);
-    return response.data;
+  async createLeaveType(payload) {
+    const response = await api.post('/leave/types', payload);
+    return response.data?.data || response.data;
   },
 
-  async updateLeaveType(id, data) {
-    const response = await api.put(`/leave/types/${id}`, data);
-    return response.data;
+  async updateLeaveType(id, payload) {
+    // Clean payload
+    const cleanPayload = {};
+    const allowed = ['name', 'code', 'description', 'maxDaysPerYear', 'daysAllowed', 'isPaid', 'carryForward', 'maxCarryForward', 'maxCarryForwardDays', 'isActive'];
+
+    for (const key of allowed) {
+      if (payload[key] !== undefined && payload[key] !== null) {
+        cleanPayload[key] = payload[key];
+      }
+    }
+
+    const response = await api.put(`/leave/types/${id}`, cleanPayload);
+    return response.data?.data || response.data;
   },
 
   async deleteLeaveType(id) {
     const response = await api.delete(`/leave/types/${id}`);
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   async getBalances(params = {}) {
@@ -81,9 +98,29 @@ export const leaveService = {
     return response.data;
   },
 
+  async getLeaveHistory(params = {}) {
+    const response = await api.get('/leave/history', { params });
+    const data = response.data?.data || response.data;
+    
+    // Ensure array is returned
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.leaves)) return data.leaves;
+    if (Array.isArray(data?.history)) return data.history;
+    if (Array.isArray(data?.data)) return data.data;
+    
+    return [];
+  },
+
   async getEmployeeHistory(employeeId, params = {}) {
     const response = await api.get(`/leave/history/${employeeId}`, { params });
-    return response.data;
+    const data = response.data?.data || response.data;
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.leaves)) return data.leaves;
+    if (Array.isArray(data?.history)) return data.history;
+    if (Array.isArray(data?.data)) return data.data;
+
+    return [];
   }
 };
 

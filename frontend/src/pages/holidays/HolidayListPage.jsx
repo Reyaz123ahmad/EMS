@@ -39,7 +39,17 @@ export default function HolidayListPage() {
   const updateHoliday = useUpdateHoliday();
   const deleteHoliday = useDeleteHoliday();
 
-  const holidays = holidaysData?.data?.data || holidaysData?.data || [];
+  const holidays = Array.isArray(holidaysData)
+    ? holidaysData
+    : Array.isArray(holidaysData?.holidays)
+    ? holidaysData.holidays
+    : Array.isArray(holidaysData?.data?.holidays)
+    ? holidaysData.data.holidays
+    : Array.isArray(holidaysData?.data?.data)
+    ? holidaysData.data.data
+    : Array.isArray(holidaysData?.data)
+    ? holidaysData.data
+    : [];
 
   const handleOpenAdd = () => {
     setSelectedHoliday(null);

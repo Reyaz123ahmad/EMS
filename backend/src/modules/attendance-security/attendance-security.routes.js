@@ -12,6 +12,12 @@ router.use(requireActiveSubscription);
 
 // Liveness challenge & verification
 router.post(
+  '/liveness/detect',
+  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
+  attendanceSecurityController.detectLiveness
+);
+
+router.post(
   '/liveness/challenge',
   requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN'),
   attendanceSecurityController.createLivenessChallenge

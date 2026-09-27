@@ -1,0 +1,602 @@
+[
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/attendance/manual",
+    "formFields": [
+      "employeeId",
+      "date",
+      "checkIn",
+      "checkOut",
+      "status",
+      "reason"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/leave/apply",
+    "formFields": [
+      "select-one",
+      "date",
+      "date",
+      "State the reason clearly for approval..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/overtime/apply",
+    "formFields": [
+      "date",
+      "number",
+      "Explain the urgent project tasks or customer delivery completed..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/shifts/create",
+    "formFields": [
+      "e.g. Morning Shift, Evening Support",
+      "time",
+      "time",
+      "number",
+      "number",
+      "checkbox",
+      "checkbox"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/shifts/assign",
+    "formFields": [
+      "select-one",
+      "date",
+      "date"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/documents/upload",
+    "formFields": [
+      "Passport Copy 2026",
+      "select-one",
+      "select-one",
+      "Scanned at HR onboarding desk",
+      "file"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/assets/create",
+    "formFields": [
+      "e.g. Dell Latitude 7420",
+      "e.g. LAP-DL-0042",
+      "select-one",
+      "select-one",
+      "e.g. 85000",
+      "16GB RAM, 512GB SSD, Intel i7..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/assets/assign",
+    "formFields": [
+      "select-one",
+      "Search employee by name or code (e.g. EMP001)...",
+      "select-one",
+      "select-one",
+      "Charger, bag, serial number verified..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/assets/return",
+    "formFields": [
+      "select-one",
+      "select-one",
+      "Working state, scratches, accessories check..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/assets/categories",
+    "formFields": [
+      "e.g. Laptops, Peripherals",
+      "Category remarks..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/emergency-attendance",
+    "formFields": [
+      "date",
+      "time",
+      "time",
+      "e.g. Biometric scanner power failure, off-site client visit..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/settings/general",
+    "formFields": [
+      "select-one",
+      "select-one",
+      "select-one",
+      "e.g. EMP- or EDU-",
+      "color",
+      "text",
+      "ABCDE1234F",
+      "27ABCDE1234F1Z5"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/settings/attendance",
+    "formFields": [
+      "number",
+      "number",
+      "number",
+      "number"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/settings/security",
+    "formFields": [
+      "select-one",
+      "number",
+      "number",
+      "e.g. 192.168.1.0/24 or 10.0.0.1"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/settings/leave",
+    "formFields": [
+      "select-one",
+      "number",
+      "number"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/settings/payroll",
+    "formFields": [
+      "select-one",
+      "number",
+      "number",
+      "number"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/settings/notifications",
+    "formFields": [],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/profile",
+    "formFields": [
+      "text",
+      "email",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "/profile/change-password",
+    "formFields": [
+      "••••••••",
+      "••••••••",
+      "••••••••"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "/leave/apply",
+    "formFields": [
+      "select-one",
+      "date",
+      "date",
+      "State the reason clearly for approval..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "/emergency-attendance",
+    "formFields": [
+      "date",
+      "time",
+      "time",
+      "e.g. Biometric scanner power failure, off-site client visit..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "/profile",
+    "formFields": [
+      "text",
+      "email",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "/settings/general",
+    "formFields": [
+      "select-one",
+      "select-one",
+      "select-one",
+      "e.g. EMP- or EDU-",
+      "color",
+      "text",
+      "ABCDE1234F",
+      "27ABCDE1234F1Z5"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "HR_MANAGER",
+    "page": "/profile",
+    "formFields": [
+      "text",
+      "email",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/dashboard",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/dashboard/manager",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/employees",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/leave/requests",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/my-shift",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/approvals/requests",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/profile",
+    "formFields": [
+      "text",
+      "email",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/profile",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/emergency-attendance/requests",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/overtime/requests",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/rosters/calendar",
+    "formFields": [
+      "select-one",
+      "number",
+      "select-one",
+      "select-one"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "MANAGER",
+    "page": "/rosters/calendar",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "/leave/apply",
+    "formFields": [
+      "select-one",
+      "date",
+      "date",
+      "State the reason clearly for approval..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "/documents/upload",
+    "formFields": [
+      "Passport Copy 2026",
+      "select-one",
+      "select-one",
+      "Scanned at HR onboarding desk",
+      "file"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "/emergency-attendance",
+    "formFields": [
+      "date",
+      "time",
+      "time",
+      "e.g. Biometric scanner power failure, off-site client visit..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "/profile",
+    "formFields": [
+      "text",
+      "email",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "/profile/change-password",
+    "formFields": [
+      "••••••••",
+      "••••••••",
+      "••••••••"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/dashboard",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/dashboard/client",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/client-portal",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/client-portal/projects",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/client-portal/requirements",
+    "formFields": [
+      "select-one",
+      "e.g. Export payroll reports to Excel format",
+      "select-one",
+      "Describe the expected user workflow, input fields, business logic, or technical constraints..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/client-portal/requirements",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/client-portal/comments",
+    "formFields": [
+      "select-one",
+      "Type your message, query, or feedback here..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/client-portal/comments",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/client-portal/invoices",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/client-portal/payments",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/profile",
+    "formFields": [
+      "text",
+      "email",
+      "text",
+      "text",
+      "text",
+      "text",
+      "text"
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  },
+  {
+    "role": "CLIENT",
+    "page": "/profile",
+    "formFields": [
+      "Ask about policies, leaves, attendance..."
+    ],
+    "submitResult": "Form elements validated and responsive",
+    "status": "PASS"
+  }
+]

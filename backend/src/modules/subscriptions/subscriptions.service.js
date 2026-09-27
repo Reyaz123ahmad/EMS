@@ -237,18 +237,33 @@ export const subscriptionsService = {
   },
 
   async getSubscriptionHistory(companyId) {
+    if (!companyId) {
+      return { companyId: null, invoices: [], payments: [] };
+    }
+
     const sub = await prisma.subscription.findUnique({
       where: { companyId },
-      include: {
-        invoices: { orderBy: { createdAt: 'desc' } },
-        payments: { orderBy: { createdAt: 'desc' } },
-      },
     });
+
+    if (!sub) {
+      return { companyId, invoices: [], payments: [] };
+    }
+
+    const [invoices, payments] = await Promise.all([
+      prisma.invoice.findMany({
+        where: { subscriptionId: sub.id },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.paymentTransaction.findMany({
+        where: { subscriptionId: sub.id },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
     return {
       companyId,
-      invoices: sub?.invoices || [],
-      payments: sub?.payments || [],
+      invoices,
+      payments,
     };
   },
 

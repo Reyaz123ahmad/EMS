@@ -72,15 +72,6 @@ export const Sidebar = ({
               { label: 'Disputes & Refunds', to: '/payment-analytics/refunds' }
             ]
           },
-          {
-            label: 'Platform Security',
-            icon: ShieldAlert,
-            children: [
-              { label: 'Security Dashboard', to: '/security/dashboard' },
-              { label: 'Security Events', to: '/security/events' },
-              { label: 'Audit Logs', to: '/security/audit-logs' }
-            ]
-          },
           { label: 'Queue Monitor', to: '/admin/queues', icon: Cpu },
           { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles }
         ];
@@ -198,7 +189,9 @@ export const Sidebar = ({
             label: 'Biometrics',
             icon: ShieldCheck,
             children: [
-              { label: 'Face Registration', to: '/face-registration' },
+              { label: 'Face Approvals', to: '/face/approvals' },
+              { label: 'Face Registration', to: '/face/register' },
+              { label: 'Face Status Directory', to: '/face/directory' },
               { label: 'Fingerprint Sync', to: '/finger-attendance' },
               { label: 'QR Badges', to: '/card-attendance' }
             ]
@@ -345,6 +338,14 @@ export const Sidebar = ({
               { label: 'Mark Attendance', to: '/attendance' },
               { label: 'My Logs', to: '/attendance/logs' },
               { label: 'My Calendar', to: '/attendance/calendar' }
+            ]
+          },
+          {
+            label: 'Face Biometrics',
+            icon: Camera,
+            children: [
+              { label: 'Face Status', to: '/face/status' },
+              { label: 'Register Face', to: '/face/register' }
             ]
           },
           {

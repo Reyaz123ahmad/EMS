@@ -29,8 +29,10 @@ export default function ApplyLeavePage() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const leaveTypes = typesData?.data?.data || typesData?.data || [];
-  const balances = balancesData?.data?.data || balancesData?.data || [];
+  const rawTypes = typesData?.data?.data || typesData?.data?.types || typesData?.data || typesData?.types || typesData || [];
+  const leaveTypes = Array.isArray(rawTypes) ? rawTypes : (rawTypes?.types || rawTypes?.leaveTypes || []);
+  const rawBalances = balancesData?.data?.data || balancesData?.data || [];
+  const balances = Array.isArray(rawBalances) ? rawBalances : [];
 
   const calculateDays = () => {
     if (!formData.startDate || !formData.endDate) return 0;
@@ -102,7 +104,7 @@ export default function ApplyLeavePage() {
               className="w-full bg-slate-900/60 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">-- Choose Leave Category --</option>
-              {leaveTypes.map((lt) => (
+              {Array.isArray(leaveTypes) && leaveTypes.map((lt) => (
                 <option key={lt.id} value={lt.id}>
                   {lt.name} ({lt.code}) - {lt.isPaid ? 'Paid' : 'Unpaid'}
                 </option>

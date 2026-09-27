@@ -1,31 +1,29 @@
 import Joi from 'joi';
 
 export const createLeaveTypeSchema = Joi.object({
-  companyId: Joi.string().uuid().optional(),
-  name: Joi.string().trim().min(2).max(100).required(),
-  code: Joi.string().trim().max(20).optional().allow(null, ''),
-  description: Joi.string().trim().max(500).optional().allow(null, ''),
-  maxDaysPerYear: Joi.number().integer().min(1).max(365).optional(),
-  daysAllowed: Joi.number().integer().min(1).max(365).optional(),
+  name: Joi.string().min(2).max(100).required(),
+  code: Joi.string().max(20).optional().allow('', null),
+  description: Joi.string().max(500).optional().allow('', null),
+  maxDaysPerYear: Joi.number().integer().min(0).max(365).optional(),
+  daysAllowed: Joi.number().integer().min(0).max(365).optional(),
   isPaid: Joi.boolean().default(true),
   carryForward: Joi.boolean().default(false),
-  maxCarryForward: Joi.number().integer().min(0).max(100).optional().allow(null),
-  maxCarryForwardDays: Joi.number().integer().min(0).max(100).optional().allow(null)
+  maxCarryForward: Joi.number().integer().min(0).default(0).allow(null),
+  maxCarryForwardDays: Joi.number().integer().min(0).default(0).allow(null)
 }).unknown(true);
 
 export const updateLeaveTypeSchema = Joi.object({
-  companyId: Joi.string().uuid().optional(),
-  name: Joi.string().trim().min(2).max(100).optional(),
-  code: Joi.string().trim().max(20).optional().allow(null, ''),
-  description: Joi.string().trim().max(500).optional().allow(null, ''),
-  maxDaysPerYear: Joi.number().integer().min(1).max(365).optional(),
-  daysAllowed: Joi.number().integer().min(1).max(365).optional(),
+  name: Joi.string().min(2).max(100).optional(),
+  code: Joi.string().max(20).optional().allow('', null),
+  description: Joi.string().max(500).optional().allow('', null),
+  maxDaysPerYear: Joi.number().integer().min(0).max(365).optional(),
+  daysAllowed: Joi.number().integer().min(0).max(365).optional(),
   isPaid: Joi.boolean().optional(),
   carryForward: Joi.boolean().optional(),
-  maxCarryForward: Joi.number().integer().min(0).max(100).optional().allow(null),
-  maxCarryForwardDays: Joi.number().integer().min(0).max(100).optional().allow(null),
+  maxCarryForward: Joi.number().integer().min(0).optional().allow(null),
+  maxCarryForwardDays: Joi.number().integer().min(0).optional().allow(null),
   isActive: Joi.boolean().optional()
-}).unknown(true);
+}).min(1).unknown(true);
 
 export const applyLeaveSchema = Joi.object({
   companyId: Joi.string().uuid().optional(),

@@ -12,7 +12,21 @@ export default function LeaveHistoryPage() {
   const employeeId = user?.employeeId || user?.id;
 
   const { data: historyData, isLoading, refetch } = useEmployeeLeaveHistory(employeeId);
-  const history = historyData?.data?.data || historyData?.data || [];
+  const history = Array.isArray(historyData)
+    ? historyData
+    : Array.isArray(historyData?.leaves)
+    ? historyData.leaves
+    : Array.isArray(historyData?.history)
+    ? historyData.history
+    : Array.isArray(historyData?.data?.leaves)
+    ? historyData.data.leaves
+    : Array.isArray(historyData?.data?.history)
+    ? historyData.data.history
+    : Array.isArray(historyData?.data?.data)
+    ? historyData.data.data
+    : Array.isArray(historyData?.data)
+    ? historyData.data
+    : [];
 
   const columns = [
     {

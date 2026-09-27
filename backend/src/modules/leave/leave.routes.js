@@ -37,6 +37,7 @@ router.put('/requests/bulk-approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMP
 // Calendar, History & Stats
 router.get('/calendar', leaveController.getCalendar);
 router.get('/stats', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), leaveController.getStats);
+router.get('/history', leaveController.getLeaveHistory);
 router.get('/history/:employeeId', leaveController.getEmployeeHistory);
 
 export default router;

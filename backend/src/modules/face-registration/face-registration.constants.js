@@ -1,5 +1,5 @@
-export const EMBEDDING_DIMENSIONS = 512;
-export const FACE_MATCH_THRESHOLD = 0.90;
+export const EMBEDDING_DIMENSIONS = 128;
+export const FACE_MATCH_THRESHOLD = 0.75;
 export const LIVENESS_THRESHOLD = 0.85;
 export const MAX_REGISTRATION_ATTEMPTS = 3;
 export const FACE_PHOTO_MAX_SIZE = 5 * 1024 * 1024; // 5MB

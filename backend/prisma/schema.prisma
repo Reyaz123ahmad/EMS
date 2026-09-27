@@ -483,6 +483,7 @@ model Employee {
   weeklyOffAssignments  WeeklyOffAssignment[]
   fraudSignals          FraudSignal[]
   livenessVerifications LivenessVerification[]
+  faceRegistrationRequests FaceRegistrationRequest[]
 
   @@unique([companyId, employeeCode])
   @@index([companyId, email])
@@ -597,12 +598,22 @@ model AttendanceBreak {
   attendanceLog          AttendanceLog @relation(fields: [attendanceLogId], references: [id], onDelete: Cascade)
   employeeId             String
   employee               Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Break Start
   breakStartAt           DateTime
-  breakEndAt             DateTime?
   breakPhotoUrl          String?
+  breakStartPhotoUrl     String?
   breakPhotoPublicId     String?
   breakLivenessScore     String?
   breakFaceMatchScore    String?
+  
+  // Break End
+  breakEndAt             DateTime?
+  breakEndPhotoUrl       String?
+  breakEndPhotoPublicId  String?
+  breakEndLivenessScore  String?
+  breakEndFaceMatchScore String?
+  
   totalBreakMinutes      Int?
   breakType              String?       // LUNCH, SHORT
   expectedReturnTime     DateTime?
@@ -1702,5 +1713,33 @@ model AIUsageLog {
   @@index([provider, createdAt])
   @@map("ai_usage_logs")
 }
+
+model FaceRegistrationRequest {
+  id                    String   @id @default(uuid())
+  employeeId            String
+  employee              Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  companyId             String
+
+  // Pending data (not yet active)
+  pendingPhotoUrl       String
+  pendingPhotoPublicId  String?
+  pendingEmbedding      String   // Encrypted
+  livenessScore         String?
+
+  // Approval
+  status                String   @default("PENDING")  // PENDING, APPROVED, REJECTED
+  requestedBy           String
+  approvedBy            String?
+  approvedAt            DateTime?
+  rejectionReason       String?
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([companyId, status])
+  @@index([employeeId])
+  @@map("face_registration_requests")
+}
+
 
 

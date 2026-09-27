@@ -2,8 +2,7 @@ import crypto from 'crypto';
 import prisma from '../../config/prisma.js';
 import attendanceSecurityRepository from './attendance-security.repository.js';
 import { decryptData } from '../../security/encryption.js';
-import { FaceClient } from '../../integrations/face/face.client.js';
-import { cosineSimilarity } from '../../utils/face-similarity.js';
+import * as faceService from '../../services/face.service.js';
 import {
   FRAUD_TYPES,
   SEVERITY,
@@ -305,25 +304,24 @@ export const faceMatchService = {
         return { passed: false, score: 0, reason: 'Corrupt or unreadable enrolled face template' };
       }
 
-      // 2. Generate live probe embedding from photo
-      const liveEmbedding = await FaceClient.generateEmbedding(photoBase64);
+      // 2. Generate live probe embedding from photo with face-api.js
+      const liveEmbedding = await faceService.generateEmbedding(photoBase64);
       if (!liveEmbedding || liveEmbedding.length === 0) {
         return { passed: false, score: 0, reason: 'No face detected in live camera frame' };
       }
 
-      // 3. Compute real Cosine Similarity
-      const similarity = cosineSimilarity(registeredEmbedding, liveEmbedding);
-      const threshold = SECURITY_THRESHOLDS.FACE_SIMILARITY_MIN || 0.90;
-      const passed = similarity >= threshold;
+      // 3. Compute real Cosine Similarity & strict comparison
+      const threshold = SECURITY_THRESHOLDS.FACE_SIMILARITY_MIN || 0.75;
+      const comparison = faceService.compareFaces(registeredEmbedding, liveEmbedding, threshold);
 
-      console.log(`[FACE_MATCH] Employee: ${employee.id} | Score: ${similarity} | Required: ${threshold} | Result: ${passed ? 'MATCH' : 'MISMATCH'}`);
+      console.log(`[FACE_MATCH] Employee: ${employee.id} | Score: ${comparison.similarity} | Required: ${threshold} | Result: ${comparison.passed ? 'MATCH' : 'MISMATCH'}`);
 
       return {
-        passed,
-        score: similarity,
+        passed: comparison.passed,
+        score: comparison.similarity,
         threshold,
-        matchConfidence: `${Math.round(similarity * 100)}%`,
-        reason: passed ? null : `Face mismatch (${Math.round(similarity * 100)}% similarity is below ${Math.round(threshold * 100)}% threshold)`
+        matchConfidence: comparison.matchConfidence,
+        reason: comparison.passed ? null : `Face mismatch (${comparison.matchConfidence} similarity is below ${Math.round(threshold * 100)}% threshold)`
       };
     } catch (err) {
       console.error('[FACE_MATCH_ERROR]', err);

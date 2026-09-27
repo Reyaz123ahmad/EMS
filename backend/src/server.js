@@ -8,6 +8,7 @@ import { bootstrap } from './bootstrap.js';
 import { initSocket, getIO, closeSocketClients } from './config/socket.js';
 import { startAllWorkers, closeAllWorkers } from './workers/index.js';
 import { closeAllQueues } from './queues/index.js';
+import { loadModels as loadFaceModels } from './services/face.service.js';
 
 let server;
 let httpServer;
@@ -16,6 +17,7 @@ let isShuttingDown = false;
 async function startServer() {
   try {
     await bootstrap();
+    await loadFaceModels();
 
     // In development mode (or if standalone worker not deployed), run workers in-process
     if (env.NODE_ENV !== 'production' && !process.env.WORKER_ID) {

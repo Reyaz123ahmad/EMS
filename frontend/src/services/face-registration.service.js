@@ -49,6 +49,26 @@ export const faceRegistrationService = {
   exportEmbeddings: async () => {
     const response = await api.get('/face/export');
     return response.data;
+  },
+
+  getMyStatus: async () => {
+    const response = await api.get('/face/my-status');
+    return response.data?.data || response.data;
+  },
+
+  listPendingRequests: async (params = {}) => {
+    const response = await api.get('/face/pending', { params });
+    return response.data?.data || response.data;
+  },
+
+  approveRequest: async (requestId) => {
+    const response = await api.post(`/face/${requestId}/approve`);
+    return response.data?.data || response.data;
+  },
+
+  rejectRequest: async (requestId, reason) => {
+    const response = await api.post(`/face/${requestId}/reject`, { reason });
+    return response.data?.data || response.data;
   }
 };
 

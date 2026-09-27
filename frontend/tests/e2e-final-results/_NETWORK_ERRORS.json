@@ -1,0 +1,182 @@
+[
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/analytics/company?period=current_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/anomalies?dataType=ATTENDANCE_AND_PAYROLL",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/analytics/company?period=current_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/anomalies?dataType=ATTENDANCE_AND_PAYROLL",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/attendance/logs?page=1&limit=10&startDate=2026-09-01&endDate=2026-09-30&status=&search=",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/attendance/logs"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/analytics/company?period=current_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/attendance/prediction?month=next_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/anomalies?dataType=ATTENDANCE_AND_PAYROLL",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/recommendations",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/analytics/company?period=current_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/attendance/prediction?month=next_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/anomalies?dataType=ATTENDANCE_AND_PAYROLL",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/recommendations",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/analytics/company?period=current_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/ai/analytics/company?period=current_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/overtime/requests?companyId=29ba6047-ac9b-4520-8b49-67d041da9325",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/overtime/requests"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:5000/api/v1/reports/history",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/reports/history"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/attendance/logs?page=1&limit=10&startDate=2026-09-01&endDate=2026-09-30&status=&search=",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/attendance/logs"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/leave/balances?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&employeeId=d99af43f-6499-4119-8f84-b18c8ca62151&year=2026",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/leave/apply"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/leave/balances?companyId=29ba6047-ac9b-4520-8b49-67d041da9325&year=2026",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/leave/balance"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/documents?search=&status=&type=&page=1&limit=10",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/documents"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/documents?search=&status=&type=&page=1&limit=10",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/documents"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/ai/recommendations",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/ai/analytics/company?period=current_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/ai/attendance/prediction?month=next_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/ai/anomalies?dataType=ATTENDANCE_AND_PAYROLL",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/ai/recommendations",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/ai/analytics/company?period=current_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/ai/attendance/prediction?month=next_month",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:5000/api/v1/ai/anomalies?dataType=ATTENDANCE_AND_PAYROLL",
+    "status": 403,
+    "pageUrl": "http://localhost:3000/ai/hub"
+  }
+]

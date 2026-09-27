@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -6,22 +8,13 @@ import Table from '../../components/ui/Table';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import {
-  useOvertimeRules,
-  useCreateOvertimeRule,
-  useUpdateOvertimeRule,
-  useDeleteOvertimeRule,
-} from '../../hooks/useOvertime';
-import { useAuthStore } from '../../store/authStore';
+import overtimeService from '../../services/overtime.service.js';
+import useAuthStore from '../../store/auth.store.js';
 
 export default function OvertimeRulesPage() {
   const { user } = useAuthStore();
   const companyId = user?.companyId;
-
-  const { data: rulesData, isLoading, refetch } = useOvertimeRules(companyId);
-  const createRule = useCreateOvertimeRule();
-  const updateRule = useUpdateOvertimeRule();
-  const deleteRule = useDeleteOvertimeRule();
+  const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
@@ -34,6 +27,65 @@ export default function OvertimeRulesPage() {
     maxDailyMinutes: 240,
     requiresApproval: true,
     dayType: 'WEEKDAY',
+  });
+
+  const { data: rawRules = [], isLoading, refetch } = useQuery({
+    queryKey: ['overtime-rules', companyId],
+    queryFn: () => overtimeService.getOvertimeRules(),
+  });
+
+  const rules = Array.isArray(rawRules)
+    ? rawRules
+    : Array.isArray(rawRules?.rules)
+    ? rawRules.rules
+    : Array.isArray(rawRules?.data?.rules)
+    ? rawRules.data.rules
+    : Array.isArray(rawRules?.data?.data)
+    ? rawRules.data.data
+    : Array.isArray(rawRules?.data)
+    ? rawRules.data
+    : [];
+
+  const createMutation = useMutation({
+    mutationFn: (data) => overtimeService.createOvertimeRule(data),
+    onSuccess: () => {
+      toast.success('Overtime rule created');
+      queryClient.invalidateQueries({ queryKey: ['overtime-rules'] });
+      queryClient.invalidateQueries({ queryKey: ['overtime', 'rules'] });
+      setIsModalOpen(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to create rule');
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => overtimeService.updateOvertimeRule(id, data),
+    onSuccess: () => {
+      toast.success('Overtime rule updated');
+      queryClient.invalidateQueries({ queryKey: ['overtime-rules'] });
+      queryClient.invalidateQueries({ queryKey: ['overtime', 'rules'] });
+      setIsModalOpen(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to update rule');
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => overtimeService.deleteOvertimeRule(id),
+    onSuccess: () => {
+      toast.success('Rule deleted');
+      queryClient.invalidateQueries({ queryKey: ['overtime-rules'] });
+      queryClient.invalidateQueries({ queryKey: ['overtime', 'rules'] });
+      setDeleteId(null);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || 'Failed to delete rule');
+    }
   });
 
   const handleOpenCreate = () => {
@@ -55,8 +107,8 @@ export default function OvertimeRulesPage() {
       name: rule.name,
       multiplier: rule.multiplier,
       minMinutes: rule.minMinutes,
-      maxDailyMinutes: rule.maxDailyMinutes,
-      requiresApproval: rule.requiresApproval,
+      maxDailyMinutes: rule.maxMinutesPerDay || rule.maxDailyMinutes || 240,
+      requiresApproval: rule.requiresApproval !== undefined ? rule.requiresApproval : true,
       dayType: rule.dayType || 'WEEKDAY',
     });
     setIsModalOpen(true);
@@ -65,23 +117,17 @@ export default function OvertimeRulesPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editingRule) {
-      await updateRule.mutateAsync({ id: editingRule.id, data: formData });
+      updateMutation.mutate({ id: editingRule.id, data: formData });
     } else {
-      await createRule.mutateAsync({ companyId, ...formData });
+      createMutation.mutate({ companyId, ...formData });
     }
-    setIsModalOpen(false);
-    refetch();
   };
 
   const handleDelete = async () => {
     if (deleteId) {
-      await deleteRule.mutateAsync(deleteId);
-      setDeleteId(null);
-      refetch();
+      deleteMutation.mutate(deleteId);
     }
   };
-
-  const rules = rulesData?.data?.data || rulesData?.data || [];
 
   const columns = [
     {
@@ -102,19 +148,22 @@ export default function OvertimeRulesPage() {
     {
       header: 'Min Duration',
       accessor: 'minMinutes',
-      cell: (row) => <span className="text-slate-300">{row.minMinutes} mins</span>,
+      cell: (row) => <span className="text-slate-300">{row.minMinutes || 30} mins</span>,
     },
     {
       header: 'Max Daily Cap',
       accessor: 'maxDailyMinutes',
-      cell: (row) => <span className="text-slate-300">{row.maxDailyMinutes} mins ({(row.maxDailyMinutes / 60).toFixed(1)}h)</span>,
+      cell: (row) => {
+        const cap = row.maxMinutesPerDay || row.maxDailyMinutes || 240;
+        return <span className="text-slate-300">{cap} mins ({(cap / 60).toFixed(1)}h)</span>;
+      },
     },
     {
       header: 'Approval Needed',
       accessor: 'requiresApproval',
       cell: (row) => (
-        <Badge variant={row.requiresApproval ? 'warning' : 'success'}>
-          {row.requiresApproval ? 'Required' : 'Auto-Approved'}
+        <Badge variant={row.requiresApproval === false ? 'success' : 'warning'}>
+          {row.requiresApproval === false ? 'Auto-Approved' : 'Required'}
         </Badge>
       ),
     },
@@ -217,7 +266,7 @@ export default function OvertimeRulesPage() {
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit" loading={createRule.isPending || updateRule.isPending}>
+            <Button variant="primary" type="submit" loading={createMutation.isPending || updateMutation.isPending}>
               {editingRule ? 'Save Changes' : 'Create Rule'}
             </Button>
           </div>

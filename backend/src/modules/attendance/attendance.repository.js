@@ -197,7 +197,8 @@ export const attendanceRepository = {
         employeeId: data.employeeId,
         breakStartAt: data.breakStartAt || new Date(),
         breakType: data.breakType || 'SHORT',
-        breakPhotoUrl: data.breakPhotoUrl || null,
+        breakPhotoUrl: data.breakPhotoUrl || data.breakStartPhotoUrl || null,
+        breakStartPhotoUrl: data.breakStartPhotoUrl || data.breakPhotoUrl || null,
         breakLivenessScore: data.breakLivenessScore ? String(data.breakLivenessScore) : null,
         breakFaceMatchScore: data.breakFaceMatchScore ? String(data.breakFaceMatchScore) : null,
         expectedReturnTime: data.expectedReturnTime || null,
@@ -386,9 +387,15 @@ export const attendanceRepository = {
     let halfDay = 0;
 
     logs.forEach((log) => {
-      if (log.status === 'PRESENT') present += 1;
-      if (log.isLate) late += 1;
-      else if (log.status === 'HALF_DAY') halfDay += 1;
+      if (['PRESENT', 'LATE', 'HALF_DAY'].includes(log.status) || log.checkInTime || log.checkInAt) {
+        present += 1;
+      }
+      if (log.status === 'LATE' || log.isLate) {
+        late += 1;
+      }
+      if (log.status === 'HALF_DAY') {
+        halfDay += 1;
+      }
     });
 
     const clockedInCount = logs.length;
@@ -410,10 +417,14 @@ export const attendanceRepository = {
 
       const [dayPresent, dayLate] = await Promise.all([
         prisma.attendanceLog.count({
-          where: { companyId, attendanceDate: curDayDate, status: 'PRESENT' }
+          where: { companyId, attendanceDate: curDayDate, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } }
         }).catch(() => 0),
         prisma.attendanceLog.count({
-          where: { companyId, attendanceDate: curDayDate, isLate: true }
+          where: {
+            companyId,
+            attendanceDate: curDayDate,
+            OR: [{ status: 'LATE' }, { isLate: true }]
+          }
         }).catch(() => 0)
       ]);
 

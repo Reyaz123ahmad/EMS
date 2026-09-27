@@ -50,9 +50,9 @@ export const reportsService = {
     switch (type) {
       case REPORT_TYPES.ATTENDANCE:
         return data.map((item) => ({
-          ID: item.id,
-          Employee: item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : 'N/A',
-          Code: item.employee?.employeeCode || 'N/A',
+          EmployeeCode: item.employee?.employeeCode || 'N/A',
+          EmployeeName: item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : 'N/A',
+          Department: item.employee?.department?.name || 'N/A',
           Date: item.attendanceDate ? item.attendanceDate.toISOString().split('T')[0] : 'N/A',
           CheckIn: item.checkInAt ? new Date(item.checkInAt).toLocaleTimeString() : 'N/A',
           CheckOut: item.checkOutAt ? new Date(item.checkOutAt).toLocaleTimeString() : 'N/A',
@@ -63,21 +63,22 @@ export const reportsService = {
 
       case REPORT_TYPES.EMPLOYEE:
         return data.map((item) => ({
-          ID: item.id,
-          Code: item.employeeCode,
-          Name: `${item.firstName} ${item.lastName}`,
+          EmployeeCode: item.employeeCode || 'N/A',
+          EmployeeName: `${item.firstName} ${item.lastName}`,
           Email: item.email,
           Phone: item.phone || 'N/A',
           Department: item.department?.name || 'N/A',
           Designation: item.designation?.name || 'N/A',
+          Branch: item.branch?.name || 'N/A',
           JoiningDate: item.joiningDate ? item.joiningDate.toISOString().split('T')[0] : 'N/A',
           Status: item.status
         }));
 
       case REPORT_TYPES.LEAVE:
         return data.map((item) => ({
-          ID: item.id,
-          Employee: item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : 'N/A',
+          EmployeeCode: item.employee?.employeeCode || 'N/A',
+          EmployeeName: item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : 'N/A',
+          Department: item.employee?.department?.name || 'N/A',
           LeaveType: item.leaveType?.name || 'General',
           StartDate: item.startDate ? item.startDate.toISOString().split('T')[0] : 'N/A',
           EndDate: item.endDate ? item.endDate.toISOString().split('T')[0] : 'N/A',
@@ -87,12 +88,30 @@ export const reportsService = {
 
       case REPORT_TYPES.PAYROLL:
         return data.map((run) => ({
-          ID: run.id,
           Period: `${run.month}/${run.year}`,
-          TotalGross: run.totalGross ? run.totalGross.toString() : '0',
-          TotalDeductions: run.totalDeductions ? run.totalDeductions.toString() : '0',
-          TotalNet: run.totalNet ? run.totalNet.toString() : '0',
+          TotalGross: run.totalGross ? `₹${run.totalGross}` : '₹0',
+          TotalDeductions: run.totalDeductions ? `₹${run.totalDeductions}` : '₹0',
+          TotalNet: run.totalNet ? `₹${run.totalNet}` : '₹0',
           Status: run.status
+        }));
+
+      case REPORT_TYPES.OVERTIME:
+        return data.map((item) => ({
+          EmployeeCode: item.employee?.employeeCode || 'N/A',
+          EmployeeName: item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : 'N/A',
+          Date: item.date ? item.date.toISOString().split('T')[0] : 'N/A',
+          Hours: item.hours ? item.hours.toString() : '0',
+          Rate: item.rate ? item.rate.toString() : '1.5x',
+          Status: item.status
+        }));
+
+      case REPORT_TYPES.PERFORMANCE:
+        return data.map((item) => ({
+          EmployeeCode: item.employee?.employeeCode || 'N/A',
+          EmployeeName: item.employee ? `${item.employee.firstName} ${item.employee.lastName}` : 'N/A',
+          ReviewCycle: item.cycle?.name || 'Annual Appraisal',
+          Rating: item.score ? item.score.toString() : 'N/A',
+          Status: item.status
         }));
 
       default:

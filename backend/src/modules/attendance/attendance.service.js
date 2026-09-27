@@ -9,6 +9,8 @@ import {
 } from '../attendance-security/attendance-security.service.js';
 import { advancedSecurityService } from '../advanced-security/advanced-security.service.js';
 import { prisma } from '../../config/prisma.js';
+import * as faceService from '../../services/face.service.js';
+import { decryptData } from '../../security/encryption.js';
 
 export const attendanceService = {
   /**
@@ -673,9 +675,20 @@ export const attendanceService = {
   },
 
   /**
-   * 8. Start Break (with Limits, Types & Expected Return)
+   * 8. Start Break (with Security, Limits, Types & Expected Return)
    */
-  async startBreak({ employeeId, companyId, breakType = 'SHORT', photo, remarks }) {
+  async startBreak({
+    employeeId,
+    companyId,
+    breakType = 'SHORT',
+    mode = 'face',
+    photo,
+    location,
+    deviceInfo = {},
+    cardNumber,
+    remarks,
+    livenessScore = 0.95
+  }) {
     const employee = await attendanceRepository.findEmployeeWithBranch(employeeId);
     if (!employee) {
       throw new Error('Employee record not found.');
@@ -705,12 +718,91 @@ export const attendanceService = {
       throw err;
     }
 
-    // Rule 6: Break Limit & Type Validation
+    // Rule 2: Validate Mode Permission
+    if (mode) {
+      attendanceRules.validateModeEnabled(settings, mode);
+    }
+
+    // Rule 3: Break Limit & Type Validation
     const limitCheck = await this.checkBreakLimit(empId, companyId);
     if (!limitCheck.canTakeBreak) {
       const err = new Error(limitCheck.reason);
       err.statusCode = 400;
       throw err;
+    }
+
+    // Security Verification 1: Mock Location Detection
+    if (deviceInfo.isMockLocation) {
+      const err = new Error('Mock location detected on device.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    // Security Verification 2: Geo-Fencing Check
+    if (location && location.lat !== undefined && location.lng !== undefined && settings.geoFencing) {
+      const geoResult = await geoFencingService.validateLocation({
+        latitude: location.lat,
+        longitude: location.lng,
+        accuracy: location.accuracy,
+        isMockLocation: deviceInfo.isMockLocation || false,
+        ipAddress: deviceInfo.ipAddress,
+        branch: employee.branch,
+        companyId,
+        employeeId: empId
+      });
+
+      if (!geoResult.passed) {
+        const err = new Error(`Location verification failed on break start: ${geoResult.reason}`);
+        err.statusCode = 403;
+        throw err;
+      }
+    }
+
+    // Security Verification 3: Biometric / Mode Attestation
+    let faceMatchResult = null;
+    const effectiveLivenessScore = Number(livenessScore !== undefined ? livenessScore : 0.95);
+
+    if (mode.toLowerCase() === 'face') {
+      if (effectiveLivenessScore < 0.75) {
+        const err = new Error('Liveness check failed. Please look directly into the camera and try again.');
+        err.statusCode = 403;
+        err.code = 'LIVENESS_FAILED';
+        throw err;
+      }
+
+      if (!employee.faceEmbedding) {
+        const err = new Error('No face registered. Please register your face first.');
+        err.statusCode = 400;
+        err.code = 'NO_FACE_REGISTERED';
+        throw err;
+      }
+
+      if (!photo) {
+        const err = new Error('Live camera face photo is required for face break start.');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      faceMatchResult = await faceMatchService.matchFace(employee, photo);
+      if (!faceMatchResult.passed) {
+        const err = new Error(`Face mismatch (${faceMatchResult.matchConfidence || Math.round(faceMatchResult.score * 100) + '%'}).`);
+        err.statusCode = 403;
+        err.code = 'FACE_MISMATCH';
+        throw err;
+      }
+    } else if (mode.toLowerCase() === 'card') {
+      if (!cardNumber) {
+        const err = new Error('NFC/RFID Card Number is required for card punch mode.');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      const card = await attendanceRepository.findCardByNumber(companyId, cardNumber);
+      if (!card || card.employeeId !== empId) {
+        const err = new Error('Invalid or unassigned NFC/RFID access card.');
+        err.statusCode = 400;
+        throw err;
+      }
     }
 
     const normType = (breakType || 'SHORT').toUpperCase();
@@ -727,7 +819,10 @@ export const attendanceService = {
       breakType: normType,
       allowedDurationMinutes: allowedDuration,
       expectedReturnTime,
-      breakPhotoUrl: photo || null
+      breakPhotoUrl: photo || null,
+      breakStartPhotoUrl: photo || null,
+      breakLivenessScore: photo ? String(effectiveLivenessScore) : null,
+      breakFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null
     });
 
     // Update break counters in AttendanceLog
@@ -747,9 +842,19 @@ export const attendanceService = {
   },
 
   /**
-   * 9. End Break (with Late Return & Checkout Extension)
+   * 9. End Break (with Security, Late Return & Checkout Extension)
    */
-  async endBreak({ employeeId, companyId, remarks }) {
+  async endBreak({
+    employeeId,
+    companyId,
+    mode = 'face',
+    photo,
+    location,
+    deviceInfo = {},
+    cardNumber,
+    remarks,
+    livenessScore = 0.95
+  }) {
     const employee = await attendanceRepository.findEmployeeWithBranch(employeeId);
     if (!employee) {
       throw new Error('Employee record not found.');
@@ -765,6 +870,80 @@ export const attendanceService = {
 
     const todayLog = await attendanceRepository.findTodayAttendance(empId);
     const settings = await attendanceRules.getCompanyAttendanceSettings(companyId);
+
+    // Security Verification 1: Mock Location Detection
+    if (deviceInfo.isMockLocation) {
+      const err = new Error('Mock location detected on device.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    // Security Verification 2: Geo-Fencing Check
+    if (location && location.lat !== undefined && location.lng !== undefined && settings.geoFencing) {
+      const geoResult = await geoFencingService.validateLocation({
+        latitude: location.lat,
+        longitude: location.lng,
+        accuracy: location.accuracy,
+        isMockLocation: deviceInfo.isMockLocation || false,
+        ipAddress: deviceInfo.ipAddress,
+        branch: employee?.branch,
+        companyId,
+        employeeId: empId
+      });
+
+      if (!geoResult.passed) {
+        const err = new Error(`Location verification failed on break end: ${geoResult.reason}`);
+        err.statusCode = 403;
+        throw err;
+      }
+    }
+
+    // Security Verification 3: Biometric / Mode Attestation
+    let faceMatchResult = null;
+    const effectiveLivenessScore = Number(livenessScore !== undefined ? livenessScore : 0.95);
+
+    if (mode.toLowerCase() === 'face') {
+      if (effectiveLivenessScore < 0.75) {
+        const err = new Error('Liveness check failed. Please look directly into the camera and try again.');
+        err.statusCode = 403;
+        err.code = 'LIVENESS_FAILED';
+        throw err;
+      }
+
+      if (!employee.faceEmbedding) {
+        const err = new Error('No face registered. Please register your face first.');
+        err.statusCode = 400;
+        err.code = 'NO_FACE_REGISTERED';
+        throw err;
+      }
+
+      if (!photo) {
+        const err = new Error('Live camera face photo is required for face break end.');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      faceMatchResult = await faceMatchService.matchFace(employee, photo);
+      if (!faceMatchResult.passed) {
+        const err = new Error(`Face mismatch (${faceMatchResult.matchConfidence || Math.round(faceMatchResult.score * 100) + '%'}).`);
+        err.statusCode = 403;
+        err.code = 'FACE_MISMATCH';
+        throw err;
+      }
+    } else if (mode.toLowerCase() === 'card') {
+      if (!cardNumber) {
+        const err = new Error('NFC/RFID Card Number is required for card punch mode.');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      const card = await attendanceRepository.findCardByNumber(companyId, cardNumber);
+      if (!card || card.employeeId !== empId) {
+        const err = new Error('Invalid or unassigned NFC/RFID access card.');
+        err.statusCode = 400;
+        throw err;
+      }
+    }
 
     const actualReturnTime = new Date();
     const startTime = new Date(activeBreak.breakStartAt);
@@ -792,6 +971,9 @@ export const attendanceService = {
 
     const updatedBreak = await attendanceRepository.updateAttendanceBreak(activeBreak.id, {
       breakEndAt: actualReturnTime,
+      breakEndPhotoUrl: photo || null,
+      breakEndLivenessScore: photo ? String(effectiveLivenessScore) : null,
+      breakEndFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null,
       actualReturnTime,
       lateReturnMinutes,
       totalBreakMinutes: durationMinutes
@@ -1267,16 +1449,14 @@ export const attendanceService = {
       }
     });
 
-    const presentDays = logs.filter(l => l.status === 'PRESENT').length;
+    const presentDays = logs.filter(l => ['PRESENT', 'LATE', 'HALF_DAY'].includes(l.status) || l.checkInTime || l.checkInAt).length;
     const absentDays = logs.filter(l => l.status === 'ABSENT').length;
     const halfDays = logs.filter(l => l.status === 'HALF_DAY').length;
-    const lateDays = logs.filter(l => l.isLate).length;
+    const lateDays = logs.filter(l => l.status === 'LATE' || l.isLate).length;
     const totalWorkingDays = new Date(targetYear, targetMonth + 1, 0).getDate();
 
-    let totalOvertimeMinutes = 0;
-    logs.forEach(l => {
-      if (l.overtimeMinutes) totalOvertimeMinutes += l.overtimeMinutes;
-    });
+    const totalWorkedMinutes = logs.reduce((sum, l) => sum + (l.totalWorkedMinutes || 0), 0);
+    const totalOvertimeMinutes = logs.reduce((sum, l) => sum + (l.overtimeMinutes || 0), 0);
 
     const punctualityRate = presentDays > 0 ? Math.round(((presentDays - lateDays) / presentDays) * 100) : 100;
 
@@ -1288,10 +1468,84 @@ export const attendanceService = {
       halfDays,
       lateDays,
       totalWorkingDays,
-      totalOvertimeHours: Number((totalOvertimeMinutes / 60).toFixed(1)),
+      totalHours: Math.round((totalWorkedMinutes / 60) * 10) / 10,
+      overtimeHours: Math.round((totalOvertimeMinutes / 60) * 10) / 10,
+      totalOvertimeHours: Math.round((totalOvertimeMinutes / 60) * 10) / 10,
       punctualityRate: isNaN(punctualityRate) ? 100 : punctualityRate,
-      totalLogs: logs.length
+      totalLogs: logs.length,
+      logs
     };
+  },
+
+  /**
+   * Match live face photo with employee enrolled face embedding (STRICT match)
+   */
+  async matchFace(employeeId, photoBase64) {
+    console.log('=== FACE MATCH ===');
+
+    // 1. Get employee's registered embedding
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      select: { id: true, faceEmbedding: true, faceRegisteredAt: true }
+    });
+
+    console.log('Employee has embedding:', !!employee?.faceEmbedding);
+
+    if (!employee?.faceEmbedding) {
+      const error = new Error('No face registered. Register your face first.');
+      error.statusCode = 400;
+      error.code = 'NO_FACE_REGISTERED';
+      throw error;
+    }
+
+    // 2. Generate embedding from LIVE photo
+    const liveEmbedding = await faceService.generateEmbedding(photoBase64);
+
+    console.log('Live embedding generated:', !!liveEmbedding);
+
+    if (!liveEmbedding || liveEmbedding.length === 0) {
+      const error = new Error('No face detected in live photo');
+      error.statusCode = 400;
+      error.code = 'NO_FACE_DETECTED';
+      throw error;
+    }
+
+    // 3. Decrypt stored embedding
+    let storedEmbedding = null;
+    if (typeof employee.faceEmbedding === 'string') {
+      storedEmbedding = decryptData(employee.faceEmbedding, true);
+    } else if (Array.isArray(employee.faceEmbedding)) {
+      storedEmbedding = employee.faceEmbedding;
+    }
+
+    if (!Array.isArray(storedEmbedding)) {
+      const error = new Error('Stored face embedding is corrupt or invalid format');
+      error.statusCode = 500;
+      throw error;
+    }
+
+    console.log('Stored embedding length:', storedEmbedding.length);
+    console.log('Live embedding length:', liveEmbedding.length);
+
+    // 4. Compare with STRICT threshold
+    const result = faceService.compareFaces(storedEmbedding, liveEmbedding, 0.75);
+
+    console.log('Similarity:', result.similarity);
+    console.log('Threshold:', result.threshold);
+    console.log('Passed:', result.passed);
+
+    if (!result.passed) {
+      const error = new Error(
+        `Face mismatch (${Math.round(result.similarity * 100)}% match). ` +
+        `Required: ${Math.round(result.threshold * 100)}%`
+      );
+      error.statusCode = 403;
+      error.code = 'FACE_MISMATCH';
+      error.score = result.similarity;
+      throw error;
+    }
+
+    return result;
   }
 };
 

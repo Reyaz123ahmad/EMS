@@ -20,13 +20,32 @@ export async function processWebhookEvent(event, payload) {
     case 'payment.authorized':
     case 'payment.captured': {
       const orderId = data.order_id;
+      const paymentMethod = data.method || 'card';
+      const paymentMethodDetails = {
+        method: paymentMethod,
+        card: data.card || null,
+        upi: data.upi || null,
+        bank: data.bank || null,
+        wallet: data.wallet || null,
+      };
+
       if (orderId) {
+        const existing = await prisma.paymentTransaction.findFirst({
+          where: { razorpayOrderId: orderId }
+        });
+        const existingMeta = typeof existing?.metadata === 'object' && existing?.metadata !== null ? existing.metadata : {};
+
         await prisma.paymentTransaction.updateMany({
           where: { razorpayOrderId: orderId },
           data: {
             status: 'SUCCESS',
             razorpayPaymentId: data.id,
-            metadata: data,
+            metadata: {
+              ...existingMeta,
+              paymentMethod,
+              paymentMethodDetails,
+              rawWebhookData: data
+            },
           },
         });
       }

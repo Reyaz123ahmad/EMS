@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -6,40 +8,79 @@ import Table from '../../components/ui/Table';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import {
-  useLeaveTypes,
-  useCreateLeaveType,
-  useUpdateLeaveType,
-  useDeleteLeaveType,
-  useBulkAllocateLeaves,
-} from '../../hooks/useLeave';
+import LeaveTypeModal from '../../components/leave/LeaveTypeModal';
+import leaveService from '../../services/leave.service';
+import { useBulkAllocateLeaves } from '../../hooks/useLeave';
 import { useAuthStore } from '../../store/authStore';
 
 export default function LeaveTypesPage() {
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const companyId = user?.companyId;
 
-  const { data: typesData, isLoading, refetch } = useLeaveTypes(companyId);
-  const createType = useCreateLeaveType();
-  const updateType = useUpdateLeaveType();
-  const deleteType = useDeleteLeaveType();
-  const bulkAllocate = useBulkAllocateLeaves();
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [editingType, setEditingType] = useState(null);
-  const [deleteId, setDeleteId] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    description: '',
-    daysAllowed: 12,
-    isPaid: true,
-    carryForward: false,
-    maxCarryForwardDays: 0,
+  // Fetch leave types
+  const { data: leaveTypes, isLoading, error, refetch } = useQuery({
+    queryKey: ['leave-types'],
+    queryFn: () => leaveService.getLeaveTypes()
   });
 
+  // Create mutation
+  const createMutation = useMutation({
+    mutationFn: (data) => leaveService.createLeaveType(data),
+    onSuccess: (data) => {
+      console.log('Created:', data);
+      toast.success('Leave type created successfully');
+      queryClient.invalidateQueries({ queryKey: ['leave-types'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'types'] });
+      setShowModal(false);
+    },
+    onError: (error) => {
+      console.error('Create error:', error);
+      toast.error(error.response?.data?.message || 'Failed to create leave type');
+    }
+  });
+
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => leaveService.updateLeaveType(id, data),
+    onSuccess: (data) => {
+      console.log('Updated:', data);
+      toast.success('Leave type updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['leave-types'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'types'] });
+      setEditingType(null);
+      setShowModal(false);
+    },
+    onError: (error) => {
+      console.error('Update error:', error);
+      toast.error(error.response?.data?.message || 'Failed to update leave type');
+    }
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id) => leaveService.deleteLeaveType(id),
+    onSuccess: () => {
+      toast.success('Leave type deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['leave-types'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'types'] });
+      setDeletingId(null);
+      setConfirmDelete(null);
+    },
+    onError: (error) => {
+      console.error('Delete error:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete leave type');
+      setDeletingId(null);
+    }
+  });
+
+  const bulkAllocate = useBulkAllocateLeaves();
   const [bulkData, setBulkData] = useState({
     leaveTypeId: '',
     year: new Date().getFullYear(),
@@ -47,66 +88,72 @@ export default function LeaveTypesPage() {
     employeeIds: [],
   });
 
+  // Handle form submit
+  const handleSubmit = (formData) => {
+    const payload = {
+      ...formData,
+      companyId: companyId || formData.companyId
+    };
+
+    if (editingType) {
+      updateMutation.mutate({ id: editingType.id, data: payload });
+    } else {
+      createMutation.mutate(payload);
+    }
+  };
+
   const handleOpenCreate = () => {
     setEditingType(null);
-    setFormData({
-      name: '',
-      code: '',
-      description: '',
-      daysAllowed: 12,
-      isPaid: true,
-      carryForward: false,
-      maxCarryForwardDays: 0,
-    });
-    setIsModalOpen(true);
+    setShowModal(true);
   };
 
   const handleOpenEdit = (lt) => {
     setEditingType(lt);
-    setFormData({
-      name: lt.name,
-      code: lt.code,
-      description: lt.description || '',
-      daysAllowed: lt.daysAllowed,
-      isPaid: lt.isPaid,
-      carryForward: lt.carryForward,
-      maxCarryForwardDays: lt.maxCarryForwardDays || 0,
-    });
-    setIsModalOpen(true);
+    setShowModal(true);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (editingType) {
-      await updateType.mutateAsync({ id: editingType.id, data: formData });
-    } else {
-      await createType.mutateAsync({ companyId, ...formData });
-    }
-    setIsModalOpen(false);
-    refetch();
+  const handleDelete = (type) => {
+    setConfirmDelete(type);
   };
 
-  const handleDelete = async () => {
-    if (deleteId) {
-      await deleteType.mutateAsync(deleteId);
-      setDeleteId(null);
-      refetch();
+  const handleConfirmDelete = () => {
+    if (confirmDelete?.id) {
+      setDeletingId(confirmDelete.id);
+      deleteMutation.mutate(confirmDelete.id);
     }
   };
 
   const handleBulkAllocateSubmit = async (e) => {
     e.preventDefault();
-    await bulkAllocate.mutateAsync({
-      companyId,
-      leaveTypeId: bulkData.leaveTypeId,
-      year: Number(bulkData.year),
-      days: Number(bulkData.days),
-      employeeIds: bulkData.employeeIds,
-    });
-    setIsBulkModalOpen(false);
+    try {
+      await bulkAllocate.mutateAsync({
+        companyId,
+        leaveTypeId: bulkData.leaveTypeId,
+        year: Number(bulkData.year),
+        days: Number(bulkData.days),
+        employeeIds: bulkData.employeeIds,
+      });
+      toast.success('Leaves allocated successfully');
+      queryClient.invalidateQueries({ queryKey: ['leave', 'balances'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-balances'] });
+      setIsBulkModalOpen(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to allocate leaves');
+    }
   };
 
-  const leaveTypes = typesData?.data?.data || typesData?.data || [];
+  const types = Array.isArray(leaveTypes)
+    ? leaveTypes
+    : Array.isArray(leaveTypes?.types)
+    ? leaveTypes.types
+    : Array.isArray(leaveTypes?.data?.types)
+    ? leaveTypes.data.types
+    : Array.isArray(leaveTypes?.data)
+    ? leaveTypes.data
+    : [];
+
+  console.log('Leave types data:', types);
+  console.log('Is array:', Array.isArray(types));
 
   const columns = [
     {
@@ -122,12 +169,16 @@ export default function LeaveTypesPage() {
     {
       header: 'Code',
       accessor: 'code',
-      cell: (row) => <Badge variant="primary">{row.code}</Badge>,
+      cell: (row) => <Badge variant="primary">{row.code || '—'}</Badge>,
     },
     {
       header: 'Days / Year',
       accessor: 'daysAllowed',
-      cell: (row) => <span className="text-slate-200 font-medium">{row.daysAllowed} days</span>,
+      cell: (row) => (
+        <span className="text-slate-200 font-medium">
+          {row.maxDaysPerYear || row.daysAllowed || 0} days
+        </span>
+      ),
     },
     {
       header: 'Type',
@@ -143,7 +194,7 @@ export default function LeaveTypesPage() {
       accessor: 'carryForward',
       cell: (row) => (
         <span className="text-xs text-slate-300">
-          {row.carryForward ? `Yes (Max ${row.maxCarryForwardDays || 0}d)` : 'No'}
+          {row.carryForward ? `Yes (Max ${row.maxCarryForward || row.maxCarryForwardDays || 0}d)` : 'No'}
         </span>
       ),
     },
@@ -154,7 +205,7 @@ export default function LeaveTypesPage() {
           <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(row)}>
             Edit
           </Button>
-          <Button variant="danger" size="sm" onClick={() => setDeleteId(row.id)}>
+          <Button variant="danger" size="sm" onClick={() => handleDelete(row)}>
             Delete
           </Button>
         </div>
@@ -180,85 +231,20 @@ export default function LeaveTypesPage() {
       </div>
 
       <Card>
-        <Table columns={columns} data={leaveTypes} isLoading={isLoading} />
+        <Table columns={columns} data={types} isLoading={isLoading} />
       </Card>
 
       {/* Add / Edit Modal */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingType ? 'Edit Leave Type' : 'Create Leave Type'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Type Name"
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="e.g. Annual Leave, Casual Leave"
-          />
-          <Input
-            label="Leave Code"
-            required
-            value={formData.code}
-            onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-            placeholder="e.g. AL, CL, SL"
-          />
-          <Input
-            label="Annual Allowance (Days)"
-            type="number"
-            required
-            value={formData.daysAllowed}
-            onChange={(e) => setFormData({ ...formData, daysAllowed: Number(e.target.value) })}
-          />
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full bg-slate-900/60 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Brief description of when this applies..."
-            />
-          </div>
-          <div className="flex items-center gap-4 pt-2">
-            <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.isPaid}
-                onChange={(e) => setFormData({ ...formData, isPaid: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
-              />
-              Paid Leave
-            </label>
-            <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.carryForward}
-                onChange={(e) => setFormData({ ...formData, carryForward: e.target.checked })}
-                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
-              />
-              Allow Carry Forward
-            </label>
-          </div>
-          {formData.carryForward && (
-            <Input
-              label="Max Carry Forward Days"
-              type="number"
-              value={formData.maxCarryForwardDays}
-              onChange={(e) => setFormData({ ...formData, maxCarryForwardDays: Number(e.target.value) })}
-            />
-          )}
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit" loading={createType.isPending || updateType.isPending}>
-              {editingType ? 'Save Changes' : 'Create Type'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <LeaveTypeModal
+        open={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setEditingType(null);
+        }}
+        onSubmit={handleSubmit}
+        initialData={editingType}
+        isLoading={createMutation.isPending || updateMutation.isPending}
+      />
 
       {/* Bulk Allocate Modal */}
       <Modal
@@ -276,9 +262,9 @@ export default function LeaveTypesPage() {
               className="w-full bg-slate-900/60 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">-- Choose Leave Type --</option>
-              {leaveTypes.map((lt) => (
+              {types.map((lt) => (
                 <option key={lt.id} value={lt.id}>
-                  {lt.name} ({lt.code})
+                  {lt.name} ({lt.code || 'N/A'})
                 </option>
               ))}
             </select>
@@ -301,7 +287,7 @@ export default function LeaveTypesPage() {
             Note: Leaving employee selection blank will automatically grant this balance to all active employees in the company.
           </p>
           <div className="flex justify-end gap-3 pt-4">
-            <Button variant="ghost" onClick={() => setIsBulkModalOpen(false)}>
+            <Button variant="ghost" onClick={() => setIsBulkModalOpen(false)} type="button">
               Cancel
             </Button>
             <Button variant="primary" type="submit" loading={bulkAllocate.isPending}>
@@ -312,11 +298,19 @@ export default function LeaveTypesPage() {
       </Modal>
 
       <ConfirmDialog
-        isOpen={!!deleteId}
-        onClose={() => setDeleteId(null)}
-        onConfirm={handleDelete}
+        open={!!confirmDelete}
+        isOpen={!!confirmDelete}
+        onClose={() => {
+          if (!deletingId) {
+            setConfirmDelete(null);
+          }
+        }}
+        onConfirm={handleConfirmDelete}
         title="Delete Leave Type"
-        message="Are you sure you want to delete this leave type? This action cannot be undone."
+        message={`Are you sure you want to delete "${confirmDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+        isLoading={deleteMutation.isPending || !!deletingId}
       />
     </div>
   );

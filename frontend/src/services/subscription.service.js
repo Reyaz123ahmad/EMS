@@ -31,19 +31,38 @@ export const subscriptionService = {
     return response.data;
   },
 
-  async getSubscriptionHistory() {
-    const response = await api.get('/subscriptions/history');
-    return response.data?.data || [];
+  async getSubscriptionHistory(params = {}) {
+    const response = await api.get('/subscriptions/history', { params });
+    const data = response.data?.data || response.data;
+
+    // Always return array or normalized object
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.invoices)) return data.invoices;
+    if (Array.isArray(data?.payments)) return data.payments;
+    if (Array.isArray(data?.history)) return data.history;
+
+    return data || [];
+  },
+
+  async getHistory(params = {}) {
+    return this.getSubscriptionHistory(params);
   },
 
   async getSubscriptionStats() {
     const response = await api.get('/subscriptions/stats');
-    return response.data?.data;
+    return response.data?.data || response.data;
   },
 
   async checkSubscriptionExpiry() {
     const response = await api.get('/subscriptions/check-expiry');
-    return response.data?.data;
+    return response.data?.data || response.data;
+  },
+
+  async downloadInvoice(invoiceId) {
+    const response = await api.get(`/invoices/${invoiceId}/download`, {
+      responseType: 'blob',
+    });
+    return response.data;
   },
 };
 

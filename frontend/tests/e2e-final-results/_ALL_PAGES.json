@@ -1,0 +1,1772 @@
+[
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3379
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/dashboard/company-admin",
+    "url": "http://localhost:3000/dashboard/company-admin",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3679
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/employees",
+    "url": "http://localhost:3000/employees",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3665
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/employees/create",
+    "url": "http://localhost:3000/employees/create",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3648
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/employees/bulk-import",
+    "url": "http://localhost:3000/employees/bulk-import",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3443
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/organization/branches",
+    "url": "http://localhost:3000/organization/branches",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3408
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/organization/departments",
+    "url": "http://localhost:3000/organization/departments",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3680
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/organization/designations",
+    "url": "http://localhost:3000/organization/designations",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3664
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3722
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3896
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance/monthly-summary",
+    "url": "http://localhost:3000/attendance/monthly-summary",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3646
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance/calendar",
+    "url": "http://localhost:3000/attendance/calendar",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3399
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance/exceptions",
+    "url": "http://localhost:3000/attendance/exceptions",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3549
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance/manual",
+    "url": "http://localhost:3000/attendance/manual",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3561
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/attendance/stats",
+    "url": "http://localhost:3000/attendance/stats",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3908
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/leave/types",
+    "url": "http://localhost:3000/leave/types",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3093
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/leave/balance",
+    "url": "http://localhost:3000/leave/balance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3634
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/leave/requests",
+    "url": "http://localhost:3000/leave/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3622
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/leave/apply",
+    "url": "http://localhost:3000/leave/apply",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3607
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/leave/calendar",
+    "url": "http://localhost:3000/leave/calendar",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3715
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/leave/history",
+    "url": "http://localhost:3000/leave/history",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2898
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/payroll/salary-structure",
+    "url": "http://localhost:3000/payroll/salary-structure",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2827
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/payroll/runs",
+    "url": "http://localhost:3000/payroll/runs",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2953
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/payroll/batches",
+    "url": "http://localhost:3000/payroll/batches",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2385
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/payroll/slips",
+    "url": "http://localhost:3000/payroll/slips",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3611
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/overtime/rules",
+    "url": "http://localhost:3000/overtime/rules",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3085
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/overtime/records",
+    "url": "http://localhost:3000/overtime/records",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3435
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/overtime/apply",
+    "url": "http://localhost:3000/overtime/apply",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3490
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/overtime/requests",
+    "url": "http://localhost:3000/overtime/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3488
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/overtime/stats",
+    "url": "http://localhost:3000/overtime/stats",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3497
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/shifts",
+    "url": "http://localhost:3000/shifts",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3493
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/shifts/create",
+    "url": "http://localhost:3000/shifts/create",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3403
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/shifts/assign",
+    "url": "http://localhost:3000/shifts/assign",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3298
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/shifts/rosters",
+    "url": "http://localhost:3000/shifts/rosters",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2989
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/shifts/generate",
+    "url": "http://localhost:3000/shifts/generate",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2695
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/rosters",
+    "url": "http://localhost:3000/rosters",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2390
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/rosters/calendar",
+    "url": "http://localhost:3000/rosters/calendar",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 4902
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/holidays",
+    "url": "http://localhost:3000/holidays",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3512
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/holidays/list",
+    "url": "http://localhost:3000/holidays/list",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3613
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/holidays/assign",
+    "url": "http://localhost:3000/holidays/assign",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2692
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/documents",
+    "url": "http://localhost:3000/documents",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3473
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/documents/upload",
+    "url": "http://localhost:3000/documents/upload",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3541
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/reports",
+    "url": "http://localhost:3000/reports",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3804
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/reports/history",
+    "url": "http://localhost:3000/reports/history",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3605
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/subscription/current",
+    "url": "http://localhost:3000/subscription/current",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3384
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/subscription/plans",
+    "url": "http://localhost:3000/subscription/plans",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3389
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/subscription/upgrade",
+    "url": "http://localhost:3000/subscription/upgrade",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3379
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/subscription/history",
+    "url": "http://localhost:3000/subscription/history",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 5272
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/payments",
+    "url": "http://localhost:3000/payments",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3699
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/invoices",
+    "url": "http://localhost:3000/invoices",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3580
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/refunds",
+    "url": "http://localhost:3000/refunds",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3396
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/refunds/request",
+    "url": "http://localhost:3000/refunds/request",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2670
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/security/dashboard",
+    "url": "http://localhost:3000/security/dashboard",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3340
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/security/fraud-signals",
+    "url": "http://localhost:3000/security/fraud-signals",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3400
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/security/events",
+    "url": "http://localhost:3000/security/events",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3654
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/security/audit-logs",
+    "url": "http://localhost:3000/security/audit-logs",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3397
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/security/blocked-employees",
+    "url": "http://localhost:3000/security/blocked-employees",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3632
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/approvals/workflows",
+    "url": "http://localhost:3000/approvals/workflows",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3420
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/approvals/requests",
+    "url": "http://localhost:3000/approvals/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3432
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/approvals/history",
+    "url": "http://localhost:3000/approvals/history",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3418
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/assets",
+    "url": "http://localhost:3000/assets",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3350
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/assets/create",
+    "url": "http://localhost:3000/assets/create",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3463
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/assets/assign",
+    "url": "http://localhost:3000/assets/assign",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3492
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/assets/return",
+    "url": "http://localhost:3000/assets/return",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3391
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/assets/categories",
+    "url": "http://localhost:3000/assets/categories",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3391
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/emergency-attendance",
+    "url": "http://localhost:3000/emergency-attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3586
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/emergency-attendance/requests",
+    "url": "http://localhost:3000/emergency-attendance/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3533
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/emergency-attendance/stats",
+    "url": "http://localhost:3000/emergency-attendance/stats",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3386
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/face-registration",
+    "url": "http://localhost:3000/face-registration",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3597
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/face/status",
+    "url": "http://localhost:3000/face/status",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3435
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/face/approvals",
+    "url": "http://localhost:3000/face/approvals",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3378
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/face/stats",
+    "url": "http://localhost:3000/face/stats",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3671
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/settings/general",
+    "url": "http://localhost:3000/settings/general",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3462
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/settings/attendance",
+    "url": "http://localhost:3000/settings/attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3310
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/settings/security",
+    "url": "http://localhost:3000/settings/security",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3465
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/settings/leave",
+    "url": "http://localhost:3000/settings/leave",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3668
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/settings/payroll",
+    "url": "http://localhost:3000/settings/payroll",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3474
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/settings/notifications",
+    "url": "http://localhost:3000/settings/notifications",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3428
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/notifications",
+    "url": "http://localhost:3000/notifications",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3348
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3540
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/profile/change-password",
+    "url": "http://localhost:3000/profile/change-password",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3394
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/profile/2fa",
+    "url": "http://localhost:3000/profile/2fa",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3388
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "route": "/ai/hub",
+    "url": "http://localhost:3000/ai/hub",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3393
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3350
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/dashboard/hr-admin",
+    "url": "http://localhost:3000/dashboard/hr-admin",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3412
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/employees",
+    "url": "http://localhost:3000/employees",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3498
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/employees/create",
+    "url": "http://localhost:3000/employees/create",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3599
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/organization/branches",
+    "url": "http://localhost:3000/organization/branches",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 4078
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/organization/departments",
+    "url": "http://localhost:3000/organization/departments",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3589
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/organization/designations",
+    "url": "http://localhost:3000/organization/designations",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3704
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 4025
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3732
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/attendance/monthly-summary",
+    "url": "http://localhost:3000/attendance/monthly-summary",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3562
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/attendance/calendar",
+    "url": "http://localhost:3000/attendance/calendar",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3479
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/leave/types",
+    "url": "http://localhost:3000/leave/types",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2903
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/leave/balance",
+    "url": "http://localhost:3000/leave/balance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3821
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/leave/requests",
+    "url": "http://localhost:3000/leave/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3545
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/leave/apply",
+    "url": "http://localhost:3000/leave/apply",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3440
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/payroll/salary-structure",
+    "url": "http://localhost:3000/payroll/salary-structure",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3206
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/payroll/runs",
+    "url": "http://localhost:3000/payroll/runs",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2827
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/payroll/slips",
+    "url": "http://localhost:3000/payroll/slips",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3436
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/overtime/rules",
+    "url": "http://localhost:3000/overtime/rules",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2812
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/overtime/records",
+    "url": "http://localhost:3000/overtime/records",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3514
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/shifts",
+    "url": "http://localhost:3000/shifts",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3370
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/holidays",
+    "url": "http://localhost:3000/holidays",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3522
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/documents",
+    "url": "http://localhost:3000/documents",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3429
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/reports",
+    "url": "http://localhost:3000/reports",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3496
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/approvals/requests",
+    "url": "http://localhost:3000/approvals/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3474
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/approvals/history",
+    "url": "http://localhost:3000/approvals/history",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3360
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/assets",
+    "url": "http://localhost:3000/assets",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3379
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/emergency-attendance",
+    "url": "http://localhost:3000/emergency-attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3503
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/face/status",
+    "url": "http://localhost:3000/face/status",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3447
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/face/approvals",
+    "url": "http://localhost:3000/face/approvals",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3398
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/notifications",
+    "url": "http://localhost:3000/notifications",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3456
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3649
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/ai/hub",
+    "url": "http://localhost:3000/ai/hub",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3499
+  },
+  {
+    "role": "HR_ADMIN",
+    "route": "/settings/general",
+    "url": "http://localhost:3000/settings/general",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3369
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3410
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/dashboard/hr-manager",
+    "url": "http://localhost:3000/dashboard/hr-manager",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3347
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/employees",
+    "url": "http://localhost:3000/employees",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3573
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3722
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3653
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/leave/requests",
+    "url": "http://localhost:3000/leave/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3489
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/leave/balance",
+    "url": "http://localhost:3000/leave/balance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3485
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/documents",
+    "url": "http://localhost:3000/documents",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3695
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/approvals/requests",
+    "url": "http://localhost:3000/approvals/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3350
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/assets",
+    "url": "http://localhost:3000/assets",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3389
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/notifications",
+    "url": "http://localhost:3000/notifications",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3548
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3613
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/ai/hub",
+    "url": "http://localhost:3000/ai/hub",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 4,
+    "networkErrorsCount": 4,
+    "timeTakenMs": 3727
+  },
+  {
+    "role": "HR_MANAGER",
+    "route": "/reports",
+    "url": "http://localhost:3000/reports",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3565
+  },
+  {
+    "role": "MANAGER",
+    "route": "/dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2382
+  },
+  {
+    "role": "MANAGER",
+    "route": "/dashboard/manager",
+    "url": "http://localhost:3000/dashboard/manager",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2395
+  },
+  {
+    "role": "MANAGER",
+    "route": "/employees",
+    "url": "http://localhost:3000/employees",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3182
+  },
+  {
+    "role": "MANAGER",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2594
+  },
+  {
+    "role": "MANAGER",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 1,
+    "timeTakenMs": 3562
+  },
+  {
+    "role": "MANAGER",
+    "route": "/leave/requests",
+    "url": "http://localhost:3000/leave/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3020
+  },
+  {
+    "role": "MANAGER",
+    "route": "/my-shift",
+    "url": "http://localhost:3000/my-shift",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2401
+  },
+  {
+    "role": "MANAGER",
+    "route": "/approvals/requests",
+    "url": "http://localhost:3000/approvals/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2411
+  },
+  {
+    "role": "MANAGER",
+    "route": "/assets",
+    "url": "http://localhost:3000/assets",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3738
+  },
+  {
+    "role": "MANAGER",
+    "route": "/notifications",
+    "url": "http://localhost:3000/notifications",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 4998
+  },
+  {
+    "role": "MANAGER",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2874
+  },
+  {
+    "role": "MANAGER",
+    "route": "/ai/hub",
+    "url": "http://localhost:3000/ai/hub",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 10,
+    "networkErrorsCount": 10,
+    "timeTakenMs": 5303
+  },
+  {
+    "role": "MANAGER",
+    "route": "/emergency-attendance/requests",
+    "url": "http://localhost:3000/emergency-attendance/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2894
+  },
+  {
+    "role": "MANAGER",
+    "route": "/overtime/requests",
+    "url": "http://localhost:3000/overtime/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 1,
+    "timeTakenMs": 2768
+  },
+  {
+    "role": "MANAGER",
+    "route": "/rosters/calendar",
+    "url": "http://localhost:3000/rosters/calendar",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3324
+  },
+  {
+    "role": "MANAGER",
+    "route": "/reports",
+    "url": "http://localhost:3000/reports",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 1,
+    "timeTakenMs": 2660
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2922
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/dashboard/employee",
+    "url": "http://localhost:3000/dashboard/employee",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3064
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/attendance",
+    "url": "http://localhost:3000/attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3355
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/attendance/logs",
+    "url": "http://localhost:3000/attendance/logs",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 1,
+    "timeTakenMs": 3458
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/leave/apply",
+    "url": "http://localhost:3000/leave/apply",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 1,
+    "timeTakenMs": 3216
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/leave/balance",
+    "url": "http://localhost:3000/leave/balance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 1,
+    "timeTakenMs": 3132
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/leave/history",
+    "url": "http://localhost:3000/leave/history",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2724
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/payroll/slips",
+    "url": "http://localhost:3000/payroll/slips",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3160
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/my-shift",
+    "url": "http://localhost:3000/my-shift",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3046
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/documents",
+    "url": "http://localhost:3000/documents",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 2,
+    "networkErrorsCount": 2,
+    "timeTakenMs": 3110
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/documents/upload",
+    "url": "http://localhost:3000/documents/upload",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3147
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/emergency-attendance",
+    "url": "http://localhost:3000/emergency-attendance",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3005
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/notifications",
+    "url": "http://localhost:3000/notifications",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3151
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3231
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/profile/change-password",
+    "url": "http://localhost:3000/profile/change-password",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 1,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3063
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/ai/hub",
+    "url": "http://localhost:3000/ai/hub",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 8,
+    "networkErrorsCount": 8,
+    "timeTakenMs": 3196
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/approvals/requests",
+    "url": "http://localhost:3000/approvals/requests",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3138
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/assets",
+    "url": "http://localhost:3000/assets",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3247
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/rosters/calendar",
+    "url": "http://localhost:3000/rosters/calendar",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3458
+  },
+  {
+    "role": "EMPLOYEE",
+    "route": "/holidays",
+    "url": "http://localhost:3000/holidays",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 3373
+  },
+  {
+    "role": "CLIENT",
+    "route": "/dashboard",
+    "url": "http://localhost:3000/dashboard",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2549
+  },
+  {
+    "role": "CLIENT",
+    "route": "/dashboard/client",
+    "url": "http://localhost:3000/dashboard/client",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2667
+  },
+  {
+    "role": "CLIENT",
+    "route": "/client-portal",
+    "url": "http://localhost:3000/client-portal",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2289
+  },
+  {
+    "role": "CLIENT",
+    "route": "/client-portal/projects",
+    "url": "http://localhost:3000/client-portal/projects",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2343
+  },
+  {
+    "role": "CLIENT",
+    "route": "/client-portal/requirements",
+    "url": "http://localhost:3000/client-portal/requirements",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2665
+  },
+  {
+    "role": "CLIENT",
+    "route": "/client-portal/comments",
+    "url": "http://localhost:3000/client-portal/comments",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2924
+  },
+  {
+    "role": "CLIENT",
+    "route": "/client-portal/invoices",
+    "url": "http://localhost:3000/client-portal/invoices",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2677
+  },
+  {
+    "role": "CLIENT",
+    "route": "/client-portal/payments",
+    "url": "http://localhost:3000/client-portal/payments",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2415
+  },
+  {
+    "role": "CLIENT",
+    "route": "/notifications",
+    "url": "http://localhost:3000/notifications",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 5246
+  },
+  {
+    "role": "CLIENT",
+    "route": "/profile",
+    "url": "http://localhost:3000/profile",
+    "status": "PASS",
+    "error": null,
+    "consoleErrorsCount": 0,
+    "networkErrorsCount": 0,
+    "timeTakenMs": 2999
+  }
+]

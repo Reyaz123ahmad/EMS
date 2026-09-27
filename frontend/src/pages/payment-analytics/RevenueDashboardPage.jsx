@@ -5,10 +5,14 @@ import {
   useARR,
   useRevenueByPlan
 } from '../../hooks/usePaymentAnalytics.js';
+import useAuthStore from '../../store/auth.store.js';
 import RevenueChart from '../../components/payment-analytics/RevenueChart.jsx';
-import { IndianRupee, TrendingUp, Calendar, Layers, ArrowUpRight, DollarSign } from 'lucide-react';
+import { IndianRupee, TrendingUp, Calendar, Layers, ArrowUpRight, DollarSign, Wallet, ArrowDownRight, Building2, CreditCard } from 'lucide-react';
 
 export function RevenueDashboardPage() {
+  const { user } = useAuthStore();
+  const isSuperAdmin = !user || user?.role === 'SUPER_ADMIN' || user?.roles?.includes('SUPER_ADMIN');
+
   const [dateRange, setDateRange] = useState({
     startDate: '',
     endDate: ''
@@ -20,9 +24,12 @@ export function RevenueDashboardPage() {
   const { data: planRevenue = [] } = useRevenueByPlan();
 
   const totalRevenue = Number(revenueStats?.totalRevenue || 0);
+  const totalExpense = Number(revenueStats?.totalExpense || 0);
+  const netIncome = Number(revenueStats?.netIncome ?? (totalRevenue - totalExpense));
   const mrr = Number(mrrData?.mrr || 0);
   const arr = Number(arrData?.arr || 0);
   const monthlyData = revenueStats?.monthlyTrend || [];
+  const subscriptionPayments = revenueStats?.subscriptionPayments || [];
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-6 px-4 sm:px-6">
@@ -33,7 +40,9 @@ export function RevenueDashboardPage() {
             Revenue & Financial Analytics
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Real-time insights into Monthly Recurring Revenue, ARR, and monetization performance.
+            {isSuperAdmin
+              ? 'Real-time insights into Monthly Recurring Revenue, ARR, and monetization performance from subscriber companies.'
+              : 'Track income earned from client projects against software subscription expenses paid to EMS Platform.'}
           </p>
         </div>
 
@@ -55,90 +64,173 @@ export function RevenueDashboardPage() {
       </div>
 
       {/* Primary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-500/10 relative overflow-hidden">
-          <div className="absolute right-3 -bottom-4 opacity-15">
-            <IndianRupee className="w-32 h-32" />
+      {isSuperAdmin ? (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-500/10 relative overflow-hidden">
+            <div className="absolute right-3 -bottom-4 opacity-15">
+              <IndianRupee className="w-32 h-32" />
+            </div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-indigo-100">
+              Total Platform Revenue
+            </span>
+            <h2 className="text-3xl font-extrabold mt-2 flex items-center">
+              <IndianRupee className="w-6 h-6" />
+              {totalRevenue.toLocaleString('en-IN')}
+            </h2>
+            <div className="mt-4 flex items-center gap-1.5 text-xs text-indigo-100">
+              <TrendingUp className="w-4 h-4" />
+              <span>Subscription payments from all companies</span>
+            </div>
           </div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-indigo-100">
-            Total Revenue Collected
-          </span>
-          <h2 className="text-3xl font-extrabold mt-2 flex items-center">
-            <IndianRupee className="w-6 h-6" />
-            {totalRevenue.toLocaleString('en-IN')}
-          </h2>
-          <div className="mt-4 flex items-center gap-1.5 text-xs text-indigo-100">
-            <TrendingUp className="w-4 h-4" />
-            <span>Real-time transaction aggregate</span>
+
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Monthly Recurring Revenue (MRR)
+            </span>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center text-indigo-600 dark:text-indigo-400">
+              <IndianRupee className="w-6 h-6" />
+              {mrr.toLocaleString('en-IN')}
+            </h2>
+            <p className="text-xs text-slate-400 mt-2">Active recurring subscription base</p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              Annual Run Rate (ARR)
+            </span>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center text-emerald-600 dark:text-emerald-400">
+              <IndianRupee className="w-6 h-6" />
+              {arr.toLocaleString('en-IN')}
+            </h2>
+            <p className="text-xs text-slate-400 mt-2">Annualized revenue projection</p>
           </div>
         </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-3xl p-6 relative overflow-hidden">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              Revenue (From Clients)
+            </span>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center">
+              <IndianRupee className="w-6 h-6" />
+              {totalRevenue.toLocaleString('en-IN')}
+            </h2>
+            <div className="mt-4 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+              <ArrowUpRight className="w-4 h-4" />
+              <span>Project receivables & client deliverables</span>
+            </div>
+          </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            Monthly Recurring Revenue (MRR)
-          </span>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center text-indigo-600 dark:text-indigo-400">
-            <IndianRupee className="w-6 h-6" />
-            {mrr.toLocaleString('en-IN')}
-          </h2>
-          <p className="text-xs text-slate-400 mt-2">Active recurring subscription base</p>
-        </div>
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6 relative overflow-hidden">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              Expense (SaaS Subscriptions)
+            </span>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center">
+              <IndianRupee className="w-6 h-6" />
+              {totalExpense.toLocaleString('en-IN')}
+            </h2>
+            <div className="mt-4 flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+              <ArrowDownRight className="w-4 h-4" />
+              <span>Paid to EMS Platform for software license</span>
+            </div>
+          </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            Annual Run Rate (ARR)
-          </span>
-          <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mt-2 flex items-center text-emerald-600 dark:text-emerald-400">
-            <IndianRupee className="w-6 h-6" />
-            {arr.toLocaleString('en-IN')}
-          </h2>
-          <p className="text-xs text-slate-400 mt-2">Annualized revenue projection</p>
+          <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-3xl p-6 relative overflow-hidden">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              Net Operating Income
+            </span>
+            <h2 className={`text-3xl font-extrabold mt-2 flex items-center ${
+              netIncome >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+            }`}>
+              <IndianRupee className="w-6 h-6" />
+              {netIncome.toLocaleString('en-IN')}
+            </h2>
+            <div className="mt-4 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <Wallet className="w-4 h-4" />
+              <span>Client Revenue − Platform Expense</span>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Revenue Trend Chart */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Revenue Growth Trajectory</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+              {isSuperAdmin ? 'Platform Revenue Growth Trajectory' : 'Monthly Financial Trajectory'}
+            </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Aggregated monthly gross billed payments (INR)
+              {isSuperAdmin
+                ? 'Aggregated monthly gross billed subscription payments (INR)'
+                : 'Monthly performance trends for client revenues and expenses'}
             </p>
           </div>
         </div>
         <RevenueChart data={monthlyData} />
       </div>
 
-      {/* Plan Revenue Breakdown */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Revenue Breakdown by Tier</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {planRevenue.length > 0 ? (
-            planRevenue.map((p, idx) => {
-              const amountVal = Number(p.amount ?? p.revenue ?? 0);
-              const subscribersVal = Number(p.subscribers ?? p.subscriptionCount ?? 0);
-              return (
-                <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
-                  <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{p.planName || 'Plan'}</span>
-                  <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1 flex items-center">
-                    <IndianRupee className="w-4 h-4" />
-                    {(isNaN(amountVal) ? 0 : amountVal).toLocaleString('en-IN')}
-                  </h4>
-                  <span className="text-xs text-slate-400">
-                    {isNaN(subscribersVal) ? 0 : subscribersVal} active subscribers
+      {/* Breakdown Section */}
+      {isSuperAdmin ? (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Revenue Breakdown by Subscription Tier</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {planRevenue.length > 0 ? (
+              planRevenue.map((p, idx) => {
+                const amountVal = Number(p.amount ?? p.revenue ?? 0);
+                const subscribersVal = Number(p.subscribers ?? p.subscriptionCount ?? 0);
+                return (
+                  <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
+                    <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{p.planName || 'Plan'}</span>
+                    <h4 className="text-xl font-bold text-slate-900 dark:text-white mt-1 flex items-center">
+                      <IndianRupee className="w-4 h-4" />
+                      {(isNaN(amountVal) ? 0 : amountVal).toLocaleString('en-IN')}
+                    </h4>
+                    <span className="text-xs text-slate-400">
+                      {isNaN(subscribersVal) ? 0 : subscribersVal} active subscribers
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="col-span-3 py-6 text-center text-xs text-slate-500">
+                No active subscription tiers registered.
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Recent Subscription Expenses (Paid to EMS Platform)</h3>
+          {subscriptionPayments.length > 0 ? (
+            <div className="space-y-3">
+              {subscriptionPayments.map((exp, idx) => (
+                <div key={exp.id || idx} className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600">
+                      <CreditCard className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-semibold text-xs text-slate-900 dark:text-white">{exp.description}</span>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{new Date(exp.date || exp.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <span className="font-bold text-sm text-amber-600 dark:text-amber-400 font-mono">
+                    - ₹{Number(exp.amount || 0).toLocaleString('en-IN')}
                   </span>
                 </div>
-              );
-            })
+              ))}
+            </div>
           ) : (
-            <div className="col-span-3 py-6 text-center text-xs text-slate-500">
-              No active subscription tiers registered.
+            <div className="py-6 text-center text-xs text-slate-500">
+              No subscription expense payments recorded yet.
             </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 export default RevenueDashboardPage;
+

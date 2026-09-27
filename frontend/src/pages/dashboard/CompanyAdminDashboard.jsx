@@ -123,6 +123,64 @@ export const CompanyAdminDashboard = () => {
         </div>
       </div>
 
+      {/* Financial Overview (Company Revenue vs Platform Expense) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 rounded-2xl border border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-950/50 dark:bg-emerald-950/20 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+              Revenue from Clients
+            </span>
+            <span className="p-1 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold">
+              INCOME
+            </span>
+          </div>
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
+            ₹{Number(dashboardData?.totalRevenue ?? dashboardData?.finance?.revenue ?? 0).toLocaleString('en-IN')}
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            Money received from client projects & deliverables
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl border border-amber-200/80 bg-amber-50/50 dark:border-amber-950/50 dark:bg-amber-950/20 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              Platform Subscription Cost
+            </span>
+            <span className="p-1 rounded-md bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-300 text-[10px] font-bold">
+              EXPENSE
+            </span>
+          </div>
+          <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">
+            ₹{Number(dashboardData?.totalExpense ?? dashboardData?.finance?.expense ?? 0).toLocaleString('en-IN')}
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            Paid to EMS Platform for SaaS software access
+          </p>
+        </div>
+
+        <div className="p-4 rounded-2xl border border-indigo-200/80 bg-indigo-50/50 dark:border-indigo-950/50 dark:bg-indigo-950/20 backdrop-blur-md">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+              Net Operating Income
+            </span>
+            <span className="p-1 rounded-md bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-300 text-[10px] font-bold">
+              NET
+            </span>
+          </div>
+          <div className={`mt-2 text-2xl font-black ${
+            (Number(dashboardData?.netIncome ?? dashboardData?.finance?.netIncome ?? 0) >= 0)
+              ? 'text-emerald-600 dark:text-emerald-400'
+              : 'text-rose-600 dark:text-rose-400'
+          }`}>
+            ₹{Number(dashboardData?.netIncome ?? dashboardData?.finance?.netIncome ?? 0).toLocaleString('en-IN')}
+          </div>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            Client revenue minus SaaS platform subscription cost
+          </p>
+        </div>
+      </div>
+
       {/* Stats Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard

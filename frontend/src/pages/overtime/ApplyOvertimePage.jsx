@@ -1,48 +1,64 @@
 import React, { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import { useApplyOvertime } from '../../hooks/useOvertime';
-import { useAuthStore } from '../../store/authStore';
+import overtimeService from '../../services/overtime.service';
 
 export default function ApplyOvertimePage() {
-  const { user } = useAuthStore();
-  const employeeId = user?.employeeId || user?.id;
-  const companyId = user?.companyId;
-
-  const applyOvertime = useApplyOvertime();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
-    minutes: 60,
+    requestedMinutes: 60,
     reason: '',
   });
 
-  const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  const applyMutation = useMutation({
+    mutationFn: (data) => overtimeService.applyOvertime(data),
+    onSuccess: () => {
+      toast.success('Overtime request submitted successfully');
+      queryClient.invalidateQueries({ queryKey: ['overtime', 'requests'] });
+      queryClient.invalidateQueries({ queryKey: ['overtime-requests'] });
+      navigate('/overtime/requests');
+    },
+    onError: (error) => {
+      console.error('Overtime apply error:', error);
+      const message = error.response?.data?.message || 'Failed to submit overtime claim';
+      const code = error.response?.data?.code;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSuccessMsg('');
-    setErrorMsg('');
-
-    try {
-      await applyOvertime.mutateAsync({
-        employeeId,
-        companyId,
-        date: formData.date,
-        minutes: Number(formData.minutes),
-        reason: formData.reason,
-      });
-      setSuccessMsg('Overtime claim submitted successfully for manager approval.');
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        minutes: 60,
-        reason: '',
-      });
-    } catch (err) {
-      setErrorMsg(err.response?.data?.message || err.message || 'Failed to submit overtime claim');
+      if (code === 'ALREADY_PENDING') {
+        toast.error('You already have a pending overtime request for this date');
+      } else if (code === 'USER_NOT_FOUND') {
+        toast.error('Your employee record is not properly set up. Please contact HR.');
+      } else {
+        toast.error(message);
+      }
     }
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!formData.date) {
+      toast.error('Please select a date');
+      return;
+    }
+
+    const minutes = parseInt(formData.requestedMinutes, 10);
+    if (!minutes || minutes < 15) {
+      toast.error('Minimum 15 minutes required');
+      return;
+    }
+
+    applyMutation.mutate({
+      date: new Date(formData.date).toISOString(),
+      requestedMinutes: minutes,
+      reason: formData.reason || ''
+    });
   };
 
   return (
@@ -53,17 +69,6 @@ export default function ApplyOvertimePage() {
       </div>
 
       <Card className="p-6">
-        {successMsg && (
-          <div className="mb-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm">
-            ✓ {successMsg}
-          </div>
-        )}
-        {errorMsg && (
-          <div className="mb-4 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm">
-            ✕ {errorMsg}
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Work Date"
@@ -82,13 +87,14 @@ export default function ApplyOvertimePage() {
                 type="number"
                 step="15"
                 min="15"
+                max="720"
                 required
-                value={formData.minutes}
-                onChange={(e) => setFormData({ ...formData, minutes: Number(e.target.value) })}
+                value={formData.requestedMinutes}
+                onChange={(e) => setFormData({ ...formData, requestedMinutes: Number(e.target.value) })}
                 className="w-40"
               />
               <span className="text-sm text-slate-400">
-                = {(formData.minutes / 60).toFixed(2)} hours
+                = {(formData.requestedMinutes / 60).toFixed(2)} hours
               </span>
             </div>
           </div>
@@ -96,7 +102,6 @@ export default function ApplyOvertimePage() {
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">Reason / Task Description</label>
             <textarea
-              required
               rows="4"
               value={formData.reason}
               onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
@@ -106,7 +111,7 @@ export default function ApplyOvertimePage() {
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button variant="primary" type="submit" loading={applyOvertime.isPending}>
+            <Button variant="primary" type="submit" loading={applyMutation.isPending}>
               Submit Overtime Claim
             </Button>
           </div>

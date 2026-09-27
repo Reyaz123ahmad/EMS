@@ -327,8 +327,88 @@ export const employeesService = {
   /**
    * Update employee
    */
-  async updateEmployee(id, data) {
-    return employeesRepository.updateEmployee(id, data);
+  async updateEmployee(id, data, companyId, updatedBy) {
+    if (typeof id === 'object' && id !== null) {
+      const params = id;
+      id = params.id;
+      companyId = params.companyId || companyId;
+      data = params.data || data;
+      updatedBy = params.updatedBy || updatedBy;
+    }
+
+    // Validate employee exists
+    const existing = await prisma.employee.findUnique({
+      where: { id }
+    });
+
+    if (!existing) {
+      const error = new Error('Employee not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const compId = companyId || existing.companyId;
+
+    // Validate department if provided
+    if (data.departmentId) {
+      const dept = await prisma.department.findFirst({
+        where: { id: data.departmentId, companyId: compId }
+      });
+      if (!dept) {
+        const error = new Error('Department not found');
+        error.statusCode = 400;
+        error.code = 'DEPARTMENT_NOT_FOUND';
+        throw error;
+      }
+    }
+
+    // Validate designation if provided
+    if (data.designationId) {
+      const desig = await prisma.designation.findFirst({
+        where: { id: data.designationId, companyId: compId }
+      });
+      if (!desig) {
+        const error = new Error('Designation not found');
+        error.statusCode = 400;
+        error.code = 'DESIGNATION_NOT_FOUND';
+        throw error;
+      }
+    }
+
+    // Validate branch if provided
+    if (data.branchId) {
+      const branch = await prisma.branch.findFirst({
+        where: { id: data.branchId, companyId: compId }
+      });
+      if (!branch) {
+        const error = new Error('Branch not found');
+        error.statusCode = 400;
+        error.code = 'BRANCH_NOT_FOUND';
+        throw error;
+      }
+    }
+
+    // Validate manager if provided
+    if (data.managerId) {
+      const manager = await prisma.employee.findFirst({
+        where: { id: data.managerId, companyId: compId }
+      });
+      if (!manager) {
+        const error = new Error('Manager not found');
+        error.statusCode = 400;
+        error.code = 'MANAGER_NOT_FOUND';
+        throw error;
+      }
+    }
+
+    // Now update
+    return await prisma.employee.update({
+      where: { id },
+      data: {
+        ...data,
+        updatedAt: new Date()
+      }
+    });
   },
 
   /**

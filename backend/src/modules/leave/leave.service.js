@@ -5,33 +5,172 @@ export const leaveService = {
    * Leave Types CRUD
    */
   async listLeaveTypes(companyId) {
+    const compId = typeof companyId === 'object' ? companyId.companyId : companyId;
     return prisma.leaveType.findMany({
-      where: { companyId },
-      orderBy: { name: 'asc' }
+      where: { companyId: compId, isActive: true },
+      orderBy: { name: 'asc' },
+      include: {
+        _count: {
+          select: { leaveRequests: true }
+        }
+      }
     });
   },
 
-  async createLeaveType(companyId, data) {
-    return prisma.leaveType.create({
+  async getLeaveTypes({ companyId }) {
+    const types = await prisma.leaveType.findMany({
+      where: { companyId, isActive: true },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        _count: {
+          select: { leaveRequests: true }
+        }
+      }
+    });
+
+    return {
+      types,
+      total: types.length
+    };
+  },
+
+  async createLeaveType(arg1, arg2, arg3) {
+    let companyId, data, createdBy;
+    if (typeof arg1 === 'object' && arg1 !== null && !arg2) {
+      companyId = arg1.companyId;
+      data = arg1.data || arg1;
+      createdBy = arg1.createdBy;
+    } else {
+      companyId = arg1;
+      data = arg2;
+      createdBy = arg3;
+    }
+
+    // Check duplicate name
+    const existing = await prisma.leaveType.findFirst({
+      where: {
+        companyId,
+        name: data.name
+      }
+    });
+
+    if (existing) {
+      const error = new Error('Leave type with this name already exists');
+      error.statusCode = 409;
+      throw error;
+    }
+
+    const type = await prisma.leaveType.create({
       data: {
         companyId,
         name: data.name,
         code: data.code || null,
         description: data.description || null,
-        maxDaysPerYear: data.maxDaysPerYear || 12,
+        maxDaysPerYear: data.maxDaysPerYear || data.daysAllowed || 12,
         isPaid: data.isPaid !== undefined ? data.isPaid : true,
-        carryForward: data.carryForward || false,
-        maxCarryForward: data.maxCarryForward || null,
+        carryForward: data.carryForward !== undefined ? data.carryForward : false,
+        maxCarryForward: data.maxCarryForward || data.maxCarryForwardDays || null,
         isActive: true
       }
     });
+
+    if (createdBy) {
+      try {
+        await prisma.auditLog.create({
+          data: {
+            userId: createdBy,
+            action: 'CREATE',
+            entity: 'LeaveType',
+            entityId: type.id,
+            newValues: { name: type.name, code: type.code }
+          }
+        });
+      } catch (e) {
+        // ignore audit log failure if any
+      }
+    }
+
+    return type;
   },
 
-  async updateLeaveType(id, data) {
-    return prisma.leaveType.update({
-      where: { id },
-      data
+  async updateLeaveType(arg1, arg2, arg3) {
+    let id, companyId, data, updatedBy;
+    if (typeof arg1 === 'object' && arg1 !== null && !arg2) {
+      id = arg1.id;
+      companyId = arg1.companyId;
+      data = arg1.data || arg1;
+      updatedBy = arg1.updatedBy;
+    } else {
+      id = arg1;
+      data = arg2;
+      companyId = arg3?.companyId;
+      updatedBy = arg3?.updatedBy;
+    }
+
+    const whereClause = { id };
+    if (companyId) whereClause.companyId = companyId;
+
+    const existing = await prisma.leaveType.findFirst({
+      where: whereClause
     });
+
+    if (!existing) {
+      const error = new Error('Leave type not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    if (data.name && data.name !== existing.name) {
+      const duplicate = await prisma.leaveType.findFirst({
+        where: {
+          companyId: existing.companyId,
+          name: data.name,
+          id: { not: id }
+        }
+      });
+
+      if (duplicate) {
+        const error = new Error('Leave type with this name already exists');
+        error.statusCode = 409;
+        throw error;
+      }
+    }
+
+    const cleanData = {};
+    if (data.name !== undefined) cleanData.name = data.name;
+    if (data.code !== undefined) cleanData.code = data.code || null;
+    if (data.description !== undefined) cleanData.description = data.description || null;
+    if (data.maxDaysPerYear !== undefined) cleanData.maxDaysPerYear = data.maxDaysPerYear;
+    else if (data.daysAllowed !== undefined) cleanData.maxDaysPerYear = data.daysAllowed;
+    if (data.isPaid !== undefined) cleanData.isPaid = data.isPaid;
+    if (data.carryForward !== undefined) cleanData.carryForward = data.carryForward;
+    if (data.maxCarryForward !== undefined) cleanData.maxCarryForward = data.maxCarryForward;
+    else if (data.maxCarryForwardDays !== undefined) cleanData.maxCarryForward = data.maxCarryForwardDays;
+    if (data.isActive !== undefined) cleanData.isActive = data.isActive;
+
+    const updated = await prisma.leaveType.update({
+      where: { id },
+      data: cleanData
+    });
+
+    if (updatedBy) {
+      try {
+        await prisma.auditLog.create({
+          data: {
+            userId: updatedBy,
+            action: 'UPDATE',
+            entity: 'LeaveType',
+            entityId: id,
+            oldValues: { name: existing.name },
+            newValues: { name: updated.name }
+          }
+        });
+      } catch (e) {
+        // ignore audit log error if any
+      }
+    }
+
+    return updated;
   },
 
   async deleteLeaveType(id) {
@@ -419,6 +558,51 @@ export const leaveService = {
       pendingRequests,
       approvedRequests,
       rejectedRequests
+    };
+  },
+
+  /**
+   * Leave History with pagination and company filter
+   */
+  async getLeaveHistory({ employeeId, companyId, filters = {}, pagination = { page: 1, limit: 20 } }) {
+    const where = {};
+    if (employeeId) where.employeeId = employeeId;
+    if (companyId) {
+      where.employee = { companyId };
+    }
+    if (filters.status) where.status = filters.status;
+    if (filters.year) {
+      const y = parseInt(filters.year, 10);
+      where.startDate = {
+        gte: new Date(Date.UTC(y, 0, 1)),
+        lte: new Date(Date.UTC(y, 11, 31, 23, 59, 59))
+      };
+    }
+
+    const page = parseInt(pagination?.page, 10) || 1;
+    const limit = parseInt(pagination?.limit, 10) || 20;
+
+    const [history, total] = await Promise.all([
+      prisma.leaveRequest.findMany({
+        where,
+        include: {
+          leaveType: {
+            select: { id: true, name: true, code: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.leaveRequest.count({ where })
+    ]);
+
+    return {
+      leaves: history,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
     };
   },
 

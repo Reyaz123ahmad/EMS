@@ -2,6 +2,14 @@ import api from './api.js';
 
 export const attendanceSecurityService = {
   /**
+   * Real-time camera liveness detection (blink, head pose direction)
+   */
+  async detectLiveness(data) {
+    const response = await api.post('/attendance-security/liveness/detect', data);
+    return response.data?.data || response.data;
+  },
+
+  /**
    * Request randomized liveness challenge
    */
   async createLivenessChallenge(data = {}) {

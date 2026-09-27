@@ -32,6 +32,10 @@ export default function LeaveCalendar({ month, year, leaves = [], onMonthChange,
 
   const renderDays = () => {
     const cells = [];
+    const leavesArray = Array.isArray(leaves)
+      ? leaves
+      : (leaves?.leaves || leaves?.data?.data || leaves?.data || []);
+
     // Blank cells before first day
     for (let i = 0; i < firstDayIndex; i++) {
       cells.push(<div key={`empty-${i}`} className="min-h-[100px] bg-slate-900/20 border border-slate-800/40 rounded-lg opacity-40"></div>);
@@ -40,10 +44,15 @@ export default function LeaveCalendar({ month, year, leaves = [], onMonthChange,
     // Days in current month
     for (let day = 1; day <= daysInMonth; day++) {
       const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const dayLeaves = leaves.filter((l) => {
-        const start = new Date(l.startDate).toISOString().split('T')[0];
-        const end = new Date(l.endDate).toISOString().split('T')[0];
-        return dateStr >= start && dateStr <= end;
+      const dayLeaves = leavesArray.filter((l) => {
+        if (!l || !l.startDate || !l.endDate) return false;
+        try {
+          const start = new Date(l.startDate).toISOString().split('T')[0];
+          const end = new Date(l.endDate).toISOString().split('T')[0];
+          return dateStr >= start && dateStr <= end;
+        } catch (e) {
+          return false;
+        }
       });
 
       const isToday = new Date().toISOString().split('T')[0] === dateStr;

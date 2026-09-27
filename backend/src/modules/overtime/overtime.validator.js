@@ -25,12 +25,10 @@ export const updateOvertimeRuleSchema = Joi.object({
 }).unknown(true);
 
 export const applyOvertimeSchema = Joi.object({
-  companyId: Joi.string().uuid().optional(),
-  employeeId: Joi.string().uuid().optional(),
   date: Joi.date().iso().required(),
-  requestedMinutes: Joi.number().integer().positive().max(1440).optional(),
-  minutes: Joi.number().integer().positive().max(1440).optional(),
-  reason: Joi.string().trim().max(500).optional().allow(null, '')
+  requestedMinutes: Joi.number().integer().min(15).max(720).optional(),
+  minutes: Joi.number().integer().min(15).max(720).optional(),
+  reason: Joi.string().max(500).optional().allow('', null)
 }).unknown(true);
 
 export const bulkApproveOvertimeSchema = Joi.object({

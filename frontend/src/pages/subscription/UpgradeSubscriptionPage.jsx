@@ -1,22 +1,51 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { usePlans, useCreateOrder, useVerifyPayment } from '../../hooks/useSubscription.js';
-import { Check, ShieldCheck, ArrowLeft, CreditCard, Sparkles } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePlans } from '../../hooks/useSubscription.js';
+import paymentService from '../../services/payment.service.js';
+import useAuthStore from '../../store/auth.store.js';
+import { Check, ShieldCheck, ArrowLeft, CreditCard, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import Card from '../../components/ui/Card.jsx';
+import Button from '../../components/ui/Button.jsx';
+import EmptyState from '../../components/ui/EmptyState.jsx';
 
 export function UpgradeSubscriptionPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN' || user?.roles?.includes('SUPER_ADMIN');
+
   const { data: plans = [], isLoading: loadingPlans } = usePlans();
-  const { mutateAsync: createOrder, isPending: creatingOrder } = useCreateOrder();
-  const { mutateAsync: verifyPayment, isPending: verifyingPayment } = useVerifyPayment();
+  const { data: razorpayConfig } = useQuery({
+    queryKey: ['razorpay-config'],
+    queryFn: () => paymentService.getRazorpayConfig()
+  });
 
   const [selectedPlanId, setSelectedPlanId] = useState(
     location.state?.selectedPlan?.id || plans[0]?.id || ''
   );
   const [billingCycle, setBillingCycle] = useState('monthly');
+  const [processing, setProcessing] = useState(false);
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[0];
+
+  if (isSuperAdmin) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6 py-6 px-4 sm:px-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+          Subscription Management
+        </h1>
+        <Card className="p-8 text-center">
+          <EmptyState
+            title="Super Admin Access"
+            message="Super Admins have platform-level access. No organization subscription is required."
+          />
+        </Card>
+      </div>
+    );
+  }
 
   const handleCheckout = async () => {
     if (!selectedPlan) {
@@ -24,29 +53,90 @@ export function UpgradeSubscriptionPage() {
       return;
     }
 
-    try {
-      toast.loading('Initiating Razorpay checkout...');
-      const order = await createOrder({
-        planId: selectedPlan.id,
-        billingCycle,
-      });
+    if (processing) return;
+    setProcessing(true);
 
-      // Simulate or trigger Razorpay Checkout
-      const mockPaymentPayload = {
-        razorpayOrderId: order?.orderId || `order_${Date.now()}`,
-        razorpayPaymentId: `pay_${Date.now()}`,
-        razorpaySignature: `sig_${Date.now()}`,
-        planId: selectedPlan.id,
-        billingCycle,
+    try {
+      // 1. Check if Razorpay script is loaded
+      if (typeof window.Razorpay === 'undefined') {
+        throw new Error('Razorpay SDK not loaded. Please refresh the page.');
+      }
+
+      // 2. Get Razorpay Key
+      const keyId = razorpayConfig?.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID;
+      if (!keyId) {
+        throw new Error('Razorpay key not configured. Contact admin.');
+      }
+
+      // 3. Create order on backend
+      const order = await paymentService.createOrder(selectedPlan.id, billingCycle);
+
+      if (!order?.orderId) {
+        throw new Error('Failed to create payment order');
+      }
+
+      // 4. Configure Razorpay modal options
+      const options = {
+        key: keyId,
+        amount: order.amount,
+        currency: order.currency || 'INR',
+        name: 'EMS Platform',
+        description: `${selectedPlan.name} Subscription - ${billingCycle}`,
+        order_id: order.orderId,
+        prefill: {
+          name: order.user?.name || user?.name || '',
+          email: order.user?.email || user?.email || '',
+          contact: order.user?.phone || user?.phone || ''
+        },
+        theme: {
+          color: '#4f46e5'
+        },
+        handler: async function (response) {
+          try {
+            toast.loading('Verifying payment and activating plan...');
+            await paymentService.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              planId: selectedPlan.id,
+              billingCycle
+            });
+
+            toast.dismiss();
+            toast.success(`Payment successful! ${selectedPlan.name} plan activated.`);
+            queryClient.invalidateQueries({ queryKey: ['current-subscription'] });
+            queryClient.invalidateQueries({ queryKey: ['subscription-history'] });
+            queryClient.invalidateQueries({ queryKey: ['subscription-stats'] });
+            navigate('/subscription/current');
+          } catch (verifyErr) {
+            toast.dismiss();
+            toast.error(verifyErr.response?.data?.message || verifyErr.message || 'Payment verification failed');
+          } finally {
+            setProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            toast.info('Payment cancelled');
+            setProcessing(false);
+          }
+        }
       };
 
-      await verifyPayment(mockPaymentPayload);
-      toast.dismiss();
-      toast.success(`Successfully upgraded to ${selectedPlan.name} plan!`);
-      navigate('/subscription/current');
+      const rzp = new window.Razorpay(options);
+
+      rzp.on('payment.failed', function (response) {
+        toast.error('Payment failed: ' + (response.error?.description || 'Transaction failed'));
+        setProcessing(false);
+      });
+
+      rzp.open();
     } catch (err) {
-      toast.dismiss();
-      toast.error(err.message || 'Payment failed');
+      toast.error(err.message || 'Failed to initiate payment');
+      setProcessing(false);
     }
   };
 
@@ -60,7 +150,7 @@ export function UpgradeSubscriptionPage() {
     <div className="max-w-4xl mx-auto space-y-8 py-6 px-4 sm:px-6">
       <button
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+        className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
       >
         <ArrowLeft className="h-4 w-4" /> Back
       </button>
@@ -87,6 +177,7 @@ export function UpgradeSubscriptionPage() {
             </div>
             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
               <button
+                type="button"
                 onClick={() => setBillingCycle('monthly')}
                 className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
                   billingCycle === 'monthly'
@@ -97,6 +188,7 @@ export function UpgradeSubscriptionPage() {
                 Monthly
               </button>
               <button
+                type="button"
                 onClick={() => setBillingCycle('yearly')}
                 className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
                   billingCycle === 'yearly'
@@ -183,14 +275,24 @@ export function UpgradeSubscriptionPage() {
             </span>
           </div>
 
-          <button
+          <Button
+            type="button"
             onClick={handleCheckout}
-            disabled={creatingOrder || verifyingPayment}
+            disabled={processing || loadingPlans}
             className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md hover:shadow-indigo-500/25 transition-all disabled:opacity-50"
           >
-            <CreditCard className="h-4 w-4" />
-            {creatingOrder || verifyingPayment ? 'Processing...' : 'Pay with Razorpay'}
-          </button>
+            {processing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Connecting Razorpay...
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-4 w-4" />
+                Pay with Razorpay
+              </>
+            )}
+          </Button>
 
           <div className="flex items-center justify-center gap-2 text-xs text-slate-400 text-center">
             <ShieldCheck className="h-4 w-4 text-emerald-500" /> 256-bit Encrypted Secure Checkout

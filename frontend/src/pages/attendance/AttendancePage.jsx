@@ -54,8 +54,9 @@ export const AttendancePage = () => {
   const startBreakMutation = useStartBreak();
   const endBreakMutation = useEndBreak();
 
-  // Wizard state for punch operations: null | 'CHECK_IN' | 'CHECK_OUT'
+  // Wizard state for punch operations: null | 'CHECK_IN' | 'CHECK_OUT' | 'BREAK_START' | 'BREAK_END'
   const [activeAction, setActiveAction] = useState(null);
+  const [selectedBreakType, setSelectedBreakType] = useState('SHORT');
   const [wizardStep, setWizardStep] = useState(1); // 1: Camera, 2: Liveness, 3: FaceMatch, 4: Geo, 5: Ready
   const [photo, setPhoto] = useState(null);
   const [livenessResult, setLivenessResult] = useState(null);
@@ -81,6 +82,7 @@ export const AttendancePage = () => {
 
   const resetWizard = () => {
     setActiveAction(null);
+    setSelectedBreakType('SHORT');
     setWizardStep(1);
     setPhoto(null);
     setLivenessResult(null);
@@ -91,7 +93,7 @@ export const AttendancePage = () => {
     setRemarks('');
   };
 
-  const startPunchFlow = (actionType) => {
+  const startPunchFlow = (actionType, extra = {}) => {
     if (isHoliday) {
       toast.error(`Today is a public holiday: ${holiday?.holiday?.name || 'Holiday'}. Attendance not required.`);
       return;
@@ -99,6 +101,9 @@ export const AttendancePage = () => {
     if (!hasShift && actionType === 'CHECK_IN') {
       toast.error('No shift assigned. Contact HR to assign a shift.');
       return;
+    }
+    if (extra.breakType) {
+      setSelectedBreakType(extra.breakType);
     }
     setActiveAction(actionType);
     setWizardStep(1);
@@ -110,16 +115,15 @@ export const AttendancePage = () => {
   const handleCameraCapture = (capturedPhoto) => {
     setPhoto(capturedPhoto);
     if (capturedPhoto) {
-      if (activeMode === 'face') {
-        setWizardStep(2);
-      } else {
-        setWizardStep(4);
-      }
+      setWizardStep(4);
     }
   };
 
   const handleLivenessComplete = (res) => {
     setLivenessResult(res);
+    if (res?.photo) {
+      setPhoto(res.photo);
+    }
     setWizardStep(3);
   };
 
@@ -145,6 +149,7 @@ export const AttendancePage = () => {
     const payload = {
       mode: activeMode,
       photo: photo || undefined,
+      livenessScore: livenessResult?.score || 0.95,
       location: {
         lat: location.lat,
         lng: location.lng,
@@ -170,49 +175,33 @@ export const AttendancePage = () => {
       } else if (activeAction === 'CHECK_OUT') {
         const res = await checkOutMutation.mutateAsync(payload);
         toast.success(res.message || 'Check-out recorded successfully!');
+      } else if (activeAction === 'BREAK_START') {
+        const res = await startBreakMutation.mutateAsync({
+          ...payload,
+          breakType: selectedBreakType || 'SHORT'
+        });
+        toast.success(res.message || 'Break started with biometric verification!');
+      } else if (activeAction === 'BREAK_END') {
+        const res = await endBreakMutation.mutateAsync(payload);
+        if (res.warning) {
+          toast.warning(res.warning);
+        } else {
+          toast.success(res.message || 'Break ended with biometric verification!');
+        }
       }
       refetchStatus();
       resetWizard();
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Attendance verification rejected');
+      toast.error(err.response?.data?.message || err.message || 'Verification rejected');
     }
   };
 
-  const handleStartBreak = async (breakType = 'SHORT') => {
-    try {
-      const payload = {
-        breakType,
-        deviceInfo: {
-          deviceId: 'web-browser-' + (user?.id || 'client'),
-          userAgent: navigator.userAgent,
-        },
-      };
-      const res = await startBreakMutation.mutateAsync(payload);
-      toast.success(res.message || 'Break started. Timer running.');
-      refetchStatus();
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to initiate break');
-    }
+  const handleStartBreak = (breakType = 'SHORT') => {
+    startPunchFlow('BREAK_START', { breakType });
   };
 
-  const handleEndBreak = async () => {
-    try {
-      const payload = {
-        deviceInfo: {
-          deviceId: 'web-browser-' + (user?.id || 'client'),
-          userAgent: navigator.userAgent,
-        },
-      };
-      const res = await endBreakMutation.mutateAsync(payload);
-      if (res.warning) {
-        toast.warning(res.warning);
-      } else {
-        toast.success(res.message || 'Break ended. Shift resumed.');
-      }
-      refetchStatus();
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to end break');
-    }
+  const handleEndBreak = () => {
+    startPunchFlow('BREAK_END');
   };
 
   return (
@@ -363,15 +352,20 @@ export const AttendancePage = () => {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white">
-                      {activeAction === 'CHECK_IN' ? 'Check-In Verification' : 'Check-Out Verification'}
+                      {activeAction === 'CHECK_IN' ? 'Check-In Verification' :
+                       activeAction === 'CHECK_OUT' ? 'Check-Out Verification' :
+                       activeAction === 'BREAK_START' ? `Start ${selectedBreakType === 'LUNCH' ? 'Lunch' : 'Short'} Break Verification` :
+                       'Conclude Break Verification'}
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Step {wizardStep} of 4: {
-                        wizardStep === 1 ? 'Optical Camera Capture' :
-                        wizardStep === 2 ? 'Anti-Spoof Gesture Liveness' :
-                        wizardStep === 3 ? 'Facial Vector Matching' :
-                        'Geofence & Device Attestation'
-                      }
+                      {activeMode === 'face' ? (
+                        wizardStep === 1 ? 'Step 1 of 3: Anti-Spoof Real-Time Gesture Liveness' :
+                        wizardStep === 3 ? 'Step 2 of 3: Facial Vector Biometric Matching' :
+                        'Step 3 of 3: Geofence & Device Attestation'
+                      ) : (
+                        wizardStep === 1 ? 'Step 1 of 2: Optical Camera Capture' :
+                        'Step 2 of 2: Geofence & Shift Attestation'
+                      )}
                     </p>
                   </div>
                 </div>
@@ -387,16 +381,16 @@ export const AttendancePage = () => {
 
               {/* Wizard Content by Step */}
               <div className="space-y-6">
-                {wizardStep === 1 && (
-                  <CameraCapture onCapture={handleCameraCapture} />
-                )}
-
-                {wizardStep === 2 && (
+                {wizardStep === 1 && activeMode === 'face' && (
                   <LivenessCheck
                     employeeId={user?.employeeId || user?.id}
                     onComplete={handleLivenessComplete}
                     onCancel={resetWizard}
                   />
+                )}
+
+                {wizardStep === 1 && activeMode !== 'face' && (
+                  <CameraCapture onCapture={handleCameraCapture} />
                 )}
 
                 {wizardStep === 3 && (
@@ -456,15 +450,22 @@ export const AttendancePage = () => {
                           !location ||
                           !isLocationValid ||
                           checkInMutation.isPending ||
-                          checkOutMutation.isPending
+                          checkOutMutation.isPending ||
+                          startBreakMutation.isPending ||
+                          endBreakMutation.isPending
                         }
                         onClick={submitPunch}
                         className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-xl shadow-indigo-500/25 hover:scale-105 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                       >
                         <ShieldCheck className="h-4 w-4" />
-                        {checkInMutation.isPending || checkOutMutation.isPending
+                        {checkInMutation.isPending || checkOutMutation.isPending || startBreakMutation.isPending || endBreakMutation.isPending
                           ? 'Cryptographic Verification...'
-                          : `Confirm & Submit ${activeAction === 'CHECK_IN' ? 'Check-In' : 'Check-Out'}`}
+                          : `Confirm & Submit ${
+                              activeAction === 'CHECK_IN' ? 'Check-In' :
+                              activeAction === 'CHECK_OUT' ? 'Check-Out' :
+                              activeAction === 'BREAK_START' ? 'Break Start' :
+                              'Break End'
+                            }`}
                       </button>
                     </div>
                   </div>

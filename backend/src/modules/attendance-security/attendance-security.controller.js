@@ -3,6 +3,11 @@ import {
   fraudDetectionService
 } from './attendance-security.service.js';
 import {
+  detectFaceWithLandmarks,
+  detectHeadPose,
+  detectBlink
+} from '../../services/face.service.js';
+import {
   livenessChallengeSchema,
   livenessVerifySchema,
   reviewFraudSignalSchema,
@@ -10,6 +15,50 @@ import {
 } from './attendance-security.validator.js';
 
 export const attendanceSecurityController = {
+  /**
+   * POST /attendance-security/liveness/detect
+   * Real-time continuous landmark, blink & head direction detection
+   */
+  async detectLiveness(req, res, next) {
+    try {
+      const { photo } = req.body;
+      if (!photo) {
+        return res.status(400).json({ status: 'error', message: 'Photo is required for liveness detection' });
+      }
+
+      const detection = await detectFaceWithLandmarks(photo);
+      if (!detection) {
+        return res.status(200).json({
+          status: 'ok',
+          data: {
+            faceDetected: false,
+            headDirection: 'UNKNOWN',
+            isBlinking: false
+          },
+          message: 'No face detected in live camera frame'
+        });
+      }
+
+      const headPose = detectHeadPose(detection.landmarks);
+      const blink = detectBlink(detection.landmarks);
+
+      return res.status(200).json({
+        status: 'ok',
+        data: {
+          faceDetected: true,
+          headDirection: headPose.direction,
+          yaw: headPose.yaw,
+          isBlinking: blink.isBlinking,
+          ear: blink.ear,
+          box: detection.box,
+          score: detection.score
+        },
+        message: 'Liveness detected'
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
   /**
    * POST /attendance-security/liveness/challenge
    */

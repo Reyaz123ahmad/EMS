@@ -12,12 +12,24 @@ export const documentService = {
   },
 
   async uploadDocument(formData) {
-    const response = await api.post('/documents/upload', formData, {
+    let payload = formData;
+    if (formData instanceof FormData) {
+      payload = new FormData();
+      for (const [key, value] of formData.entries()) {
+        if (key === 'employeeId' && (!value || value === '' || value === 'undefined' || value === 'null')) {
+          continue;
+        }
+        if (value !== '' && value !== null && value !== undefined) {
+          payload.append(key, value);
+        }
+      }
+    }
+    const response = await api.post('/documents/upload', payload, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     });
-    return response.data;
+    return response.data?.data || response.data;
   },
 
   async verifyDocument(id, data = {}) {

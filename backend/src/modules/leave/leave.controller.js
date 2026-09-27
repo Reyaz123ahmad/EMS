@@ -12,7 +12,17 @@ export const leaveController = {
     try {
       const companyId = req.user.companyId;
       const types = await leaveService.listLeaveTypes(companyId);
-      res.status(200).json({ status: 'ok', data: { types } });
+      res.status(200).json({ status: 'ok', data: { types, total: types.length } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getLeaveTypes(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const result = await leaveService.getLeaveTypes({ companyId });
+      res.status(200).json({ status: 'ok', success: true, message: 'Leave types retrieved', data: result });
     } catch (err) {
       next(err);
     }
@@ -24,8 +34,29 @@ export const leaveController = {
       if (error) return res.status(400).json({ status: 'error', message: error.details[0].message });
 
       const companyId = req.user.companyId;
-      const created = await leaveService.createLeaveType(companyId, value);
+      const created = await leaveService.createLeaveType({
+        companyId,
+        data: value,
+        createdBy: req.user.id || req.user.userId
+      });
       res.status(201).json({ status: 'ok', message: 'Leave type created', data: created });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async createLeaveType(req, res, next) {
+    try {
+      const { error, value } = createLeaveTypeSchema.validate(req.body);
+      if (error) return res.status(400).json({ status: 'error', message: error.details[0].message });
+
+      const companyId = req.user.companyId;
+      const created = await leaveService.createLeaveType({
+        companyId,
+        data: value,
+        createdBy: req.user.id || req.user.userId
+      });
+      res.status(201).json({ status: 'ok', success: true, message: 'Leave type created', data: created });
     } catch (err) {
       next(err);
     }
@@ -33,11 +64,57 @@ export const leaveController = {
 
   async updateType(req, res, next) {
     try {
+      const { id } = req.params;
+      const companyId = req.user.companyId;
+
       const { error, value } = updateLeaveTypeSchema.validate(req.body);
       if (error) return res.status(400).json({ status: 'error', message: error.details[0].message });
 
-      const updated = await leaveService.updateLeaveType(req.params.id, value);
-      res.status(200).json({ status: 'ok', message: 'Leave type updated', data: updated });
+      const allowed = ['name', 'code', 'description', 'maxDaysPerYear', 'daysAllowed', 'isPaid', 'carryForward', 'maxCarryForward', 'maxCarryForwardDays', 'isActive'];
+      const cleanData = {};
+      for (const key of allowed) {
+        if (value[key] !== undefined) {
+          cleanData[key] = value[key];
+        }
+      }
+
+      const updated = await leaveService.updateLeaveType({
+        id,
+        companyId,
+        data: cleanData,
+        updatedBy: req.user.id || req.user.userId
+      });
+
+      res.status(200).json({ status: 'ok', success: true, message: 'Leave type updated', data: updated });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async updateLeaveType(req, res, next) {
+    try {
+      const { id } = req.params;
+      const companyId = req.user.companyId;
+
+      const { error, value } = updateLeaveTypeSchema.validate(req.body);
+      if (error) return res.status(400).json({ status: 'error', message: error.details[0].message });
+
+      const allowed = ['name', 'code', 'description', 'maxDaysPerYear', 'daysAllowed', 'isPaid', 'carryForward', 'maxCarryForward', 'maxCarryForwardDays', 'isActive'];
+      const cleanData = {};
+      for (const key of allowed) {
+        if (value[key] !== undefined) {
+          cleanData[key] = value[key];
+        }
+      }
+
+      const updated = await leaveService.updateLeaveType({
+        id,
+        companyId,
+        data: cleanData,
+        updatedBy: req.user.id || req.user.userId
+      });
+
+      res.status(200).json({ status: 'ok', success: true, message: 'Leave type updated', data: updated });
     } catch (err) {
       next(err);
     }
@@ -46,7 +123,16 @@ export const leaveController = {
   async deleteType(req, res, next) {
     try {
       await leaveService.deleteLeaveType(req.params.id);
-      res.status(200).json({ status: 'ok', message: 'Leave type deleted successfully' });
+      res.status(200).json({ status: 'ok', success: true, message: 'Leave type deleted successfully' });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async deleteLeaveType(req, res, next) {
+    try {
+      await leaveService.deleteLeaveType(req.params.id);
+      res.status(200).json({ status: 'ok', success: true, message: 'Leave type deleted successfully' });
     } catch (err) {
       next(err);
     }
@@ -199,6 +285,35 @@ export const leaveController = {
       const companyId = req.user.companyId;
       const stats = await leaveService.getLeaveStats(companyId, req.query);
       res.status(200).json({ status: 'ok', data: { stats } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getLeaveHistory(req, res, next) {
+    try {
+      const employee = await prisma.employee.findFirst({
+        where: {
+          OR: [
+            { userId: req.user.id || req.user.userId },
+            { id: req.user.employeeId || '' }
+          ]
+        }
+      });
+
+      const employeeId = employee ? employee.id : (req.user.employeeId || req.user.id);
+
+      const result = await leaveService.getLeaveHistory({
+        employeeId: employeeId,
+        companyId: req.user.companyId,
+        filters: req.query,
+        pagination: {
+          page: parseInt(req.query.page, 10) || 1,
+          limit: parseInt(req.query.limit, 10) || 20
+        }
+      });
+
+      res.status(200).json({ status: 'ok', success: true, message: 'Leave history retrieved', data: result });
     } catch (err) {
       next(err);
     }

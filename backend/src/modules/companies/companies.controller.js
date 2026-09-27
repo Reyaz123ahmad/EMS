@@ -1,4 +1,5 @@
 import companiesService from './companies.service.js';
+import { COMPANY_SETTINGS_DEFAULTS } from './companies.constants.js';
 import {
   sendCompanyOTPSchema,
   verifyCompanyOTPSchema,
@@ -186,9 +187,7 @@ export const companiesController = {
    */
   async getSettingsSchema(req, res, next) {
     try {
-      const { settingsService } = await import('../../services/settings.service.js');
-      const schema = settingsService.getSettingsSchema();
-      res.status(200).json({ status: 'ok', data: schema });
+      res.status(200).json({ status: 'ok', data: COMPANY_SETTINGS_DEFAULTS });
     } catch (err) {
       next(err);
     }
@@ -197,8 +196,18 @@ export const companiesController = {
   async getSettingByType(req, res, next) {
     try {
       const { id, type } = req.params;
-      const { settingsService } = await import('../../services/settings.service.js');
-      const data = await settingsService.getSettingsWithDefaults(id, type);
+      const settings = await companiesService.getCompanySettings(id);
+      const fieldMap = {
+        attendance: 'attendanceSettings',
+        security: 'securitySettings',
+        leave: 'leaveSettings',
+        payroll: 'payrollSettings',
+        notifications: 'notificationSettings',
+        general: 'generalSettings'
+      };
+      const field = fieldMap[type] || `${type}Settings`;
+      const defaults = COMPANY_SETTINGS_DEFAULTS[field] || {};
+      const data = { ...defaults, ...(settings[field] || {}) };
       res.status(200).json({ status: 'ok', data });
     } catch (err) {
       next(err);
@@ -208,9 +217,8 @@ export const companiesController = {
   async updateSettingByType(req, res, next) {
     try {
       const { id, type } = req.params;
-      const { settingsService } = await import('../../services/settings.service.js');
-      const data = await settingsService.updateSettings(id, type, req.body);
-      res.status(200).json({ status: 'ok', data });
+      const updated = await companiesService.updateCompanySettings(id, type, req.body);
+      res.status(200).json({ status: 'ok', data: updated });
     } catch (err) {
       next(err);
     }
@@ -220,8 +228,17 @@ export const companiesController = {
     try {
       const { id } = req.params;
       const { settingType = 'general' } = req.body;
-      const { settingsService } = await import('../../services/settings.service.js');
-      const result = await settingsService.resetSettings({ companyId: id, settingType });
+      const fieldMap = {
+        attendance: 'attendanceSettings',
+        security: 'securitySettings',
+        leave: 'leaveSettings',
+        payroll: 'payrollSettings',
+        notifications: 'notificationSettings',
+        general: 'generalSettings'
+      };
+      const field = fieldMap[settingType] || `${settingType}Settings`;
+      const defaults = COMPANY_SETTINGS_DEFAULTS[field] || {};
+      const result = await companiesService.updateCompanySettings(id, settingType, defaults);
       res.status(200).json({ status: 'ok', data: result });
     } catch (err) {
       next(err);

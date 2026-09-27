@@ -5,6 +5,12 @@ import { requireRole } from '../../middlewares/role.middleware.js';
 
 const router = Router();
 
+// Razorpay config & order endpoints
+router.get('/razorpay-config', authenticate, controller.getRazorpayConfig);
+router.post('/create-order', authenticate, controller.createOrder);
+router.post('/orders', authenticate, controller.createOrder);
+router.post('/verify', authenticate, controller.verifyPayment);
+
 // Webhook endpoint (public with signature verification)
 router.post('/webhook', controller.handleWebhook);
 

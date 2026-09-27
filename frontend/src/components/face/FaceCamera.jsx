@@ -10,30 +10,51 @@ export default function FaceCamera({ onCapture, disabled = false }) {
   const [capturedPhoto, setCapturedPhoto] = useState(null);
 
   useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, [facingMode]);
+    let isMounted = true;
+    const checkMounted = () => isMounted;
 
-  const startCamera = async () => {
-    stopCamera();
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode,
-          width: { ideal: 640 },
-          height: { ideal: 480 }
+    const startCamera = async () => {
+      stopCamera();
+      try {
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode,
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          }
+        });
+
+        if (!checkMounted()) {
+          mediaStream.getTracks().forEach((t) => t.stop());
+          return;
         }
-      });
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
+
+        setStream(mediaStream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          try {
+            await videoRef.current.play();
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              console.error('Video play error:', err);
+            }
+          }
+        }
+        setHasCamera(true);
+      } catch (err) {
+        if (!checkMounted()) return;
+        console.warn('Camera access unavailable:', err.message);
+        setHasCamera(false);
       }
-      setHasCamera(true);
-    } catch (err) {
-      console.warn('Camera access unavailable:', err.message);
-      setHasCamera(false);
-    }
-  };
+    };
+
+    startCamera();
+
+    return () => {
+      isMounted = false;
+      stopCamera();
+    };
+  }, [facingMode]);
 
   const stopCamera = () => {
     if (stream) {

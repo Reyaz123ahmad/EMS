@@ -48,16 +48,33 @@ export const holidayCalendarService = {
    * Festival Holidays
    */
   async listHolidays(companyId, filters = {}) {
-    const where = {
-      calendar: { companyId }
-    };
+    const where = {};
+    if (companyId) {
+      where.calendar = { companyId };
+    }
     if (filters.calendarId) where.calendarId = filters.calendarId;
-    if (filters.year) where.calendar.year = parseInt(filters.year, 10);
+    if (filters.year && !filters.month) {
+      where.calendar = { ...where.calendar, year: parseInt(filters.year, 10) };
+    }
+    if (filters.month && filters.year) {
+      const m = parseInt(filters.month, 10);
+      const y = parseInt(filters.year, 10);
+      const startDate = new Date(Date.UTC(y, m - 1, 1));
+      const endDate = new Date(Date.UTC(y, m, 0, 23, 59, 59));
+      where.date = { gte: startDate, lte: endDate };
+    } else if (filters.year) {
+      const y = parseInt(filters.year, 10);
+      const startDate = new Date(Date.UTC(y, 0, 1));
+      const endDate = new Date(Date.UTC(y, 11, 31, 23, 59, 59));
+      where.date = { gte: startDate, lte: endDate };
+    }
 
     return prisma.festivalHoliday.findMany({
       where,
       include: {
-        calendar: true,
+        calendar: {
+          select: { name: true, year: true, companyId: true }
+        },
         _count: {
           select: { assignments: true }
         }

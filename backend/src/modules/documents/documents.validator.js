@@ -33,15 +33,20 @@ export const uploadAadhaarSchema = Joi.object({
 });
 
 export const uploadDocumentSchema = Joi.object({
-  documentTypeId: Joi.string().uuid().required(),
-  employeeId: Joi.string().uuid().required(),
-  fileName: Joi.string().optional(),
-  fileUrl: Joi.string().uri().optional(),
-  publicId: Joi.string().optional(),
-  fileSize: Joi.number().optional(),
-  mimeType: Joi.string().optional(),
-  format: Joi.string().optional()
-});
+  employeeId: Joi.string().uuid().optional().allow('', null),
+  documentTypeId: Joi.string().uuid().optional().allow('', null),
+  type: Joi.string().optional().allow('', null),
+  title: Joi.string().optional().allow('', null),
+  notes: Joi.string().optional().allow('', null),
+  issueDate: Joi.string().optional().allow('', null),
+  expiryDate: Joi.string().optional().allow('', null),
+  fileName: Joi.string().optional().allow('', null),
+  fileUrl: Joi.string().optional().allow('', null),
+  publicId: Joi.string().optional().allow('', null),
+  fileSize: Joi.number().optional().allow('', null),
+  mimeType: Joi.string().optional().allow('', null),
+  format: Joi.string().optional().allow('', null)
+}).unknown(true);
 
 export const verifyDocumentSchema = Joi.object({
   notes: Joi.string().max(500).optional().allow('')

@@ -3,10 +3,11 @@ import * as analyticsService from './payment-analytics.service.js';
 export async function getRevenueStats(req, res, next) {
   try {
     const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
-    const companyId = isSuperAdmin ? req.query.companyId : req.user?.companyId || req.user?.company?.id;
+    const companyId = isSuperAdmin ? req.query.companyId : (req.user?.companyId || req.user?.company?.id);
+    const role = isSuperAdmin ? 'SUPER_ADMIN' : (req.user?.role || req.user?.roles?.[0] || 'COMPANY_ADMIN');
     const { startDate, endDate } = req.query;
 
-    const data = await analyticsService.getRevenueStats({ companyId, startDate, endDate });
+    const data = await analyticsService.getRevenueStats({ companyId, role, startDate, endDate });
     res.status(200).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -16,9 +17,10 @@ export async function getRevenueStats(req, res, next) {
 export async function getMRR(req, res, next) {
   try {
     const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
-    const companyId = isSuperAdmin ? req.query.companyId : req.user?.companyId || req.user?.company?.id;
+    const companyId = isSuperAdmin ? req.query.companyId : (req.user?.companyId || req.user?.company?.id);
+    const role = isSuperAdmin ? 'SUPER_ADMIN' : (req.user?.role || req.user?.roles?.[0] || 'COMPANY_ADMIN');
 
-    const data = await analyticsService.getMRR({ companyId });
+    const data = await analyticsService.getMRR({ companyId, role });
     res.status(200).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -28,9 +30,10 @@ export async function getMRR(req, res, next) {
 export async function getARR(req, res, next) {
   try {
     const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
-    const companyId = isSuperAdmin ? req.query.companyId : req.user?.companyId || req.user?.company?.id;
+    const companyId = isSuperAdmin ? req.query.companyId : (req.user?.companyId || req.user?.company?.id);
+    const role = isSuperAdmin ? 'SUPER_ADMIN' : (req.user?.role || req.user?.roles?.[0] || 'COMPANY_ADMIN');
 
-    const data = await analyticsService.getARR({ companyId });
+    const data = await analyticsService.getARR({ companyId, role });
     res.status(200).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -40,9 +43,10 @@ export async function getARR(req, res, next) {
 export async function getChurnRate(req, res, next) {
   try {
     const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
-    const companyId = isSuperAdmin ? req.query.companyId : req.user?.companyId || req.user?.company?.id;
+    const companyId = isSuperAdmin ? req.query.companyId : (req.user?.companyId || req.user?.company?.id);
+    const role = isSuperAdmin ? 'SUPER_ADMIN' : (req.user?.role || req.user?.roles?.[0] || 'COMPANY_ADMIN');
 
-    const data = await analyticsService.getChurnRate({ companyId });
+    const data = await analyticsService.getChurnRate({ companyId, role });
     res.status(200).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -52,9 +56,10 @@ export async function getChurnRate(req, res, next) {
 export async function getPaymentSuccessRate(req, res, next) {
   try {
     const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
-    const companyId = isSuperAdmin ? req.query.companyId : req.user?.companyId || req.user?.company?.id;
+    const companyId = isSuperAdmin ? req.query.companyId : (req.user?.companyId || req.user?.company?.id);
+    const role = isSuperAdmin ? 'SUPER_ADMIN' : (req.user?.role || req.user?.roles?.[0] || 'COMPANY_ADMIN');
 
-    const data = await analyticsService.getPaymentSuccessRate({ companyId });
+    const data = await analyticsService.getPaymentSuccessRate({ companyId, role });
     res.status(200).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -64,9 +69,10 @@ export async function getPaymentSuccessRate(req, res, next) {
 export async function getRefundRate(req, res, next) {
   try {
     const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
-    const companyId = isSuperAdmin ? req.query.companyId : req.user?.companyId || req.user?.company?.id;
+    const companyId = isSuperAdmin ? req.query.companyId : (req.user?.companyId || req.user?.company?.id);
+    const role = isSuperAdmin ? 'SUPER_ADMIN' : (req.user?.role || req.user?.roles?.[0] || 'COMPANY_ADMIN');
 
-    const data = await analyticsService.getRefundRate({ companyId });
+    const data = await analyticsService.getRefundRate({ companyId, role });
     res.status(200).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -76,9 +82,10 @@ export async function getRefundRate(req, res, next) {
 export async function getPaymentMethodStats(req, res, next) {
   try {
     const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
-    const companyId = isSuperAdmin ? req.query.companyId : req.user?.companyId || req.user?.company?.id;
+    const companyId = isSuperAdmin ? req.query.companyId : (req.user?.companyId || req.user?.company?.id);
+    const role = isSuperAdmin ? 'SUPER_ADMIN' : (req.user?.role || req.user?.roles?.[0] || 'COMPANY_ADMIN');
 
-    const data = await analyticsService.getPaymentMethodStats({ companyId });
+    const data = await analyticsService.getPaymentMethodStats({ companyId, role });
     res.status(200).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -88,9 +95,10 @@ export async function getPaymentMethodStats(req, res, next) {
 export async function getRevenueByPlan(req, res, next) {
   try {
     const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
-    const companyId = isSuperAdmin ? req.query.companyId : req.user?.companyId || req.user?.company?.id;
+    const companyId = isSuperAdmin ? req.query.companyId : (req.user?.companyId || req.user?.company?.id);
+    const role = isSuperAdmin ? 'SUPER_ADMIN' : (req.user?.role || req.user?.roles?.[0] || 'COMPANY_ADMIN');
 
-    const data = await analyticsService.getRevenueByPlan({ companyId });
+    const data = await analyticsService.getRevenueByPlan({ companyId, role });
     res.status(200).json({ success: true, data });
   } catch (err) {
     next(err);
@@ -107,3 +115,4 @@ export default {
   getPaymentMethodStats,
   getRevenueByPlan,
 };
+

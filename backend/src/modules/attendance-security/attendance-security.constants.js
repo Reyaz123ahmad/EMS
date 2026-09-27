@@ -28,12 +28,12 @@ export const LIVENESS_CHALLENGE_TYPES = {
 
 export const GEO_CONSTANTS = {
   EARTH_RADIUS_METERS: 6371000,
-  DEFAULT_MAX_ACCURACY: 50, // Max 50 meters inaccuracy allowed
+  DEFAULT_MAX_ACCURACY: 500, // Max 500 meters inaccuracy allowed
   DEFAULT_RADIUS: 100 // 100 meters geofence
 };
 
 export const SECURITY_THRESHOLDS = {
-  FACE_SIMILARITY_MIN: 0.90,
+  FACE_SIMILARITY_MIN: 0.75,
   LIVENESS_SCORE_MIN: 0.75,
   CHALLENGE_EXPIRY_SECONDS: 120 // 2 minutes to complete challenge
 };

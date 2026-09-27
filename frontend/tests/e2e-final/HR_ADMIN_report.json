@@ -1,0 +1,728 @@
+{
+  "role": "HR_ADMIN",
+  "email": "hr.admin.test@mindstocs.com",
+  "testedAt": "2026-09-27T12:27:41.119Z",
+  "totalPages": 34,
+  "totalButtons": 68,
+  "passed": 34,
+  "failed": 0,
+  "errors": 0,
+  "pages": [
+    {
+      "name": "dashboard",
+      "url": "/dashboard",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "dashboard > hr-admin",
+      "url": "/dashboard/hr-admin",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "employees",
+      "url": "/employees",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "employees > create",
+      "url": "/employees/create",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "organization > branches",
+      "url": "/organization/branches",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "organization > departments",
+      "url": "/organization/departments",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "organization > designations",
+      "url": "/organization/designations",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "attendance",
+      "url": "/attendance",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "attendance > logs",
+      "url": "/attendance/logs",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "attendance > monthly-summary",
+      "url": "/attendance/monthly-summary",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "attendance > calendar",
+      "url": "/attendance/calendar",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "leave > types",
+      "url": "/leave/types",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "leave > balance",
+      "url": "/leave/balance",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "leave > requests",
+      "url": "/leave/requests",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "leave > apply",
+      "url": "/leave/apply",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "payroll > salary-structure",
+      "url": "/payroll/salary-structure",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "payroll > runs",
+      "url": "/payroll/runs",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "payroll > slips",
+      "url": "/payroll/slips",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "overtime > rules",
+      "url": "/overtime/rules",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "overtime > records",
+      "url": "/overtime/records",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "shifts",
+      "url": "/shifts",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "holidays",
+      "url": "/holidays",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "documents",
+      "url": "/documents",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "reports",
+      "url": "/reports",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "approvals > requests",
+      "url": "/approvals/requests",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "approvals > history",
+      "url": "/approvals/history",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "assets",
+      "url": "/assets",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "emergency-attendance",
+      "url": "/emergency-attendance",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "face > status",
+      "url": "/face/status",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "face > approvals",
+      "url": "/face/approvals",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "notifications",
+      "url": "/notifications",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "profile",
+      "url": "/profile",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "ai > hub",
+      "url": "/ai/hub",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "settings > general",
+      "url": "/settings/general",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    }
+  ],
+  "failures": [],
+  "fixes": []
+}

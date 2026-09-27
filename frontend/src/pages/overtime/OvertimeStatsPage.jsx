@@ -1,24 +1,33 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
-import { useOvertimeStats } from '../../hooks/useOvertime';
-import { useAuthStore } from '../../store/authStore';
+import overtimeService from '../../services/overtime.service.js';
+import useAuthStore from '../../store/auth.store.js';
 import { formatCurrency } from '../../utils/formatters';
 
 export default function OvertimeStatsPage() {
   const { user } = useAuthStore();
   const companyId = user?.companyId;
 
-  const { data: statsData, isLoading, refetch } = useOvertimeStats({
-    companyId,
+  const { data: statsData, isLoading, refetch } = useQuery({
+    queryKey: ['overtime-stats', companyId],
+    queryFn: () => overtimeService.getOvertimeStats({ companyId }),
   });
 
-  const stats = statsData?.data?.data || statsData?.data || {
+  const stats = statsData?.data?.stats || statsData?.data || statsData?.stats || statsData || {
     totalHours: 0,
+    approvedHours: 0,
     totalApprovedHours: 0,
+    estimatedCost: 0,
     totalCost: 0,
     pendingCount: 0,
   };
+
+  const totalHours = stats.totalHours || 0;
+  const approvedHours = stats.approvedHours || stats.totalApprovedHours || 0;
+  const estimatedCost = stats.estimatedCost !== undefined ? stats.estimatedCost : (stats.totalCost || 0);
+  const pendingCount = stats.pendingCount || 0;
 
   return (
     <div className="space-y-6">
@@ -36,28 +45,28 @@ export default function OvertimeStatsPage() {
         <Card className="p-5 bg-gradient-to-br from-amber-500/10 to-transparent border-amber-500/20">
           <span className="text-xs font-semibold uppercase text-amber-400">Total Logged Overtime</span>
           <div className="text-2xl font-bold text-white mt-1">
-            {stats.totalHours || 0} Hours
+            {totalHours} Hours
           </div>
         </Card>
 
         <Card className="p-5 bg-gradient-to-br from-emerald-500/10 to-transparent border-emerald-500/20">
           <span className="text-xs font-semibold uppercase text-emerald-400">Approved Overtime</span>
           <div className="text-2xl font-bold text-white mt-1">
-            {stats.totalApprovedHours || 0} Hours
+            {approvedHours} Hours
           </div>
         </Card>
 
         <Card className="p-5 bg-gradient-to-br from-indigo-500/10 to-transparent border-indigo-500/20">
           <span className="text-xs font-semibold uppercase text-indigo-400">Estimated Cost Impact</span>
           <div className="text-2xl font-bold text-white mt-1">
-            {formatCurrency(stats.totalCost || 0)}
+            {formatCurrency(estimatedCost)}
           </div>
         </Card>
 
         <Card className="p-5 bg-gradient-to-br from-rose-500/10 to-transparent border-rose-500/20">
           <span className="text-xs font-semibold uppercase text-rose-400">Pending Approvals</span>
           <div className="text-2xl font-bold text-white mt-1">
-            {stats.pendingCount || 0} Requests
+            {pendingCount} Requests
           </div>
         </Card>
       </div>

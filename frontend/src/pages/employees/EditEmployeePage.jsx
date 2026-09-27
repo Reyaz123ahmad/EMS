@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { useEmployee, useUpdateEmployee } from '../../hooks/useEmployee.js';
 import { useBranches, useDepartments, useDesignations } from '../../hooks/useOrganization.js';
 import { Card } from '../../components/ui/Card.jsx';
@@ -9,6 +11,7 @@ import { Input } from '../../components/ui/Input.jsx';
 export function EditEmployeePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: empData, isLoading } = useEmployee(id);
   const updateMutation = useUpdateEmployee();
 
@@ -64,11 +67,39 @@ export function EditEmployeePage() {
     try {
       await updateMutation.mutateAsync({ id, data: formData });
       setSuccessMsg('Employee profile updated successfully!');
+      toast.success('Employee updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['employee', id] });
       setTimeout(() => {
         navigate(`/employees/${id}`);
-      }, 1200);
+      }, 1000);
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'Failed to update employee profile.');
+      const code = err.response?.data?.code;
+      const message = err.response?.data?.message || 'Failed to update employee profile.';
+
+      if (code === 'DEPARTMENT_NOT_FOUND') {
+        const msg = 'Selected department does not exist. Please refresh and try again.';
+        setErrorMsg(msg);
+        toast.error(msg);
+        queryClient.invalidateQueries({ queryKey: ['departments'] });
+      } else if (code === 'DESIGNATION_NOT_FOUND') {
+        const msg = 'Selected designation does not exist. Please refresh and try again.';
+        setErrorMsg(msg);
+        toast.error(msg);
+        queryClient.invalidateQueries({ queryKey: ['designations'] });
+      } else if (code === 'BRANCH_NOT_FOUND') {
+        const msg = 'Selected branch does not exist. Please refresh and try again.';
+        setErrorMsg(msg);
+        toast.error(msg);
+        queryClient.invalidateQueries({ queryKey: ['branches'] });
+      } else if (code === 'MANAGER_NOT_FOUND') {
+        const msg = 'Selected manager does not exist. Please refresh and try again.';
+        setErrorMsg(msg);
+        toast.error(msg);
+      } else {
+        setErrorMsg(message);
+        toast.error(message);
+      }
     }
   };
 

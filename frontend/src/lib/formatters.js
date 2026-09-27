@@ -40,11 +40,35 @@ export function formatCurrency(amount, currency = 'INR') {
  * @param {number} minutes 
  */
 export function formatDuration(minutes) {
-  if (!minutes && minutes !== 0) return '-';
-  const hrs = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hrs === 0) return `${mins}m`;
-  return `${hrs}h ${mins}m`;
+  const mins = Number(minutes);
+  
+  if (!mins || isNaN(mins) || mins <= 0) {
+    return '—';
+  }
+  
+  const hours = (mins / 60).toFixed(2);
+  return `${hours} hrs (${mins} mins)`;
+}
+
+export function formatMinutes(minutes) {
+  const mins = Number(minutes);
+  
+  if (!mins || isNaN(mins) || mins <= 0) {
+    return '0 min';
+  }
+  
+  if (mins < 60) {
+    return `${mins} min`;
+  }
+  
+  const hours = Math.floor(mins / 60);
+  const remainingMins = mins % 60;
+  
+  if (remainingMins === 0) {
+    return `${hours} hr`;
+  }
+  
+  return `${hours} hr ${remainingMins} min`;
 }
 
 /**

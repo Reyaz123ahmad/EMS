@@ -1,10 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import shiftService from '../services/shift.service.js';
 
-export function useShifts() {
+export function useShifts(companyId) {
   return useQuery({
-    queryKey: ['shifts'],
-    queryFn: () => shiftService.getShifts()
+    queryKey: ['shifts', companyId],
+    queryFn: async () => {
+      const data = await shiftService.getShifts();
+      
+      // Always return array
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.shifts)) return data.shifts;
+      if (Array.isArray(data?.data)) return data.data;
+      
+      return [];
+    }
   });
 }
 
@@ -73,7 +82,13 @@ export function useShiftStats() {
 export function useRosters(params = {}) {
   return useQuery({
     queryKey: ['rosters', params],
-    queryFn: () => shiftService.getRosters(params)
+    queryFn: async () => {
+      const data = await shiftService.getRosters(params);
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.rosters)) return data.rosters;
+      if (Array.isArray(data?.data)) return data.data;
+      return [];
+    }
   });
 }
 
@@ -100,7 +115,13 @@ export function usePublishRoster() {
 export function useRosterCalendar(params = {}) {
   return useQuery({
     queryKey: ['rosters', 'calendar', params],
-    queryFn: () => shiftService.getRosterCalendar(params)
+    queryFn: async () => {
+      const data = await shiftService.getRosterCalendar(params);
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.roster)) return data.roster;
+      if (Array.isArray(data?.rosters)) return data.rosters;
+      return data || [];
+    }
   });
 }
 
@@ -122,6 +143,7 @@ export default {
   useDeleteShift,
   useAssignShift,
   useShiftStats,
+  useMyShift,
   useRosters,
   useGenerateRoster,
   usePublishRoster,

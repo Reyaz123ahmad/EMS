@@ -9,33 +9,6 @@ export const CameraCapture = ({ onCapture, facingMode = 'user', initialPhoto = n
   const [isStreaming, setIsStreaming] = useState(false);
   const [cameraError, setCameraError] = useState(null);
 
-  const startCamera = useCallback(async () => {
-    setCameraError(null);
-    try {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((t) => t.stop());
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode,
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-        },
-        audio: false,
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-        setIsStreaming(true);
-      }
-    } catch (err) {
-      console.error('Camera access error:', err);
-      setCameraError('Unable to access webcam. Please check permissions or device setup.');
-      setIsStreaming(false);
-    }
-  }, [facingMode]);
-
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -44,11 +17,63 @@ export const CameraCapture = ({ onCapture, facingMode = 'user', initialPhoto = n
     setIsStreaming(false);
   }, []);
 
-  useEffect(() => {
-    if (!photo) {
-      startCamera();
+  const startCamera = useCallback(async (mountedCheck) => {
+    setCameraError(null);
+    try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode,
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        },
+        audio: false
+      });
+
+      if (mountedCheck && !mountedCheck()) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      streamRef.current = stream;
+      const video = videoRef.current;
+
+      if (video) {
+        video.srcObject = stream;
+        try {
+          await video.play();
+        } catch (err) {
+          // Ignore AbortError caused by rapid re-renders or unmounting
+          if (err.name !== 'AbortError') {
+            console.error('Video play error:', err);
+          }
+        }
+        if (!mountedCheck || mountedCheck()) {
+          setIsStreaming(true);
+        }
+      }
+    } catch (err) {
+      if (mountedCheck && !mountedCheck()) return;
+      console.error('Camera access error:', err);
+      setCameraError('Unable to access webcam. Please check permissions or device setup.');
+      setIsStreaming(false);
     }
+  }, [facingMode]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkMounted = () => isMounted;
+
+    if (!photo) {
+      startCamera(checkMounted);
+    }
+
     return () => {
+      isMounted = false;
       stopCamera();
     };
   }, [photo, startCamera, stopCamera]);
@@ -88,7 +113,7 @@ export const CameraCapture = ({ onCapture, facingMode = 'user', initialPhoto = n
           </div>
         </div>
         <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-medium text-emerald-400 border border-emerald-500/20">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           HD Optical Stream
         </span>
       </div>
@@ -115,8 +140,8 @@ export const CameraCapture = ({ onCapture, facingMode = 'user', initialPhoto = n
                 <p className="text-sm font-medium text-rose-300">{cameraError}</p>
                 <button
                   type="button"
-                  onClick={startCamera}
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition-colors"
+                  onClick={() => startCamera()}
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition-colors cursor-pointer"
                 >
                   <RefreshCw className="h-3.5 w-3.5" /> Retry Camera Access
                 </button>
@@ -141,7 +166,7 @@ export const CameraCapture = ({ onCapture, facingMode = 'user', initialPhoto = n
             type="button"
             onClick={capturePhoto}
             disabled={!isStreaming}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-purple-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             <Sparkles className="h-4 w-4" /> Snap Biometric Frame
           </button>
@@ -149,7 +174,7 @@ export const CameraCapture = ({ onCapture, facingMode = 'user', initialPhoto = n
           <button
             type="button"
             onClick={retakePhoto}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition-colors"
+            className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700/80 transition-colors cursor-pointer"
           >
             <RefreshCw className="h-3.5 w-3.5" /> Retake Frame
           </button>
@@ -158,3 +183,5 @@ export const CameraCapture = ({ onCapture, facingMode = 'user', initialPhoto = n
     </div>
   );
 };
+
+export default CameraCapture;

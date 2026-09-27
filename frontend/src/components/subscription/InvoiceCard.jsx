@@ -1,7 +1,7 @@
 import React from 'react';
-import { Download, FileText, CheckCircle, Clock } from 'lucide-react';
+import { Download, FileText, CheckCircle, Clock, Loader2 } from 'lucide-react';
 
-export function InvoiceCard({ invoice, onDownload }) {
+export function InvoiceCard({ invoice, onDownload, isDownloading = false }) {
   const isPaid = invoice.status === 'PAID' || invoice.status === 'SUCCESS';
 
   return (
@@ -34,11 +34,22 @@ export function InvoiceCard({ invoice, onDownload }) {
       </div>
 
       <button
+        type="button"
+        disabled={isDownloading}
         onClick={() => onDownload && onDownload(invoice)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-50 rounded-lg transition-colors"
       >
-        <Download className="h-3.5 w-3.5" />
-        PDF
+        {isDownloading ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-500" />
+            Downloading...
+          </>
+        ) : (
+          <>
+            <Download className="h-3.5 w-3.5" />
+            PDF
+          </>
+        )}
       </button>
     </div>
   );

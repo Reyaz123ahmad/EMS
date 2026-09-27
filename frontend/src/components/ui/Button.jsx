@@ -30,15 +30,17 @@ const buttonVariants = cva(
 );
 
 export const Button = React.forwardRef(
-  ({ className, variant, size, isLoading, children, disabled, ...props }, ref) => {
+  ({ className, variant, size, isLoading, loading, children, disabled, ...props }, ref) => {
+    const isSubmitting = Boolean(isLoading || loading);
     return (
       <button
         ref={ref}
-        disabled={isLoading || disabled}
+        disabled={isSubmitting || disabled}
         className={cn(buttonVariants({ variant, size, className }))}
+        data-loading={isSubmitting ? 'true' : undefined}
         {...props}
       >
-        {isLoading && (
+        {isSubmitting && (
           <svg
             className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
             xmlns="http://www.w3.org/2000/svg"

@@ -2,6 +2,59 @@ import * as paymentsService from './payments.service.js';
 import * as webhookService from './webhook.service.js';
 import prisma from '../../config/prisma.js';
 
+export async function getRazorpayConfig(req, res, next) {
+  try {
+    res.status(200).json({
+      success: true,
+      data: {
+        keyId: process.env.RAZORPAY_KEY_ID || '',
+      },
+      message: 'Razorpay config retrieved',
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createOrder(req, res, next) {
+  try {
+    const companyId = req.body.companyId || req.user?.companyId || req.user?.company?.id;
+    const userId = req.user?.userId || req.user?.id;
+    const order = await paymentsService.createOrder({
+      planId: req.body.planId,
+      billingCycle: req.body.billingCycle || 'monthly',
+      companyId,
+      userId,
+    });
+    res.status(201).json({
+      success: true,
+      status: 'SUCCESS',
+      message: 'Order created',
+      data: order,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function verifyPayment(req, res, next) {
+  try {
+    const companyId = req.body.companyId || req.user?.companyId || req.user?.company?.id;
+    const result = await paymentsService.verifyPayment({
+      ...req.body,
+      companyId,
+    });
+    res.status(200).json({
+      success: true,
+      status: 'SUCCESS',
+      message: 'Payment verified successfully',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function handleFailure(req, res, next) {
   try {
     const { paymentId, reason } = req.body;

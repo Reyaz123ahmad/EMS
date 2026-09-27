@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import useAuthStore from '../../store/auth.store.js';
 import Card from '../../components/ui/Card';
 import Table from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
-import { useOvertimeRecords } from '../../hooks/useOvertime';
-import { useAuthStore } from '../../store/authStore';
-import { formatDate, formatCurrency } from '../../utils/formatters';
+import overtimeService from '../../services/overtime.service.js';
+import { formatDate, formatCurrency, formatDuration } from '../../utils/formatters';
 
 export default function OvertimeRecordsPage() {
   const { user } = useAuthStore();
@@ -15,30 +16,33 @@ export default function OvertimeRecordsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const { data: recordsData, isLoading, refetch } = useOvertimeRecords({
-    companyId,
-    status: statusFilter || undefined,
+  const { data: rawData = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['overtime-records', companyId, statusFilter],
+    queryFn: () => overtimeService.listOvertimeRecords({
+      companyId,
+      status: statusFilter || undefined,
+    }),
   });
 
-  const records = Array.isArray(recordsData)
-    ? recordsData
-    : Array.isArray(recordsData?.records)
-    ? recordsData.records
-    : Array.isArray(recordsData?.data?.records)
-    ? recordsData.data.records
-    : Array.isArray(recordsData?.data?.data)
-    ? recordsData.data.data
-    : Array.isArray(recordsData?.data)
-    ? recordsData.data
+  const records = Array.isArray(rawData)
+    ? rawData
+    : Array.isArray(rawData?.records)
+    ? rawData.records
+    : Array.isArray(rawData?.data?.records)
+    ? rawData.data.records
+    : Array.isArray(rawData?.data?.data)
+    ? rawData.data.data
+    : Array.isArray(rawData?.data)
+    ? rawData.data
     : [];
 
-  const filteredRecords = Array.isArray(records)
-    ? records.filter((r) => {
-        if (!r) return false;
-        const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
-        return empName.includes(search.toLowerCase());
-      })
-    : [];
+  const filteredRecords = records.filter((r) => {
+    if (!r) return false;
+    const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
+    const code = (r.employee?.employeeCode || '').toLowerCase();
+    const term = search.toLowerCase();
+    return empName.includes(term) || code.includes(term);
+  });
 
   const columns = [
     {
@@ -49,7 +53,9 @@ export default function OvertimeRecordsPage() {
           <div className="font-semibold text-white">
             {row.employee ? `${row.employee.firstName} ${row.employee.lastName}` : 'N/A'}
           </div>
-          <div className="text-xs text-slate-400">{row.employee?.department?.name || 'Staff'}</div>
+          <div className="text-xs text-slate-400">
+            {row.employee?.employeeCode || row.employee?.department?.name || 'Staff'}
+          </div>
         </div>
       ),
     },
@@ -63,7 +69,7 @@ export default function OvertimeRecordsPage() {
       accessor: 'minutes',
       cell: (row) => (
         <span className="font-bold text-amber-400">
-          {(row.minutes / 60).toFixed(1)} hrs ({row.minutes}m)
+          {formatDuration(row.minutes || row.requestedMinutes || (row.duration ? row.duration * 60 : 0))}
         </span>
       ),
     },

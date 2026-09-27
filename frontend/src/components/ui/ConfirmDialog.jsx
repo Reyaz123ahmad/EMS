@@ -3,6 +3,7 @@ import { AlertTriangle, Info, CheckCircle2, X } from 'lucide-react';
 import Button from './Button';
 
 export const ConfirmDialog = ({
+  open,
   isOpen,
   onClose,
   onConfirm,
@@ -13,7 +14,8 @@ export const ConfirmDialog = ({
   variant = 'danger', // 'danger' | 'warning' | 'info' | 'success'
   isLoading = false
 }) => {
-  if (!isOpen) return null;
+  const isVisible = open !== undefined ? open : isOpen;
+  if (!isVisible) return null;
 
   const icons = {
     danger: AlertTriangle,

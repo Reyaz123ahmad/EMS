@@ -1,0 +1,224 @@
+{
+  "role": "CLIENT",
+  "email": "client.test@mindstocs.com",
+  "testedAt": "2026-09-27T12:29:27.830Z",
+  "totalPages": 10,
+  "totalButtons": 20,
+  "passed": 10,
+  "failed": 0,
+  "errors": 0,
+  "pages": [
+    {
+      "name": "dashboard",
+      "url": "/dashboard",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "dashboard > client",
+      "url": "/dashboard/client",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "client-portal",
+      "url": "/client-portal",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "client-portal > projects",
+      "url": "/client-portal/projects",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "client-portal > requirements",
+      "url": "/client-portal/requirements",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "client-portal > comments",
+      "url": "/client-portal/comments",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "client-portal > invoices",
+      "url": "/client-portal/invoices",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "client-portal > payments",
+      "url": "/client-portal/payments",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "notifications",
+      "url": "/notifications",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    },
+    {
+      "name": "profile",
+      "url": "/profile",
+      "status": "PASS",
+      "buttons": [
+        {
+          "label": "Sign In",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        },
+        {
+          "label": "EMS AI Assistant",
+          "expected": "Clickable without crash",
+          "actual": "Interactive",
+          "status": "PASS"
+        }
+      ],
+      "errors": [],
+      "networkErrors": []
+    }
+  ],
+  "failures": [],
+  "fixes": []
+}

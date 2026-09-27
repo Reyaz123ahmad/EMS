@@ -8,6 +8,18 @@ export default function Table({
   emptyMessage = 'No records found.',
   onRowClick,
 }) {
+  const safeData = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.leaves)
+    ? data.leaves
+    : Array.isArray(data?.history)
+    ? data.history
+    : Array.isArray(data?.data)
+    ? data.data
+    : Array.isArray(data?.items)
+    ? data.items
+    : [];
+
   return (
     <div className="w-full overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 shadow-xl">
       <table className="w-full text-left text-sm text-slate-300">
@@ -30,14 +42,14 @@ export default function Table({
                 </div>
               </td>
             </tr>
-          ) : data.length === 0 ? (
+          ) : safeData.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="px-6 py-12 text-center text-slate-400 text-sm font-medium">
                 {emptyMessage}
               </td>
             </tr>
           ) : (
-            data.map((row, rowIdx) => (
+            safeData.map((row, rowIdx) => (
               <tr
                 key={row.id || rowIdx}
                 onClick={() => onRowClick && onRowClick(row)}

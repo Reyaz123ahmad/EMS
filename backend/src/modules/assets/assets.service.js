@@ -279,12 +279,39 @@ export const assetsService = {
       select: { category: true },
       distinct: ['category'],
     });
-    return assets.map((a) => a.category).filter(Boolean);
+    const dbCategories = assets.map((a) => a.category).filter(Boolean);
+    const defaults = ['Laptops', 'Monitors', 'Peripherals', 'Mobile Devices', 'Furniture', 'Networking', 'General'];
+    const combined = Array.from(new Set([...defaults, ...dbCategories]));
+    return combined;
   },
 
   async createAssetCategory(companyId, data) {
+    const catName = (data.name || data.category || '').trim();
+    if (!catName) {
+      throw new Error('Category name is required');
+    }
+
+    const existing = await prisma.asset.findFirst({
+      where: { companyId, category: catName }
+    });
+
+    if (!existing) {
+      await prisma.asset.create({
+        data: {
+          companyId,
+          name: `${catName} Template`,
+          code: `CAT-${catName.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}-${Date.now().toString().slice(-4)}`,
+          category: catName,
+          description: data.description || 'Category registration',
+          condition: 'NEW',
+          isActive: false
+        }
+      }).catch(() => {});
+    }
+
     return {
-      category: data.name,
+      category: catName,
+      name: catName,
       description: data.description,
       companyId,
     };

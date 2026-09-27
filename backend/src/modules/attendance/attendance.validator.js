@@ -50,6 +50,8 @@ export const breakStartSchema = Joi.object({
   photo: Joi.string().optional().allow('', null),
   location: locationSchema.optional(),
   deviceInfo: deviceInfoSchema.optional(),
+  cardNumber: Joi.string().optional().allow('', null),
+  livenessScore: Joi.number().min(0).max(1).optional(),
   remarks: Joi.string().max(255).optional().allow('', null)
 });
 
@@ -60,6 +62,8 @@ export const breakEndSchema = Joi.object({
   photo: Joi.string().optional().allow('', null),
   location: locationSchema.optional(),
   deviceInfo: deviceInfoSchema.optional(),
+  cardNumber: Joi.string().optional().allow('', null),
+  livenessScore: Joi.number().min(0).max(1).optional(),
   remarks: Joi.string().max(255).optional().allow('', null)
 });
 

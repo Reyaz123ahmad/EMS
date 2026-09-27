@@ -56,8 +56,13 @@ export const holidayCalendarController = {
   async listHolidays(req, res, next) {
     try {
       const companyId = req.user.companyId;
-      const holidays = await holidayCalendarService.listHolidays(companyId, req.query);
-      res.status(200).json({ status: 'ok', data: { holidays } });
+      const filters = {
+        calendarId: req.query.calendarId,
+        year: req.query.year ? parseInt(req.query.year, 10) : null,
+        month: req.query.month ? parseInt(req.query.month, 10) : null
+      };
+      const holidays = await holidayCalendarService.listHolidays(companyId, filters);
+      res.status(200).json({ status: 'ok', success: true, message: 'Holidays retrieved', data: holidays, holidays });
     } catch (err) {
       next(err);
     }

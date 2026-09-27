@@ -3,7 +3,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { useShifts, useAssignShift } from '../../hooks/useShifts';
-import { useAuthStore } from '../../store/authStore';
+import useAuthStore from '../../store/auth.store.js';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';

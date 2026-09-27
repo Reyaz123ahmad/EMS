@@ -15,13 +15,37 @@ router.use(requireFeature('attendance.face'));
 // 1. Face Registration & Updates
 router.post(
   '/register',
-  requireRole(['HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']),
+  requireRole(['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']),
   faceRegistrationController.registerFace
+);
+
+router.get(
+  '/my-status',
+  requireRole(['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']),
+  faceRegistrationController.getMyStatus
+);
+
+router.get(
+  '/pending',
+  requireRole(['HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']),
+  faceRegistrationController.listPending
+);
+
+router.post(
+  '/:id/approve',
+  requireRole(['HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']),
+  faceRegistrationController.approveRequest
+);
+
+router.post(
+  '/:id/reject',
+  requireRole(['HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']),
+  faceRegistrationController.rejectRequest
 );
 
 router.put(
   '/update',
-  requireRole(['HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']),
+  requireRole(['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']),
   faceRegistrationController.updateFace
 );
 

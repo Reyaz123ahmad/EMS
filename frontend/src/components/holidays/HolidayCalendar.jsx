@@ -4,6 +4,19 @@ import Badge from '../ui/Badge';
 import { formatDate } from '../../utils/formatters';
 
 export default function HolidayCalendar({ year, holidays = [], onYearChange, onSelectHoliday }) {
+  // Ensure array
+  const holidaysArray = Array.isArray(holidays)
+    ? holidays
+    : Array.isArray(holidays?.holidays)
+    ? holidays.holidays
+    : Array.isArray(holidays?.data?.holidays)
+    ? holidays.data.holidays
+    : Array.isArray(holidays?.data?.data)
+    ? holidays.data.data
+    : Array.isArray(holidays?.data)
+    ? holidays.data
+    : [];
+
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -18,14 +31,14 @@ export default function HolidayCalendar({ year, holidays = [], onYearChange, onS
         </div>
         <div className="flex items-center gap-3 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800">
           <button
-            onClick={() => onYearChange(year - 1)}
+            onClick={() => onYearChange && onYearChange(year - 1)}
             className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
           >
             ←
           </button>
           <span className="text-sm font-bold text-white px-4">{year}</span>
           <button
-            onClick={() => onYearChange(year + 1)}
+            onClick={() => onYearChange && onYearChange(year + 1)}
             className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
           >
             →
@@ -36,7 +49,8 @@ export default function HolidayCalendar({ year, holidays = [], onYearChange, onS
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {months.map((monthName, idx) => {
           const monthNum = idx + 1;
-          const monthHolidays = holidays.filter((h) => {
+          const monthHolidays = holidaysArray.filter((h) => {
+            if (!h || !h.date) return false;
             const hDate = new Date(h.date);
             return hDate.getMonth() + 1 === monthNum;
           });

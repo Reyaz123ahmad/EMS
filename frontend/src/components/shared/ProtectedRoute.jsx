@@ -20,7 +20,9 @@ export function ProtectedRoute({ children, allowedRoles }) {
     '/holidays', '/departments', '/designations', '/branches', '/documents',
     '/performance', '/tasks', '/projects', '/clients', '/onboarding',
     '/certificates', '/assets', '/emergency-attendance', '/approvals',
-    '/biometric-devices', '/biometric-cards', '/overtime'
+    '/biometric-devices', '/biometric-cards', '/overtime',
+    '/security/dashboard', '/security/events', '/security/audit-logs',
+    '/security/fraud-signals', '/security/blocked-employees', '/security'
   ];
 
   if (isSuperAdmin) {
@@ -29,7 +31,7 @@ export function ProtectedRoute({ children, allowedRoles }) {
       currentPath.startsWith(route)
     );
     if (isCompanyOnly) {
-      return <Navigate to="/unauthorized" replace />;
+      return <Navigate to="/dashboard/super-admin" replace />;
     }
   }
 

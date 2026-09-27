@@ -78,13 +78,16 @@ export const employeeFiltersSchema = Joi.object({
   search: Joi.string().optional().allow('', null),
   employeeCode: Joi.string().optional().allow('', null),
   page: Joi.number().integer().min(1).optional().default(1),
-  limit: Joi.number().integer().min(1).max(100).optional().default(10)
+  limit: Joi.number().integer().min(1).max(500).optional().default(10)
 });
+
+export const listEmployeesSchema = employeeFiltersSchema;
 
 export default {
   sendEmployeeOTPSchema,
   verifyEmployeeOTPSchema,
   createEmployeeSchema,
   updateEmployeeSchema,
-  employeeFiltersSchema
+  employeeFiltersSchema,
+  listEmployeesSchema
 };

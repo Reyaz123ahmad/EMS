@@ -3,7 +3,7 @@ import leaveService from '../services/leave.service.js';
 
 export function useLeaveTypes() {
   return useQuery({
-    queryKey: ['leave', 'types'],
+    queryKey: ['leave-types'],
     queryFn: () => leaveService.getLeaveTypes()
   });
 }
@@ -13,7 +13,9 @@ export function useCreateLeaveType() {
   return useMutation({
     mutationFn: (data) => leaveService.createLeaveType(data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leave-types'] });
       queryClient.invalidateQueries({ queryKey: ['leave', 'types'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'balances'] });
     }
   });
 }
@@ -23,7 +25,9 @@ export function useUpdateLeaveType() {
   return useMutation({
     mutationFn: ({ id, data }) => leaveService.updateLeaveType(id, data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leave-types'] });
       queryClient.invalidateQueries({ queryKey: ['leave', 'types'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'balances'] });
     }
   });
 }
@@ -33,7 +37,9 @@ export function useDeleteLeaveType() {
   return useMutation({
     mutationFn: (id) => leaveService.deleteLeaveType(id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['leave-types'] });
       queryClient.invalidateQueries({ queryKey: ['leave', 'types'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'balances'] });
     }
   });
 }

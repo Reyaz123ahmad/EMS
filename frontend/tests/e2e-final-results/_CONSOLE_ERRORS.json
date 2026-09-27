@@ -1,0 +1,262 @@
+[
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/leave/types",
+    "message": "The above error occurred in the <LeaveTypesPage> component:\n\n    at LeaveTypesPage (http://localhost:3000/src/pages/leave/LeaveTypesPage.jsx:36:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/leave/history",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at LeaveHistoryPage (http://localhost:3000/src/pages/leave/LeaveHistoryPage.jsx:28:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/payroll/salary-structure",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at SalaryStructurePage (http://localhost:3000/src/pages/payroll/SalaryStructurePage.jsx:36:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/payroll/runs",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at PayrollRunsListPage (http://localhost:3000/src/pages/payroll/PayrollRunsListPage.jsx:29:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/payroll/batches",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at PayrollRunsListPage (http://localhost:3000/src/pages/payroll/PayrollRunsListPage.jsx:29:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/overtime/rules",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at OvertimeRulesPage (http://localhost:3000/src/pages/overtime/OvertimeRulesPage.jsx:35:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/shifts/rosters",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at RosterListPage (http://localhost:3000/src/pages/shifts/RosterListPage.jsx:29:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/shifts/generate",
+    "message": "The above error occurred in the <GenerateRosterPage> component:\n\n    at GenerateRosterPage (http://localhost:3000/src/pages/shifts/GenerateRosterPage.jsx:27:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/rosters",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at RosterListPage (http://localhost:3000/src/pages/shifts/RosterListPage.jsx:29:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/rosters/calendar",
+    "message": "The above error occurred in the <RosterCalendar> component:\n\n    at RosterCalendar (http://localhost:3000/src/components/shifts/RosterCalendar.jsx:20:42)\n    at div\n    at RosterCalendarPage (http://localhost:3000/src/pages/shifts/RosterCalendarPage.jsx:26:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/holidays",
+    "message": "The above error occurred in the <HolidayCalendar> component:\n\n    at HolidayCalendar (http://localhost:3000/src/components/holidays/HolidayCalendar.jsx:21:43)\n    at div\n    at HolidayCalendarPage (http://localhost:3000/src/pages/holidays/HolidayCalendarPage.jsx:36:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/holidays/list",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at HolidayListPage (http://localhost:3000/src/pages/holidays/HolidayListPage.jsx:38:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/holidays/assign",
+    "message": "The above error occurred in the <HolidayAssignmentPage> component:\n\n    at HolidayAssignmentPage (http://localhost:3000/src/pages/holidays/HolidayAssignmentPage.jsx:27:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/subscription/history",
+    "message": "The above error occurred in the <SubscriptionHistoryPage> component:\n\n    at SubscriptionHistoryPage (http://localhost:3000/src/pages/subscription/SubscriptionHistoryPage.jsx:25:45)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/refunds/request",
+    "message": "The above error occurred in the <RefundRequestPage> component:\n\n    at RefundRequestPage (http://localhost:3000/src/pages/refunds/RefundRequestPage.jsx:26:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "url": "http://localhost:3000/profile/change-password",
+    "message": "Warning: React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element.%s helperText helpertext \n    at input\n    at div\n    at div\n    at _c (http://localhost:3000/src/components/ui/Input.jsx:20:11)\n    at form\n    at div\n    at ChangePasswordPage (http://localhost:3000/src/pages/profile/ChangePasswordPage.jsx:26:49)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)"
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:3000/leave/types",
+    "message": "The above error occurred in the <LeaveTypesPage> component:\n\n    at LeaveTypesPage (http://localhost:3000/src/pages/leave/LeaveTypesPage.jsx:36:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:3000/payroll/salary-structure",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at SalaryStructurePage (http://localhost:3000/src/pages/payroll/SalaryStructurePage.jsx:36:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:3000/payroll/runs",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at PayrollRunsListPage (http://localhost:3000/src/pages/payroll/PayrollRunsListPage.jsx:29:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "HR_ADMIN",
+    "url": "http://localhost:3000/overtime/rules",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at OvertimeRulesPage (http://localhost:3000/src/pages/overtime/OvertimeRulesPage.jsx:35:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "HR_MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/attendance/logs",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/overtime/requests",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "MANAGER",
+    "url": "http://localhost:3000/reports/history",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/attendance/logs",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/leave/apply",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/leave/balance",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/leave/history",
+    "message": "The above error occurred in the <Table> component:\n\n    at Table (http://localhost:3000/src/components/ui/Table.jsx:20:3)\n    at div\n    at Card (http://localhost:3000/src/components/ui/Card.jsx:19:24)\n    at div\n    at LeaveHistoryPage (http://localhost:3000/src/pages/leave/LeaveHistoryPage.jsx:28:20)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)\n\nConsider adding an error boundary to your tree to customize error handling behavior.\nVisit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/documents",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/documents",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/profile/change-password",
+    "message": "Warning: React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element.%s helperText helpertext \n    at input\n    at div\n    at div\n    at _c (http://localhost:3000/src/components/ui/Input.jsx:20:11)\n    at form\n    at div\n    at ChangePasswordPage (http://localhost:3000/src/pages/profile/ChangePasswordPage.jsx:26:49)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Outlet (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4518:26)\n    at div\n    at main\n    at div\n    at div\n    at DashboardLayout (http://localhost:3000/src/layouts/DashboardLayout.jsx:26:37)\n    at ProtectedRoute (http://localhost:3000/src/components/shared/ProtectedRoute.jsx:22:34)\n    at RenderedRoute (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4112:5)\n    at Routes (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4582:5)\n    at App\n    at Router (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:4525:15)\n    at BrowserRouter (http://localhost:3000/node_modules/.vite/deps/react-router-dom.js?v=18960b30:5263:5)\n    at QueryClientProvider (http://localhost:3000/node_modules/.vite/deps/@tanstack_react-query.js?v=18960b30:26:30)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  },
+  {
+    "role": "EMPLOYEE",
+    "url": "http://localhost:3000/ai/hub",
+    "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+  }
+]

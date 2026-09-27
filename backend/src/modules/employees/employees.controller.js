@@ -122,7 +122,7 @@ export const employeesController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
-      const employee = await employeesService.updateEmployee(id, value);
+      const employee = await employeesService.updateEmployee(id, value, req.user?.companyId, req.user?.id);
       res.status(200).json({
         status: 'ok',
         message: 'Employee updated successfully.',

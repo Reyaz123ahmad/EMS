@@ -376,17 +376,77 @@ export const advancedSecurityService = {
   /**
    * 9. Security Events
    */
-  getSecurityEvents: async (companyId, filters = {}) => {
-    const where = {};
-    if (companyId) where.companyId = companyId;
-    if (filters.eventType) where.eventType = filters.eventType;
-    if (filters.severity) where.severity = filters.severity;
+  getSecurityEvents: async (firstArg, secondArg) => {
+    let companyId, role, filters = {}, pagination = { page: 1, limit: 20 };
 
-    return prisma.securityEvent.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      take: filters.limit ? parseInt(filters.limit, 10) : 50,
-    });
+    if (typeof firstArg === 'object' && firstArg !== null && !Array.isArray(firstArg)) {
+      companyId = firstArg.companyId;
+      role = firstArg.role;
+      filters = firstArg.filters || {};
+      pagination = firstArg.pagination || { page: 1, limit: 20 };
+    } else {
+      companyId = firstArg;
+      filters = secondArg || {};
+      pagination = { page: parseInt(filters.page) || 1, limit: parseInt(filters.limit) || 20 };
+    }
+
+    let where = {};
+    const isSuperAdmin = role === 'SUPER_ADMIN' || (!companyId && role !== 'COMPANY_ADMIN');
+    if (!isSuperAdmin && companyId) {
+      const companyUsers = await prisma.user.findMany({
+        where: { companyId },
+        select: { id: true }
+      }).catch(() => []);
+      const userIds = companyUsers.map((u) => u.id);
+
+      where = {
+        OR: [
+          { companyId },
+          { userId: { in: userIds } }
+        ]
+      };
+    }
+
+    if (filters.severity) where.severity = filters.severity;
+    if (filters.eventType) where.eventType = filters.eventType;
+    if (filters.startDate || filters.endDate) {
+      where.createdAt = {};
+      if (filters.startDate) where.createdAt.gte = new Date(filters.startDate);
+      if (filters.endDate) where.createdAt.lte = new Date(filters.endDate);
+    }
+
+    const page = Math.max(1, Number(pagination.page) || 1);
+    const limit = Math.min(Math.max(1, Number(pagination.limit) || 20), 100);
+    const skip = (page - 1) * limit;
+
+    const [events, total] = await Promise.all([
+      prisma.securityEvent.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              employee: {
+                select: { firstName: true, lastName: true, employeeCode: true }
+              }
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+      }).catch(() => []),
+      prisma.securityEvent.count({ where }).catch(() => 0)
+    ]);
+
+    return {
+      events,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1
+    };
   },
 
   /**

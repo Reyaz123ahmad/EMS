@@ -97,7 +97,7 @@ export function BranchListPage() {
         <div className="text-xs font-mono text-slate-400">
           {r.latitude && r.longitude ? (
             <span className="text-emerald-400">
-              {r.latitude.toFixed(4)}, {r.longitude.toFixed(4)} ({r.radiusMeters}m)
+              {Number(r.latitude || 0).toFixed(4)}, {Number(r.longitude || 0).toFixed(4)} ({r.radiusMeters}m)
             </span>
           ) : (
             <span className="text-slate-500">Not configured</span>

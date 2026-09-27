@@ -157,20 +157,32 @@ export const approvalsService = {
   },
 
   async getApprovalHistory(companyId, filters = {}) {
-    const { status, entityType } = filters;
-    const where = {
-      status: status ? status : { in: ['APPROVED', 'REJECTED', 'CANCELLED'] },
-    };
+    const { status, entityType, page = 1, limit = 50 } = filters;
+    const where = {};
+    if (status && status !== 'ALL') {
+      where.status = status;
+    } else if (!status) {
+      where.status = { in: ['APPROVED', 'REJECTED', 'CANCELLED'] };
+    }
     if (entityType) where.entityType = entityType;
     if (companyId) {
       where.workflow = { companyId };
     }
 
-    return prisma.approvalRequest.findMany({
-      where,
-      include: { workflow: true },
-      orderBy: { updatedAt: 'desc' },
-    });
+    const [history, total] = await Promise.all([
+      prisma.approvalRequest.findMany({
+        where,
+        include: {
+          workflow: true,
+        },
+        orderBy: { updatedAt: 'desc' },
+        skip: (Number(page) - 1) * Number(limit),
+        take: Number(limit),
+      }),
+      prisma.approvalRequest.count({ where }),
+    ]);
+
+    return history;
   },
 
   async getApprovalStats(companyId) {

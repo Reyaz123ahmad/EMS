@@ -14,5 +14,8 @@ router.get('/', rostersController.list);
 router.post('/generate', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), rostersController.generate);
 router.post('/publish', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), rostersController.publish);
 router.post('/bulk-assign', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), rostersController.bulkAssign);
+router.put('/:id', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN'), rostersController.update);
+router.delete('/:id', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'SUPER_ADMIN'), rostersController.delete);
+router.post('/:id/publish', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'SUPER_ADMIN'), rostersController.publish);
 
 export default router;

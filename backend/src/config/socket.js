@@ -72,16 +72,29 @@ export const initSocket = async (httpServer) => {
         return next(new Error('Authentication error: Invalid token payload'));
       }
 
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          userRoles: {
+      // Retry user lookup
+      let user;
+      for (let i = 0; i < 3; i++) {
+        try {
+          user = await prisma.user.findUnique({
+            where: { id: userId },
             include: {
-              role: true
+              userRoles: {
+                include: {
+                  role: true
+                }
+              }
             }
+          });
+          break;
+        } catch (err) {
+          if (err.code === 'P2024' && i < 2) {
+            await new Promise((r) => setTimeout(r, 500));
+            continue;
           }
+          throw err;
         }
-      });
+      }
 
       if (!user || user.status !== 'ACTIVE') {
         return next(new Error('Authentication error: User not active or not found'));

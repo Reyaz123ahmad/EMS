@@ -36,9 +36,14 @@ export const SuperAdminDashboard = () => {
   const recentCompanies = (dashboardData?.recentCompanies || []).map((c) => ({
     id: c.id,
     name: c.name,
-    tier: c.subscription?.plan?.name || c.subscriptions?.[0]?.plan?.name || 'TRIAL',
+    companyCode: c.companyCode || c.id?.slice(0, 8),
+    tier: c.planName || c.subscription?.plan?.name || c.subscriptions?.[0]?.plan?.name || 'TRIAL',
     status: c.status || 'ACTIVE',
-    joined: new Date(c.createdAt).toLocaleDateString()
+    joined: new Date(c.joinedAt || c.createdAt).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
   }));
 
   const recentPayments = (dashboardData?.recentPayments || []).map((p) => ({
@@ -47,14 +52,59 @@ export const SuperAdminDashboard = () => {
     plan: p.subscription?.plan?.name || 'Enterprise Annual',
     amount: `₹${(Number(p.amount) || 0).toLocaleString('en-IN')}`,
     status: p.status || 'PAID',
-    date: new Date(p.createdAt).toLocaleDateString()
+    date: new Date(p.createdAt).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    })
   }));
 
   const companyColumns = [
-    { header: 'Company Name', accessorKey: 'name', cell: (info) => <span className="font-bold text-slate-900 dark:text-slate-100">{info.getValue()}</span> },
-    { header: 'Tier Plan', accessorKey: 'tier', cell: (info) => <Badge variant={info.getValue() === 'ENTERPRISE' ? 'primary' : 'secondary'} size="sm">{info.getValue()}</Badge> },
-    { header: 'Status', accessorKey: 'status', cell: (info) => <Badge variant={info.getValue() === 'ACTIVE' ? 'success' : 'warning'} dot size="sm">{info.getValue()}</Badge> },
-    { header: 'Joined', accessorKey: 'joined' }
+    {
+      header: 'Company Name',
+      key: 'name',
+      render: (row) => (
+        <div>
+          <div className="font-bold text-slate-900 dark:text-slate-100">{row.name}</div>
+          <div className="text-[11px] text-slate-500 font-mono">{row.companyCode}</div>
+        </div>
+      )
+    },
+    {
+      header: 'Tier Plan',
+      key: 'tier',
+      render: (row) => (
+        <Badge variant={row.tier?.toUpperCase() === 'ENTERPRISE' ? 'primary' : 'secondary'} size="sm">
+          {row.tier}
+        </Badge>
+      )
+    },
+    {
+      header: 'Status',
+      key: 'status',
+      render: (row) => (
+        <Badge
+          variant={
+            row.status === 'ACTIVE'
+              ? 'success'
+              : row.status === 'TRIAL'
+              ? 'warning'
+              : row.status === 'SUSPENDED'
+              ? 'danger'
+              : 'default'
+          }
+          dot
+          size="sm"
+        >
+          {row.status}
+        </Badge>
+      )
+    },
+    {
+      header: 'Joined',
+      key: 'joined',
+      render: (row) => <span className="text-xs font-mono text-slate-400">{row.joined}</span>
+    }
   ];
 
   if (isLoading) {

@@ -41,7 +41,21 @@ export default function HolidayCalendarPage() {
   const deleteHoliday = useDeleteHoliday();
   const bulkImport = useBulkImportHolidays();
 
-  const holidays = calendarData?.data?.data?.holidays || calendarData?.data?.holidays || calendarData?.data || [];
+  const holidays = Array.isArray(calendarData)
+    ? calendarData
+    : Array.isArray(calendarData?.calendar?.holidays)
+    ? calendarData.calendar.holidays
+    : Array.isArray(calendarData?.holidays)
+    ? calendarData.holidays
+    : Array.isArray(calendarData?.data?.calendar?.holidays)
+    ? calendarData.data.calendar.holidays
+    : Array.isArray(calendarData?.data?.data?.holidays)
+    ? calendarData.data.data.holidays
+    : Array.isArray(calendarData?.data?.holidays)
+    ? calendarData.data.holidays
+    : Array.isArray(calendarData?.data)
+    ? calendarData.data
+    : [];
 
   const handleOpenAdd = () => {
     setSelectedHoliday(null);
