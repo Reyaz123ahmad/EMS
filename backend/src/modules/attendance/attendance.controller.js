@@ -1,3 +1,4 @@
+import { successResponse } from '../../utils/response.js';
 import attendanceService from './attendance.service.js';
 import {
   checkInSchema,
@@ -241,36 +242,24 @@ export const attendanceController = {
    */
   async getMonthlySummary(req, res, next) {
     try {
-      const { error, value } = monthlySummarySchema.validate(req.query);
-      if (error) {
-        return res.status(400).json({ status: 'error', message: error.details[0].message });
-      }
-
       const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user?.companyId;
-      const { month, year, ...filters } = value;
+      const { month, year, employeeId } = req.query;
 
-      // Anti-leakage role scoping
-      if (role === 'EMPLOYEE') {
-        const empId = await getAuthEmployeeId(req);
-        filters.employeeId = empId || '__NO_ACCESS__';
-      } else if (role === 'MANAGER') {
-        const emp = await getAuthEmployee(req);
-        const teamIds = await getManagerTeamIds(emp?.id);
-        filters.employeeIds = teamIds.length > 0 ? teamIds : ['__NO_ACCESS__'];
-      } else if (role === 'HR_MANAGER') {
-        const emp = await getAuthEmployee(req);
-        if (emp?.departmentId) {
-          filters.departmentId = emp.departmentId;
-        }
-      }
+      const result = await attendanceService.getMonthlySummary({
+        companyId,
+        employeeId: role === 'EMPLOYEE' ? await getAuthEmployeeId(req) : employeeId,
+        month: parseInt(month) || new Date().getMonth() + 1,
+        year: parseInt(year) || new Date().getFullYear(),
+        role
+      });
 
-      const result = await attendanceService.getMonthlySummary(companyId, month, year, filters);
-      res.status(200).json({ status: 'ok', data: result });
-    } catch (err) {
-      next(err);
+      return successResponse(res, result, 'Monthly summary retrieved');
+    } catch (error) {
+      next(error);
     }
   },
+
 
   /**
    * GET /attendance/stats
@@ -490,17 +479,85 @@ export const attendanceController = {
   },
 
   /**
+   * GET /attendance/overtime-tracker
+   */
+  async getOvertimeTracker(req, res, next) {
+    try {
+      const role = req.user?.role || 'EMPLOYEE';
+      const companyId = req.user?.companyId;
+      const employeeId = role === 'EMPLOYEE' ? await getAuthEmployeeId(req) : req.query.employeeId;
+      const result = await attendanceService.getOvertimeTracker({ companyId, employeeId, role });
+      return successResponse(res, result, 'Overtime tracker data retrieved');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * GET /attendance/shift-roster
+   */
+  async getShiftRoster(req, res, next) {
+    try {
+      const role = req.user?.role || 'EMPLOYEE';
+      const companyId = req.user?.companyId;
+      const employeeId = role === 'EMPLOYEE' ? await getAuthEmployeeId(req) : req.query.employeeId;
+      const result = await attendanceService.getShiftRoster({ companyId, employeeId, role });
+      return successResponse(res, result, 'Shift roster data retrieved');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * GET /attendance/qr-scanner
+   */
+  async getQrScanner(req, res, next) {
+    try {
+      const role = req.user?.role || 'EMPLOYEE';
+      const companyId = req.user?.companyId;
+      const employeeId = role === 'EMPLOYEE' ? await getAuthEmployeeId(req) : req.query.employeeId;
+      const result = await attendanceService.getQrScanner({ companyId, employeeId });
+      return successResponse(res, result, 'QR scanner status retrieved');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * GET /attendance/live-location
+   */
+  async getLiveLocation(req, res, next) {
+    try {
+      const companyId = req.user?.companyId;
+      const result = await attendanceService.getLiveLocation({ companyId });
+      return successResponse(res, result, 'Live location tracking data retrieved');
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
    * PUT /attendance/policy
    */
   async updatePolicy(req, res, next) {
     try {
       const companyId = req.user?.companyId;
       const result = await attendanceService.updateAttendancePolicy(companyId, req.body);
-      res.status(200).json({ status: 'ok', message: 'Attendance policy updated', data: result });
+      return successResponse(res, result, 'Attendance policy updated');
     } catch (err) {
       next(err);
     }
   }
 };
 
+export const getMonthlySummary = attendanceController.getMonthlySummary.bind(attendanceController);
+export const getExceptions = attendanceController.getExceptions.bind(attendanceController);
+export const getStats = attendanceController.getStats.bind(attendanceController);
+export const getOvertimeTracker = attendanceController.getOvertimeTracker.bind(attendanceController);
+export const getShiftRoster = attendanceController.getShiftRoster.bind(attendanceController);
+export const getFraudSignals = attendanceController.listFraudSignals.bind(attendanceController);
+export const getQrScanner = attendanceController.getQrScanner.bind(attendanceController);
+export const getLiveLocation = attendanceController.getLiveLocation.bind(attendanceController);
+
 export default attendanceController;
+

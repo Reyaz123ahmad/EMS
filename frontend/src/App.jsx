@@ -9,7 +9,7 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage.jsx';
 import TwoFactorPage from './pages/auth/TwoFactorPage.jsx';
 import UnauthorizedPage from './pages/UnauthorizedPage.jsx';
 import SubscriptionExpiredPage from './pages/subscription/SubscriptionExpiredPage.jsx';
-import LiveLocationPage from './pages/LiveLocationPage.jsx';
+
 
 import DashboardLayout from './layouts/DashboardLayout.jsx';
 import DashboardRouter from './routes/DashboardRouter.jsx';
@@ -83,6 +83,12 @@ import AttendanceStatsPage from './pages/attendance/AttendanceStatsPage.jsx';
 import AttendanceCalendarPage from './pages/attendance/AttendanceCalendarPage.jsx';
 import AttendanceExceptionsPage from './pages/attendance/AttendanceExceptionsPage.jsx';
 import ManualAttendancePage from './pages/attendance/ManualAttendancePage.jsx';
+import OvertimeTrackerPage from './pages/attendance/OvertimeTrackerPage.jsx';
+import ShiftRosterPage from './pages/attendance/ShiftRosterPage.jsx';
+import AttendanceFraudPage from './pages/attendance/AttendanceFraudPage.jsx';
+import QrScannerPage from './pages/attendance/QrScannerPage.jsx';
+import LiveLocationPage from './pages/attendance/LiveLocationPage.jsx';
+
 
 // Leave Management Module Pages
 import LeaveTypesPage from './pages/leave/LeaveTypesPage.jsx';
@@ -347,12 +353,58 @@ export default function App() {
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/attendance/logs" element={<AttendanceLogsPage />} />
         <Route path="/attendance/my-logs" element={<AttendanceLogsPage />} />
-        <Route path="/attendance/monthly-summary" element={<MonthlySummaryPage />} />
-        <Route path="/attendance/my-summary" element={<MonthlySummaryPage />} />
         <Route path="/attendance/calendar" element={<AttendanceCalendarPage />} />
-        <Route path="/attendance/exceptions" element={<AttendanceExceptionsPage />} />
         <Route path="/attendance/manual" element={<ManualAttendancePage />} />
         <Route path="/attendance/stats" element={<AttendanceStatsPage />} />
+
+        <Route path="/attendance/monthly-summary" element={
+          <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN']}>
+            <MonthlySummaryPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/attendance/my-summary" element={<MonthlySummaryPage />} />
+
+        <Route path="/attendance/exceptions" element={
+          <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN']}>
+            <AttendanceExceptionsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/attendance/overtime-tracker" element={
+          <ProtectedRoute allowedRoles={['MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN']}>
+            <OvertimeTrackerPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/attendance/overtime" element={<OvertimeTrackerPage />} />
+
+        <Route path="/attendance/shift-roster" element={
+          <ProtectedRoute allowedRoles={['MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN']}>
+            <ShiftRosterPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/attendance/roster" element={<ShiftRosterPage />} />
+
+        <Route path="/attendance/fraud" element={
+          <ProtectedRoute allowedRoles={['HR_ADMIN', 'COMPANY_ADMIN']}>
+            <AttendanceFraudPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/attendance/fraud-signals" element={<AttendanceFraudPage />} />
+
+        <Route path="/attendance/qr-scanner" element={
+          <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN']}>
+            <QrScannerPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/attendance/card-scan" element={<QrScannerPage />} />
+
+        <Route path="/attendance/live-location" element={
+          <ProtectedRoute allowedRoles={['MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN']}>
+            <LiveLocationPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/attendance/live-map" element={<LiveLocationPage />} />
+
 
         {/* Leave Management Routes */}
         <Route path="/leave/types" element={<LeaveTypesPage />} />

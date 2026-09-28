@@ -161,11 +161,12 @@ export const Sidebar = ({
               { label: 'Monthly Summary', to: '/attendance/monthly-summary' },
               { label: 'Calendar View', to: '/attendance/calendar' },
               { label: 'Exceptions', to: '/attendance/exceptions' },
-              { label: 'Overtime Tracker', to: '/attendance/overtime' },
-              { label: 'Shift Roster', to: '/attendance/roster' },
-              { label: 'Attendance Fraud', to: '/attendance/fraud-signals' },
-              { label: 'Card QR Scanner', to: '/attendance/card-scan' },
-              { label: 'Live Location Tracking', to: '/attendance/live-map' }
+              { label: 'Overtime Tracker', to: '/attendance/overtime-tracker' },
+              { label: 'Shift Roster', to: '/attendance/shift-roster' },
+              { label: 'Attendance Fraud', to: '/attendance/fraud' },
+              { label: 'QR Scanner', to: '/attendance/qr-scanner' },
+              { label: 'Live Location Tracking', to: '/attendance/live-location' }
+
             ]
           },
           {
@@ -255,8 +256,10 @@ export const Sidebar = ({
               { label: 'Clock In / Out', to: '/attendance' },
               { label: 'My Attendance Logs', to: '/attendance/logs' },
               { label: 'Monthly Summary', to: '/attendance/monthly-summary' },
-              { label: 'Attendance Calendar', to: '/attendance/calendar' }
+              { label: 'Attendance Calendar', to: '/attendance/calendar' },
+              { label: 'QR Scanner', to: '/attendance/qr-scanner' }
             ]
+
           },
           { label: 'Emergency Attendance', icon: AlertOctagon, to: '/emergency-attendance' },
           { label: 'My Approvals', icon: CheckSquare, to: '/approvals/requests' },

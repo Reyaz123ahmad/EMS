@@ -1,5 +1,14 @@
 import { Router } from 'express';
-import attendanceController from './attendance.controller.js';
+import attendanceController, {
+  getMonthlySummary,
+  getExceptions,
+  getStats,
+  getOvertimeTracker,
+  getShiftRoster,
+  getFraudSignals,
+  getQrScanner,
+  getLiveLocation
+} from './attendance.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 import { requireRole } from '../../middlewares/role.middleware.js';
 import { requireActiveSubscription, requireFeature } from '../../middlewares/subscription.middleware.js';
@@ -70,11 +79,15 @@ router.get(
   attendanceController.listLogs
 );
 
-router.get(
-  '/monthly-summary',
-  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  attendanceController.getMonthlySummary
-);
+// Allowed for all authenticated
+router.get('/monthly-summary', authenticate, getMonthlySummary);
+router.get('/exceptions', authenticate, getExceptions);
+router.get('/stats', authenticate, getStats);
+router.get('/overtime-tracker', authenticate, getOvertimeTracker);
+router.get('/shift-roster', authenticate, getShiftRoster);
+router.get('/fraud-signals', authenticate, getFraudSignals);
+router.get('/qr-scanner', authenticate, getQrScanner);
+router.get('/live-location', authenticate, getLiveLocation);
 
 router.get(
   '/calendar',
@@ -94,7 +107,6 @@ router.get(
   attendanceController.getEmployeeSummary
 );
 
-
 router.post(
   '/manual',
   requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
@@ -107,29 +119,10 @@ router.post(
   attendanceController.bulkMark
 );
 
-router.get(
-  '/exceptions',
-  requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  attendanceController.getExceptions
-);
-
 router.put(
   '/policy',
   requireRole('COMPANY_ADMIN', 'SUPER_ADMIN'),
   attendanceController.updatePolicy
-);
-
-router.get(
-  '/stats',
-  requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  attendanceController.getStats
-);
-
-// Fraud Signals Review & Audit
-router.get(
-  '/fraud-signals',
-  requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  attendanceController.listFraudSignals
 );
 
 router.post(

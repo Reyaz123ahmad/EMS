@@ -1034,12 +1034,6 @@ export const attendanceService = {
     return attendanceRepository.findAttendanceLogs(companyId, filters, pagination);
   },
 
-  /**
-   * 7. Monthly Summary
-   */
-  async getMonthlySummary(companyId, month, year, filters) {
-    return attendanceRepository.getMonthlySummary(companyId, month, year, filters);
-  },
 
   /**
    * 8. Attendance Daily / Department Stats
@@ -1426,56 +1420,227 @@ export const attendanceService = {
   /**
    * Monthly Summary Analytics
    */
-  async getMonthlySummary(companyId, month, year, filters = {}) {
-    const targetMonth = month ? Number(month) - 1 : new Date().getMonth();
-    const targetYear = year ? Number(year) : new Date().getFullYear();
+  async getMonthlySummary(paramsOrCompanyId, month, year, filters = {}) {
+    let companyId, employeeId, targetMonth, targetYear, role, departmentId;
 
-    const startDate = new Date(targetYear, targetMonth, 1);
-    const endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
+    if (typeof paramsOrCompanyId === 'object' && paramsOrCompanyId !== null) {
+      companyId = paramsOrCompanyId.companyId;
+      employeeId = paramsOrCompanyId.employeeId;
+      targetMonth = paramsOrCompanyId.month;
+      targetYear = paramsOrCompanyId.year;
+      role = paramsOrCompanyId.role;
+      departmentId = paramsOrCompanyId.departmentId;
+    } else {
+      companyId = paramsOrCompanyId;
+      targetMonth = month;
+      targetYear = year;
+      employeeId = filters.employeeId;
+      departmentId = filters.departmentId;
+    }
+
+    const parsedMonth = parseInt(targetMonth) || (new Date().getMonth() + 1);
+    const parsedYear = parseInt(targetYear) || new Date().getFullYear();
+
+    const startDate = new Date(parsedYear, parsedMonth - 1, 1);
+    const endDate = new Date(parsedYear, parsedMonth, 0, 23, 59, 59, 999);
 
     const where = {
       companyId,
-      attendanceDate: { gte: startDate, lte: endDate },
-      ...(filters.departmentId ? { employee: { departmentId: filters.departmentId } } : {}),
-      ...(filters.employeeId ? { employeeId: filters.employeeId } : {})
+      attendanceDate: {
+        gte: startDate,
+        lte: endDate
+      }
     };
+
+    if (departmentId) {
+      where.employee = { departmentId };
+    }
+
+    // Role-based filter
+    if (employeeId && employeeId !== '__NO_ACCESS__') {
+      where.employeeId = employeeId;
+    }
 
     const logs = await prisma.attendanceLog.findMany({
       where,
       include: {
         employee: {
-          select: { id: true, firstName: true, lastName: true, employeeCode: true, department: true }
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            employeeCode: true,
+            department: true
+          }
         }
-      }
+      },
+      orderBy: { attendanceDate: 'asc' }
     });
 
-    const presentDays = logs.filter(l => ['PRESENT', 'LATE', 'HALF_DAY'].includes(l.status) || l.checkInTime || l.checkInAt).length;
-    const absentDays = logs.filter(l => l.status === 'ABSENT').length;
-    const halfDays = logs.filter(l => l.status === 'HALF_DAY').length;
-    const lateDays = logs.filter(l => l.status === 'LATE' || l.isLate).length;
-    const totalWorkingDays = new Date(targetYear, targetMonth + 1, 0).getDate();
+    // Calculate stats
+    const stats = {
+      totalEmployees: new Set(logs.map((l) => l.employeeId)).size,
+      totalPresent: logs.filter((l) => ['PRESENT', 'LATE', 'HALF_DAY'].includes(l.status) || l.checkInAt || l.checkInTime).length,
+      presentDays: logs.filter((l) => ['PRESENT', 'LATE', 'HALF_DAY'].includes(l.status) || l.checkInAt || l.checkInTime).length,
+      absentDays: logs.filter((l) => l.status === 'ABSENT').length,
+      totalAbsent: logs.filter((l) => l.status === 'ABSENT').length,
+      lateDays: logs.filter((l) => l.status === 'LATE' || l.isLate).length,
+      totalLate: logs.filter((l) => l.status === 'LATE' || l.isLate).length,
+      halfDays: logs.filter((l) => l.status === 'HALF_DAY').length,
+      totalHalfDay: logs.filter((l) => l.status === 'HALF_DAY').length,
+      onLeaveDays: logs.filter((l) => l.status === 'ON_LEAVE').length,
+      totalWorkedMinutes: logs.reduce((sum, l) => sum + (l.totalWorkedMinutes || 0), 0),
+      totalOvertimeMinutes: logs.reduce((sum, l) => sum + (l.overtimeMinutes || 0), 0),
+      totalLateMinutes: logs.reduce((sum, l) => sum + (l.lateMinutes || 0), 0)
+    };
 
-    const totalWorkedMinutes = logs.reduce((sum, l) => sum + (l.totalWorkedMinutes || 0), 0);
-    const totalOvertimeMinutes = logs.reduce((sum, l) => sum + (l.overtimeMinutes || 0), 0);
-
-    const punctualityRate = presentDays > 0 ? Math.round(((presentDays - lateDays) / presentDays) * 100) : 100;
+    const totalWorkingDays = new Date(parsedYear, parsedMonth, 0).getDate();
+    const punctualityRate = stats.presentDays > 0 ? Math.round(((stats.presentDays - stats.lateDays) / stats.presentDays) * 100) : 100;
 
     return {
-      month: targetMonth + 1,
-      year: targetYear,
-      presentDays,
-      absentDays,
-      halfDays,
-      lateDays,
+      logs,
+      stats,
+      month: parsedMonth,
+      year: parsedYear,
+      presentDays: stats.presentDays,
+      absentDays: stats.absentDays,
+      halfDays: stats.halfDays,
+      lateDays: stats.lateDays,
       totalWorkingDays,
-      totalHours: Math.round((totalWorkedMinutes / 60) * 10) / 10,
-      overtimeHours: Math.round((totalOvertimeMinutes / 60) * 10) / 10,
-      totalOvertimeHours: Math.round((totalOvertimeMinutes / 60) * 10) / 10,
+      totalHours: Math.round((stats.totalWorkedMinutes / 60) * 10) / 10,
+      overtimeHours: Math.round((stats.totalOvertimeMinutes / 60) * 10) / 10,
+      totalOvertimeHours: Math.round((stats.totalOvertimeMinutes / 60) * 10) / 10,
       punctualityRate: isNaN(punctualityRate) ? 100 : punctualityRate,
       totalLogs: logs.length,
-      logs
+      employeeSummaries: []
     };
   },
+
+  /**
+   * Overtime Tracker
+   */
+  async getOvertimeTracker({ companyId, employeeId, role }) {
+    const where = {
+      ...(companyId ? { employee: { companyId } } : {})
+    };
+    if (role === 'EMPLOYEE' && employeeId) where.employeeId = employeeId;
+
+    const [records, stats] = await Promise.all([
+      prisma.overtimeRecord.findMany({
+        where,
+        include: {
+          employee: {
+            select: { id: true, firstName: true, lastName: true, employeeCode: true }
+          }
+        },
+        orderBy: { date: 'desc' },
+        take: 50
+      }).catch(() => []),
+      prisma.attendanceLog.aggregate({
+        where: {
+          companyId,
+          ...(employeeId ? { employeeId } : {}),
+          overtimeMinutes: { gt: 0 }
+        },
+        _sum: { overtimeMinutes: true },
+        _count: { id: true }
+      }).catch(() => ({ _sum: { overtimeMinutes: 0 }, _count: { id: 0 } }))
+    ]);
+
+    return {
+      records,
+      totalOvertimeMinutes: stats._sum?.overtimeMinutes || 0,
+      totalOvertimeHours: Math.round(((stats._sum?.overtimeMinutes || 0) / 60) * 10) / 10,
+      overtimeCount: stats._count?.id || 0
+    };
+  },
+
+  /**
+   * Shift Roster
+   */
+  async getShiftRoster({ companyId, employeeId, role }) {
+    const [shifts, rosters] = await Promise.all([
+      prisma.shift.findMany({
+        where: { companyId, isActive: true }
+      }).catch(() => []),
+      prisma.shiftAssignment.findMany({
+        where: {
+          employee: { companyId },
+          ...(role === 'EMPLOYEE' && employeeId ? { employeeId } : {})
+        },
+        include: {
+          employee: {
+            select: { id: true, firstName: true, lastName: true, employeeCode: true }
+          },
+          shift: true
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 50
+      }).catch(() => [])
+    ]);
+
+    return {
+      shifts,
+      rosters,
+      totalShifts: shifts.length,
+      totalRosters: rosters.length
+    };
+  },
+
+  /**
+   * QR Scanner Status
+   */
+  async getQrScanner({ companyId, employeeId }) {
+    const cards = await prisma.employeeCard.findMany({
+      where: {
+        companyId,
+        ...(employeeId ? { employeeId } : {})
+      },
+      include: {
+        employee: {
+          select: { id: true, firstName: true, lastName: true, employeeCode: true }
+        }
+      },
+      take: 20
+    }).catch(() => []);
+
+    return {
+      status: 'active',
+      scannerMode: 'DYNAMIC_QR',
+      activeCardsCount: cards.length,
+      recentCards: cards
+    };
+  },
+
+  /**
+   * Live Location Tracking
+   */
+  async getLiveLocation({ companyId }) {
+    const branches = await prisma.branch.findMany({
+      where: { companyId },
+      select: {
+        id: true,
+        name: true,
+        latitude: true,
+        longitude: true,
+        geofenceRadius: true,
+        address: true,
+        city: true,
+        state: true
+      }
+    }).catch(() => []);
+
+    return {
+      branches: branches.map((b) => ({
+        ...b,
+        radius: b.geofenceRadius || 200
+      })),
+      activeTracking: true,
+      timestamp: new Date().toISOString()
+    };
+  },
+
+
 
   /**
    * Match live face photo with employee enrolled face embedding (STRICT match)
