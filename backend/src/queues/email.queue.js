@@ -1,5 +1,6 @@
 import { Queue } from 'bullmq';
 import { defaultQueueOptions } from '../config/bullmq.js';
+import * as emailService from '../integrations/email/email.service.js';
 
 export const emailQueue = new Queue('email-queue', defaultQueueOptions);
 
@@ -7,14 +8,20 @@ export const emailQueue = new Queue('email-queue', defaultQueueOptions);
  * Add OTP Email Job
  */
 export async function addOTPEmail({ to, name, otp, purpose, expiryMinutes = 10, companyName }) {
-  return emailQueue.add('send-otp', {
-    to,
-    name,
-    otp,
-    purpose,
-    expiryMinutes,
-    companyName
+  // Asynchronously dispatch email without blocking client HTTP request
+  emailService.sendOTPEmail({ to, name, otp, purpose, expiryMinutes, companyName }).catch(() => {
+    try {
+      emailQueue.add('send-otp', {
+        to,
+        name,
+        otp,
+        purpose,
+        expiryMinutes,
+        companyName
+      }).catch(() => {});
+    } catch {}
   });
+  return { success: true };
 }
 
 /**

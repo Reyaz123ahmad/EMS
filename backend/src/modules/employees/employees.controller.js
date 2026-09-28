@@ -451,12 +451,80 @@ export const employeesController = {
   async getAnalytics(req, res, next) {
     try {
       const companyId = req.user?.companyId;
-      const result = await employeesService.getEmployeeAnalytics(companyId, req.query);
-      res.status(200).json({ status: 'ok', data: result });
+      const { startDate, endDate } = req.query;
+      const result = await employeesService.getEmployeeAnalytics(companyId, { startDate, endDate });
+      res.status(200).json({ status: 'ok', success: true, data: result });
     } catch (err) {
       next(err);
     }
+  },
+
+  /**
+   * GET /employees/managers
+   */
+  async getManagers(req, res, next) {
+    try {
+      const companyId = req.user?.companyId;
+      if (!companyId) {
+        const err = new Error('companyId missing on user context');
+        err.statusCode = 401;
+        throw err;
+      }
+
+      const managers = await prisma.user.findMany({
+        where: {
+          companyId,
+          status: 'ACTIVE',
+          userRoles: {
+            some: { role: { name: 'MANAGER' } }
+          }
+        },
+        select: {
+          id: true,
+          email: true,
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              employeeCode: true,
+              department: { select: { name: true } }
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return res.status(200).json({
+        status: 'ok',
+        success: true,
+        data: managers,
+        managers,
+        message: 'Managers retrieved'
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 };
+
+export const getMyPhoto = employeesController.getMyPhoto;
+export const uploadMyPhoto = employeesController.uploadMyPhoto;
+export const deleteMyPhoto = employeesController.deleteMyPhoto;
+export const updateMyProfile = employeesController.updateMyProfile;
+export const sendEmployeeOTP = employeesController.sendEmployeeOTP;
+export const verifyEmployeeOTP = employeesController.verifyEmployeeOTP;
+export const createEmployeeWithUser = employeesController.createEmployeeWithUser;
+export const bulkImport = employeesController.bulkImport;
+export const exportEmployees = employeesController.exportEmployees;
+export const getStats = employeesController.getStats;
+export const getAnalytics = employeesController.getAnalytics;
+export const getManagers = employeesController.getManagers;
+export const listEmployees = employeesController.listEmployees;
+export const getEmployee = employeesController.getEmployee;
+export const updateEmployee = employeesController.updateEmployee;
+export const deleteEmployee = employeesController.deleteEmployee;
+export const getDashboard = employeesController.getDashboard;
+export const registerFace = employeesController.registerFace;
 
 export default employeesController;

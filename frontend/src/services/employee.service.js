@@ -149,6 +149,14 @@ export const employeeService = {
   },
 
   /**
+   * Get list of active managers (MANAGER role)
+   */
+  async getManagers() {
+    const response = await api.get('/employees/managers');
+    return response.data?.data || response.data;
+  },
+
+  /**
    * Get employee analytics
    */
   async getEmployeeAnalytics(params = {}) {

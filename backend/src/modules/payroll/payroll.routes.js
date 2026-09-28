@@ -15,10 +15,19 @@ router.post('/components', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN
 router.put('/components/:id', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.updateComponent);
 router.delete('/components/:id', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.deleteComponent);
 
-// Salary Structures
+// Salary Structures & Directives
+router.get('/salary-structures', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listSalaryStructures);
+router.get('/structures', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listSalaryStructures);
 router.get('/structure/:employeeId', payrollController.getStructure);
 router.put('/structure/:employeeId', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.updateStructure);
 router.post('/structure/bulk-update', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.bulkUpdateStructure);
+
+// Reimbursements, Loans & Tax Slabs
+router.get('/reimbursements', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listReimbursements);
+router.get('/loans-advances', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listLoansAdvances);
+router.get('/loans', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listLoansAdvances);
+router.get('/tax-slabs', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listTaxSlabs);
+router.get('/analytics', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.getPayrollAnalytics);
 
 // Payroll Operations
 router.post('/preview', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.preview);

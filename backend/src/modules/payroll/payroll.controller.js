@@ -307,7 +307,84 @@ export const payrollController = {
     } catch (err) {
       next(err);
     }
+  },
+
+  async listSalaryStructures(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const result = await payrollService.listSalaryStructures({
+        companyId,
+        filters: req.query,
+        pagination: {
+          page: parseInt(req.query.page) || 1,
+          limit: parseInt(req.query.limit) || 20
+        }
+      });
+      res.status(200).json({ status: 'ok', data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async listReimbursements(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const result = await payrollService.listReimbursements({
+        companyId,
+        filters: req.query,
+        pagination: {
+          page: parseInt(req.query.page) || 1,
+          limit: parseInt(req.query.limit) || 20
+        }
+      });
+      res.status(200).json({ status: 'ok', data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async listLoansAdvances(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const result = await payrollService.listLoansAdvances({
+        companyId,
+        filters: req.query,
+        pagination: {
+          page: parseInt(req.query.page) || 1,
+          limit: parseInt(req.query.limit) || 20
+        }
+      });
+      res.status(200).json({ status: 'ok', data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async listTaxSlabs(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const result = await payrollService.listTaxSlabs({ companyId });
+      res.status(200).json({ status: 'ok', data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getPayrollAnalytics(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const result = await payrollService.getPayrollAnalytics({ companyId, filters: req.query });
+      res.status(200).json({ status: 'ok', data: result });
+    } catch (err) {
+      next(err);
+    }
   }
 };
+
+export const listSalaryStructures = payrollController.listSalaryStructures;
+export const listReimbursements = payrollController.listReimbursements;
+export const listLoansAdvances = payrollController.listLoansAdvances;
+export const listTaxSlabs = payrollController.listTaxSlabs;
+export const getPayrollAnalytics = payrollController.getPayrollAnalytics;
 
 export default payrollController;

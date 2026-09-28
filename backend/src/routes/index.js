@@ -33,6 +33,8 @@ import invoicesRoutes from '../modules/invoices/invoices.routes.js';
 import paymentAnalyticsRoutes from '../modules/payment-analytics/payment-analytics.routes.js';
 import couponsRoutes from '../modules/coupons/coupons.routes.js';
 import clientPortalRoutes from '../modules/client-portal/client-portal.routes.js';
+import projectsRoutes from '../modules/projects/projects.routes.js';
+import tasksRoutes from '../modules/tasks/tasks.routes.js';
 import healthRoutes from '../modules/health/health.routes.js';
 import aiRoutes from '../modules/ai/ai.routes.js';
 import { getPrometheusMetrics, metricsMiddleware } from '../modules/monitoring/metrics.js';
@@ -273,8 +275,10 @@ router.use('/rosters', authenticate, requireCompany, rostersRoutes);
 router.use('/holiday-calendars', authenticate, requireCompany, holidayRoutes);
 router.use('/holidays', authenticate, requireCompany, holidayRoutes);
 router.use('/attendance-security', authenticate, requireCompany, attendanceSecurityRoutes);
+router.use('/biometric-cards', authenticate, requireCompany, biometricCardsRoutes);
 router.use('/biometric/cards', authenticate, requireCompany, biometricCardsRoutes);
 router.use('/biometric/devices', authenticate, requireCompany, biometricDevicesRoutes);
+
 router.use('/biometric', authenticate, requireCompany, devicePunchesRoutes);
 router.use('/face', authenticate, requireCompany, faceRegistrationRoutes);
 router.use('/finger', authenticate, requireCompany, fingerAttendanceRoutes);
@@ -761,30 +765,8 @@ router.get('/employee-dashboard/tasks', authenticate, requireCompany, async (req
   }
 });
 
-router.get('/projects', authenticate, requireCompany, async (req, res, next) => {
-  try {
-    const role = req.user?.role || 'EMPLOYEE';
-    const companyId = req.user.companyId;
-    const where = { companyId };
-
-    if (role === 'CLIENT') {
-      const clientId = await getAuthClientId(req);
-      if (clientId) where.clientId = clientId;
-    } else if (role === 'EMPLOYEE') {
-      const empId = await getAuthEmployeeId(req);
-      if (empId) where.members = { some: { employeeId: empId } };
-    } else if (role === 'MANAGER') {
-      const emp = await getAuthEmployee(req);
-      const teamIds = await getManagerTeamIds(emp?.id);
-      where.members = { some: { employeeId: { in: teamIds } } };
-    }
-
-    const projects = await prisma.project.findMany({ where });
-    return successResponse(res, projects, 'Projects retrieved');
-  } catch (err) {
-    next(err);
-  }
-});
+router.use('/projects', projectsRoutes);
+router.use('/tasks', tasksRoutes);
 
 router.get('/clients', authenticate, requireCompany, async (req, res, next) => {
   try {
@@ -797,8 +779,43 @@ router.get('/clients', authenticate, requireCompany, async (req, res, next) => {
       if (clientId) where.id = clientId;
     }
 
-    const clients = await prisma.client.findMany({ where });
+    const clients = await prisma.client.findMany({
+      where,
+      include: {
+        projects: {
+          select: { id: true, name: true, status: true, budget: true }
+        },
+        _count: {
+          select: { projects: true, requirements: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
     return successResponse(res, clients, 'Clients retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/clients', authenticate, requireCompany, async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const { name, email, phone, companyName, address } = req.body;
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Client name is required' });
+    }
+    const client = await prisma.client.create({
+      data: {
+        companyId,
+        name,
+        email: email || null,
+        phone: phone || null,
+        companyName: companyName || null,
+        address: address || null,
+        isActive: true
+      }
+    });
+    return successResponse(res, client, 'Client created successfully', 201);
   } catch (err) {
     next(err);
   }

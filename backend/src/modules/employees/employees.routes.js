@@ -48,6 +48,13 @@ router.post(
   employeesController.createEmployeeWithUser
 );
 
+// Managers List (Only users with MANAGER role)
+router.get(
+  '/managers',
+  requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN'),
+  employeesController.getManagers
+);
+
 // Bulk Import & Export
 router.post(
   '/bulk-import',

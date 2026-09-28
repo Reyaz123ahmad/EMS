@@ -1,57 +1,47 @@
 import api from './api.js';
 
-export const biometricCardsService = {
-  listCards: async (params = {}) => {
+export const biometricCardService = {
+  async listCards(params = {}) {
     const response = await api.get('/biometric-cards', { params });
     return response.data?.data || response.data;
   },
 
-  getMyCard: async () => {
+  async getMyCard() {
     const response = await api.get('/biometric-cards/my');
     return response.data?.data || response.data;
   },
 
-  generateCard: async (data) => {
+  async generateCard(data) {
     const response = await api.post('/biometric-cards/generate', data);
     return response.data?.data || response.data;
   },
 
-  assignCard: async (data) => {
+  async assignCard(data) {
     const response = await api.post('/biometric-cards/assign', data);
     return response.data?.data || response.data;
   },
 
-  getCard: async (id) => {
+  async getCard(id) {
     const response = await api.get(`/biometric-cards/${id}`);
     return response.data?.data || response.data;
   },
 
-  getCardByEmployee: async (employeeId) => {
-    const response = await api.get(`/biometric/cards/employee/${employeeId}`);
+  async deactivateCard(id) {
+    const response = await api.post(`/biometric-cards/${id}/deactivate`);
     return response.data?.data || response.data;
   },
 
-  regenerateQR: async (cardId) => {
-    const response = await api.post(`/biometric-cards/${cardId}/regenerate`);
-    return response.data?.data || response.data;
-  },
-
-  deactivateCard: async (cardId, reason) => {
-    const response = await api.post(`/biometric-cards/${cardId}/deactivate`, { reason });
-    return response.data?.data || response.data;
-  },
-
-  downloadCard: async (cardId) => {
-    const response = await api.get(`/biometric-cards/${cardId}/download`, {
+  async downloadCard(id) {
+    const response = await api.get(`/biometric-cards/${id}/download`, {
       responseType: 'blob'
     });
     return response.data;
   },
 
-  verifyQR: async (qrData) => {
+  async verifyQR(qrData) {
     const response = await api.post('/biometric-cards/verify-qr', { qrData });
     return response.data?.data || response.data;
   }
 };
 
-export default biometricCardsService;
+export default biometricCardService;

@@ -60,7 +60,7 @@ export default function GenerateCardPage() {
       {/* Top Header */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate('/biometric/cards')}
+          onClick={() => navigate('/biometric-cards')}
           className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Card Directory

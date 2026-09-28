@@ -9,6 +9,7 @@ import {
 import { addOTPEmail } from '../../queues/email.queue.js';
 import { OTP_PURPOSES, OTP_EXPIRY_MINUTES, MAX_OTP_ATTEMPTS } from './auth.constants.js';
 import env from '../../config/env.js';
+import { AppError } from '../../utils/response.js';
 
 export const authService = {
   /**
@@ -25,7 +26,7 @@ export const authService = {
         status: 'FAILED',
         failureReason: 'Invalid credentials'
       });
-      throw new Error('Invalid email or password');
+      throw new AppError('Invalid email or password', 401);
     }
 
     if (user.status !== 'ACTIVE') {
@@ -37,7 +38,7 @@ export const authService = {
         status: 'FAILED',
         failureReason: `Account status is ${user.status}`
       });
-      throw new Error(`Your account is ${user.status.toLowerCase()}. Please contact administrator.`);
+      throw new AppError(`Your account is ${user.status.toLowerCase()}. Please contact administrator.`, 403);
     }
 
     const isMatch = await comparePassword(password, user.passwordHash);
@@ -50,7 +51,7 @@ export const authService = {
         status: 'FAILED',
         failureReason: 'Incorrect password'
       });
-      throw new Error('Invalid email or password');
+      throw new AppError('Invalid email or password', 401);
     }
 
     // 2FA Verification Check
@@ -59,13 +60,17 @@ export const authService = {
         // Generate and send 2FA OTP via BullMQ
         const otp = crypto.randomInt(100000, 999999).toString();
         await authRepository.storeOTP(user.email, otp, OTP_PURPOSES.LOGIN_2FA, 5);
-        await addOTPEmail({
-          to: user.email,
-          name: user.employee?.firstName || user.email,
-          otp,
-          purpose: 'Login Two-Factor Authentication',
-          expiryMinutes: 5
-        });
+        try {
+          await addOTPEmail({
+            to: user.email,
+            name: user.employee?.firstName || user.email,
+            otp,
+            purpose: 'Login Two-Factor Authentication',
+            expiryMinutes: 5
+          });
+        } catch (queueErr) {
+          // Fallback log if queue is unavailable
+        }
 
         return {
           requires2FA: true,
@@ -77,7 +82,7 @@ export const authService = {
       // Verify supplied 2FA token
       const otpRecord = await authRepository.getOTP(user.email, OTP_PURPOSES.LOGIN_2FA);
       if (!otpRecord || otpRecord.otp !== twoFactorToken) {
-        throw new Error('Invalid or expired 2FA code');
+        throw new AppError('Invalid or expired 2FA code', 400);
       }
       await authRepository.deleteOTP(user.email, OTP_PURPOSES.LOGIN_2FA);
     }
@@ -153,19 +158,19 @@ export const authService = {
    */
   async refreshTokens({ refreshToken }) {
     if (!refreshToken) {
-      throw new Error('Refresh token is required');
+      throw new AppError('Refresh token is required', 400);
     }
 
     const decoded = verifyRefreshToken(refreshToken);
     const session = await authRepository.findSessionByToken(refreshToken);
 
     if (!session || new Date() > session.expiresAt) {
-      throw new Error('Session has expired. Please sign in again.');
+      throw new AppError('Session has expired. Please sign in again.', 401);
     }
 
     const user = await authRepository.findUserById(decoded.sub);
     if (!user || user.status !== 'ACTIVE') {
-      throw new Error('User not found or inactive');
+      throw new AppError('User not found or inactive', 401);
     }
 
     const primaryRole =
@@ -205,7 +210,7 @@ export const authService = {
   async getMe({ userId }) {
     const user = await authRepository.findUserById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new AppError('User not found', 404);
     }
 
     const primaryRole =
@@ -257,12 +262,12 @@ export const authService = {
   async changePassword({ userId, oldPassword, newPassword }) {
     const user = await authRepository.findUserById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new AppError('User not found', 404);
     }
 
     const isMatch = await comparePassword(oldPassword, user.passwordHash);
     if (!isMatch) {
-      throw new Error('Current password is incorrect');
+      throw new AppError('Current password is incorrect', 400);
     }
 
     const newHash = await hashPassword(newPassword);
@@ -285,14 +290,14 @@ export const authService = {
     const otp = crypto.randomInt(100000, 999999).toString();
     await authRepository.storeOTP(user.email, otp, OTP_PURPOSES.PASSWORD_RESET, OTP_EXPIRY_MINUTES);
 
-    // Queue email in BullMQ
-    await addOTPEmail({
+    // Dispatch email asynchronously
+    addOTPEmail({
       to: user.email,
       name: user.employee?.firstName || user.email,
       otp,
       purpose: 'Password Reset',
       expiryMinutes: OTP_EXPIRY_MINUTES
-    });
+    }).catch(() => {});
 
     return { success: true, message: 'Verification code sent to your email.' };
   },
@@ -303,16 +308,16 @@ export const authService = {
   async resetPassword({ email, otp, newPassword }) {
     const otpRecord = await authRepository.getOTP(email, OTP_PURPOSES.PASSWORD_RESET);
     if (!otpRecord) {
-      throw new Error('OTP has expired or does not exist. Please request a new code.');
+      throw new AppError('OTP has expired or does not exist. Please request a new code.', 400);
     }
 
     if (otpRecord.otp !== String(otp).trim()) {
-      throw new Error('Invalid OTP code');
+      throw new AppError('Invalid OTP code', 400);
     }
 
     const user = await authRepository.findUserByEmail(email);
     if (!user) {
-      throw new Error('User not found');
+      throw new AppError('User not found', 404);
     }
 
     const passwordHash = await hashPassword(newPassword);

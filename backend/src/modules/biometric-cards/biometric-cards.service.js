@@ -131,7 +131,23 @@ export const biometricCardsService = {
     });
   },
 
-  generateCardPDF: async (employee, company, cardNumber, qrData, qrImageBuffer) => {
+  generateCardPDF: async (employeeOrCard, companyArg, cardNumberArg, qrDataArg, qrImageBufferArg) => {
+    let employee = employeeOrCard;
+    let company = companyArg;
+    let cardNumber = cardNumberArg;
+    let qrImageBuffer = qrImageBufferArg;
+
+    if (employeeOrCard && employeeOrCard.employee) {
+      employee = employeeOrCard.employee;
+      company = employeeOrCard.company || companyArg;
+      cardNumber = employeeOrCard.cardNumber || cardNumberArg;
+      if (!qrImageBuffer && employeeOrCard.qrSignature) {
+        try {
+          qrImageBuffer = await QRCode.toBuffer(employeeOrCard.qrSignature, { margin: 1, width: 250 });
+        } catch {}
+      }
+    }
+
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({

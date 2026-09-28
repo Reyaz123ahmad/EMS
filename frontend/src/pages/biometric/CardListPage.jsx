@@ -14,6 +14,8 @@ import {
   QrCode
 } from 'lucide-react';
 import { useCards, useDeactivateCard, useRegenerateQR } from '../../hooks/useBiometricCards';
+import biometricCardsService from '../../services/biometric-cards.service';
+import { toast } from 'sonner';
 import dayjs from 'dayjs';
 
 export default function CardListPage() {
@@ -36,18 +38,45 @@ export default function CardListPage() {
   const handleDeactivate = (cardId, cardNumber) => {
     const reason = window.prompt(`Enter reason to deactivate card ${cardNumber}:`, 'Lost or damaged card');
     if (reason) {
-      deactivateMutation.mutate({ cardId, reason });
+      deactivateMutation.mutate({ cardId, reason }, {
+        onSuccess: () => refetch()
+      });
     }
   };
 
   const handleRegenerate = (cardId) => {
     if (window.confirm('Regenerate QR signature and create a new PDF badge for this employee?')) {
-      regenerateMutation.mutate(cardId);
+      regenerateMutation.mutate(cardId, {
+        onSuccess: () => refetch()
+      });
     }
   };
 
-  const cards = data?.data?.cards || [];
-  const total = data?.data?.total || 0;
+  const handleDownload = async (card) => {
+    try {
+      toast.info('Downloading PDF badge...');
+      const blob = await biometricCardsService.downloadCard(card.id);
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `card-${card.cardNumber || 'badge'}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Card PDF downloaded successfully');
+    } catch (err) {
+      if (card.pdfUrl) {
+        window.open(card.pdfUrl, '_blank');
+      } else {
+        toast.error('Failed to download card PDF');
+      }
+    }
+  };
+
+  // Robust extraction of cards and total count
+  const cards = data?.cards || data?.data?.cards || (Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []));
+  const total = data?.total || data?.data?.total || cards.length;
   const totalPages = Math.ceil(total / 10) || 1;
 
   return (
@@ -66,10 +95,16 @@ export default function CardListPage() {
 
         <div className="flex items-center gap-2">
           <Link
-            to="/biometric/cards/generate"
+            to="/biometric-cards/generate"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition"
           >
             <Plus className="w-4 h-4" /> Generate QR Card
+          </Link>
+          <Link
+            to="/biometric-cards/assign"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-sm font-semibold transition"
+          >
+            <CreditCard className="w-4 h-4" /> Assign Physical Card
           </Link>
         </div>
       </div>
@@ -182,24 +217,20 @@ export default function CardListPage() {
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
                       <Link
-                        to={`/biometric/cards/${card.id}`}
+                        to={`/biometric-cards/${card.id}`}
                         className="inline-flex items-center p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition"
                         title="View Card Details"
                       >
                         <Eye className="w-4 h-4" />
                       </Link>
 
-                      {card.pdfUrl && (
-                        <a
-                          href={card.pdfUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition"
-                          title="Download PDF Badge"
-                        >
-                          <Download className="w-4 h-4" />
-                        </a>
-                      )}
+                      <button
+                        onClick={() => handleDownload(card)}
+                        className="inline-flex items-center p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition"
+                        title="Download PDF Badge"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
 
                       {card.isActive && (
                         <>

@@ -107,6 +107,31 @@ export const payrollService = {
   async sendSalarySlips(id) {
     const response = await api.post(`/payroll/runs/${id}/send-slips`);
     return response.data;
+  },
+
+  async listSalaryStructures(params = {}) {
+    const response = await api.get('/payroll/salary-structures', { params });
+    return response.data?.data || response.data;
+  },
+
+  async listReimbursements(params = {}) {
+    const response = await api.get('/payroll/reimbursements', { params });
+    return response.data?.data || response.data;
+  },
+
+  async listLoansAdvances(params = {}) {
+    const response = await api.get('/payroll/loans-advances', { params });
+    return response.data?.data || response.data;
+  },
+
+  async listTaxSlabs(params = {}) {
+    const response = await api.get('/payroll/tax-slabs', { params });
+    return response.data?.data || response.data;
+  },
+
+  async getPayrollAnalytics(params = {}) {
+    const response = await api.get('/payroll/analytics', { params });
+    return response.data?.data || response.data;
   }
 };
 

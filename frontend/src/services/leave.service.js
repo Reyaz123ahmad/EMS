@@ -106,7 +106,12 @@ export const leaveService = {
 
   async getLeaveBalanceReport(params = {}) {
     const response = await api.get('/leave/balance-report', { params });
-    return response.data;
+    return response.data?.data || response.data;
+  },
+
+  async getBalanceReport(params = {}) {
+    const response = await api.get('/leave/balance-report', { params });
+    return response.data?.data || response.data;
   },
 
   async bulkAllocateLeaves(data) {

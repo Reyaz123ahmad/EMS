@@ -252,6 +252,115 @@ export const leaveService = {
     }));
   },
 
+  async getLeaveBalanceReport(companyIdOrOpts, filtersOrQuery = {}) {
+    let companyId, filters, pagination;
+    if (typeof companyIdOrOpts === 'object' && companyIdOrOpts !== null && companyIdOrOpts.companyId) {
+      companyId = companyIdOrOpts.companyId;
+      filters = companyIdOrOpts.filters || {};
+      pagination = companyIdOrOpts.pagination || { page: 1, limit: 20 };
+    } else {
+      companyId = companyIdOrOpts;
+      filters = filtersOrQuery;
+      pagination = {
+        page: parseInt(filtersOrQuery?.page) || 1,
+        limit: parseInt(filtersOrQuery?.limit) || 20
+      };
+    }
+
+    const targetYear = filters.year ? parseInt(filters.year, 10) : new Date().getFullYear();
+    const page = parseInt(pagination.page) || 1;
+    const limit = parseInt(pagination.limit) || 20;
+
+    const where = { companyId, status: 'ACTIVE' };
+    if (filters.departmentId) where.departmentId = filters.departmentId;
+    if (filters.search) {
+      where.OR = [
+        { firstName: { contains: filters.search, mode: 'insensitive' } },
+        { lastName: { contains: filters.search, mode: 'insensitive' } },
+        { employeeCode: { contains: filters.search, mode: 'insensitive' } }
+      ];
+    }
+
+    const [employees, total, leaveTypes] = await Promise.all([
+      prisma.employee.findMany({
+        where,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeCode: true,
+          email: true,
+          department: { select: { id: true, name: true } },
+          designation: { select: { id: true, name: true } },
+          leaveBalances: {
+            where: { year: targetYear },
+            include: {
+              leaveType: {
+                select: { id: true, name: true, code: true, isPaid: true }
+              }
+            }
+          }
+        },
+        orderBy: { firstName: 'asc' },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.employee.count({ where }),
+      prisma.leaveType.findMany({
+        where: { companyId, isActive: true },
+        select: { id: true, name: true, code: true, maxDaysPerYear: true }
+      })
+    ]);
+
+    const report = employees.map(emp => {
+      const balances = emp.leaveBalances || [];
+      const totalAllowed = balances.reduce((sum, b) => sum + Number(b.totalDays || 0), 0);
+      const totalUsed = balances.reduce((sum, b) => sum + Number(b.usedDays || 0), 0);
+      const totalRemaining = balances.reduce((sum, b) => sum + Number(b.remainingDays || 0), 0);
+
+      return {
+        id: emp.id,
+        employee: {
+          id: emp.id,
+          name: `${emp.firstName} ${emp.lastName}`,
+          firstName: emp.firstName,
+          lastName: emp.lastName,
+          employeeCode: emp.employeeCode,
+          email: emp.email,
+          department: emp.department?.name || 'N/A',
+          designation: emp.designation?.name || 'N/A'
+        },
+        year: targetYear,
+        balances: balances.map(b => ({
+          leaveTypeId: b.leaveTypeId,
+          leaveTypeName: b.leaveType?.name || 'General Leave',
+          leaveTypeCode: b.leaveType?.code || 'LV',
+          totalDays: Number(b.totalDays || 0),
+          usedDays: Number(b.usedDays || 0),
+          remainingDays: Number(b.remainingDays || 0)
+        })),
+        totalAllowed,
+        totalUsed,
+        totalRemaining
+      };
+    });
+
+    return {
+      report,
+      employees: report,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1,
+      leaveTypes,
+      year: targetYear
+    };
+  },
+
+  async getBalanceReport(options) {
+    return this.getLeaveBalanceReport(options);
+  },
+
   async getEmployeeLeaveBalances(employeeId, year = new Date().getFullYear()) {
     const y = parseInt(year, 10);
     let balances = await prisma.leaveBalance.findMany({

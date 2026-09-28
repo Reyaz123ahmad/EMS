@@ -37,7 +37,9 @@ import {
   TrendingUp,
   Tag,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  FolderOpen,
+  FolderPlus
 } from 'lucide-react';
 
 export const Sidebar = ({
@@ -80,6 +82,7 @@ export const Sidebar = ({
         return [
           { label: 'Dashboard', to: '/dashboard/hr-admin', icon: LayoutDashboard },
           { label: 'Employees', to: '/employees', icon: Users },
+          { label: 'Biometric Cards', to: '/biometric-cards', icon: CreditCard },
           {
             label: 'Organization',
             icon: Building2,
@@ -125,6 +128,8 @@ export const Sidebar = ({
           },
           { label: 'Documents', to: '/documents', icon: FileText },
           { label: 'Performance', to: '/performance', icon: Award },
+          { label: 'Projects & Tasks', to: '/projects', icon: Briefcase },
+          { label: 'Create Project', to: '/projects/create', icon: FolderPlus },
           { label: 'Tasks', to: '/tasks', icon: CheckSquare },
           { label: 'Approvals', to: '/approvals/requests', icon: FileCheck2 },
           { label: 'Face Registration', to: '/face/register', icon: Camera },
@@ -143,6 +148,7 @@ export const Sidebar = ({
           { label: 'Dashboard', to: '/dashboard/company-admin', icon: LayoutDashboard },
           { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Employees', to: '/employees', icon: Users },
+          { label: 'Biometric Cards', to: '/biometric-cards', icon: CreditCard },
           {
             label: 'Organization',
             icon: Building2,
@@ -177,7 +183,7 @@ export const Sidebar = ({
               { label: 'Leave Balances', to: '/leave/balances' },
               { label: 'Leave Types', to: '/leave/types' },
               { label: 'Leave Calendar', to: '/leave/calendar' },
-              { label: 'Balance Report', to: '/leave/report' }
+              { label: 'Balance Report', to: '/leave/balance-report' }
             ]
           },
           {
@@ -185,14 +191,15 @@ export const Sidebar = ({
             icon: DollarSign,
             children: [
               { label: 'Payroll Runs', to: '/payroll/runs' },
-              { label: 'Salary Structures', to: '/payroll/structures' },
+              { label: 'Salary Structures', to: '/payroll/salary-structures' },
               { label: 'Reimbursements', to: '/payroll/reimbursements' },
-              { label: 'Loans & Advances', to: '/payroll/loans' },
+              { label: 'Loans & Advances', to: '/payroll/loans-advances' },
               { label: 'Tax Slabs', to: '/payroll/tax-slabs' },
               { label: 'Analytics & Reports', to: '/payroll/analytics' }
             ]
           },
           { label: 'Projects & Tasks', to: '/projects', icon: Briefcase },
+          { label: 'Create Project', to: '/projects/create', icon: FolderPlus },
           { label: 'Clients', to: '/clients', icon: Users },
           { label: 'Tasks Board', to: '/tasks', icon: CheckSquare },
           { label: 'Asset Management', to: '/assets', icon: Package },
@@ -207,6 +214,7 @@ export const Sidebar = ({
         return [
           { label: 'Dashboard', to: '/dashboard/hr-manager', icon: LayoutDashboard },
           { label: 'Employees', to: '/employees', icon: Users },
+          { label: 'Biometric Cards', to: '/biometric-cards', icon: CreditCard },
           { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
           { label: 'Leave', to: '/leave/requests', icon: PlaneTakeoff },
           { label: 'Documents', to: '/documents', icon: FileText },
@@ -231,6 +239,7 @@ export const Sidebar = ({
           { label: 'Approvals', to: '/approvals/requests', icon: FileCheck2 },
           { label: 'Assets', to: '/assets', icon: Package },
           { label: 'My Shift', to: '/my-shift', icon: Clock },
+          { label: 'My Card', to: '/my-card', icon: CreditCard },
           { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
           { label: 'My Profile', to: '/profile', icon: User }
         ];
@@ -261,6 +270,7 @@ export const Sidebar = ({
             ]
 
           },
+          { label: 'My Projects', to: '/my-projects', icon: FolderOpen },
           { label: 'Emergency Attendance', icon: AlertOctagon, to: '/emergency-attendance' },
           { label: 'My Approvals', icon: CheckSquare, to: '/approvals/requests' },
           { label: 'My Assets', icon: Package, to: '/assets' },
@@ -285,6 +295,7 @@ export const Sidebar = ({
           },
           { label: 'My Payslips', to: '/payroll/slips', icon: DollarSign },
           { label: 'My Shift', to: '/my-shift', icon: Clock },
+          { label: 'My Card', to: '/my-card', icon: CreditCard },
           { label: 'Documents', to: '/documents', icon: FileText },
           { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
           { label: 'My Profile', to: '/profile', icon: User }

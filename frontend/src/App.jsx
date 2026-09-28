@@ -98,14 +98,29 @@ import LeaveRequestsPage from './pages/leave/LeaveRequestsPage.jsx';
 import LeaveCalendarPage from './pages/leave/LeaveCalendarPage.jsx';
 import LeaveHistoryPage from './pages/leave/LeaveHistoryPage.jsx';
 import MyLeavePage from './pages/leave/MyLeavePage.jsx';
+import LeaveBalanceReportPage from './pages/leave/LeaveBalanceReportPage.jsx';
 
 // Payroll Module Pages
 import SalaryStructurePage from './pages/payroll/SalaryStructurePage.jsx';
+import SalaryStructuresPage from './pages/payroll/SalaryStructuresPage.jsx';
+import ReimbursementsPage from './pages/payroll/ReimbursementsPage.jsx';
+import LoansAdvancesPage from './pages/payroll/LoansAdvancesPage.jsx';
+import TaxSlabsPage from './pages/payroll/TaxSlabsPage.jsx';
+import PayrollAnalyticsPage from './pages/payroll/PayrollAnalyticsPage.jsx';
 import PayrollRunPage from './pages/payroll/PayrollRunPage.jsx';
 import PayrollRunsListPage from './pages/payroll/PayrollRunsListPage.jsx';
 import PayrollDetailPage from './pages/payroll/PayrollDetailPage.jsx';
 import SalarySlipsPage from './pages/payroll/SalarySlipsPage.jsx';
 import EmployeeSalaryPage from './pages/payroll/EmployeeSalaryPage.jsx';
+
+// Projects & Tasks Pages
+import ProjectsPage from './pages/projects/ProjectsPage.jsx';
+import CreateProjectPage from './pages/projects/CreateProjectPage.jsx';
+import ProjectDetailPage from './pages/projects/ProjectDetailPage.jsx';
+import ProjectTasksPage from './pages/projects/ProjectTasksPage.jsx';
+import MyProjectsPage from './pages/projects/MyProjectsPage.jsx';
+import MyProjectDetailPage from './pages/projects/MyProjectDetailPage.jsx';
+import ClientsPage from './pages/clients/ClientsPage.jsx';
 
 // Overtime Module Pages
 import OvertimeRulesPage from './pages/overtime/OvertimeRulesPage.jsx';
@@ -130,9 +145,13 @@ import HolidayListPage from './pages/holidays/HolidayListPage.jsx';
 import HolidayAssignmentPage from './pages/holidays/HolidayAssignmentPage.jsx';
 
 // Biometrics & Badges Pages
+import BiometricCardListPage from './pages/biometric/BiometricCardListPage.jsx';
+import BiometricCardDetailPage from './pages/biometric/BiometricCardDetailPage.jsx';
 import CardListPage from './pages/biometric/CardListPage.jsx';
 import CardDetailPage from './pages/biometric/CardDetailPage.jsx';
 import GenerateCardPage from './pages/biometric/GenerateCardPage.jsx';
+import AssignCardPage from './pages/biometric/AssignCardPage.jsx';
+import MyCardPage from './pages/biometric/MyCardPage.jsx';
 import DeviceListPage from './pages/biometric/DeviceListPage.jsx';
 import DeviceDetailPage from './pages/biometric/DeviceDetailPage.jsx';
 import VerifyQRPage from './pages/VerifyQRPage.jsx';
@@ -415,15 +434,102 @@ export default function App() {
         <Route path="/leave/calendar" element={<LeaveCalendarPage />} />
         <Route path="/leave/history" element={<LeaveHistoryPage />} />
         <Route path="/leave/my" element={<MyLeavePage />} />
+        <Route path="/leave/balance-report" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <LeaveBalanceReportPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/leave/report" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <LeaveBalanceReportPage />
+          </ProtectedRoute>
+        } />
 
         {/* Payroll Routes */}
-        <Route path="/payroll/salary-structure" element={<SalaryStructurePage />} />
+        <Route path="/payroll/salary-structure" element={<SalaryStructuresPage />} />
+        <Route path="/payroll/salary-structures" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'SUPER_ADMIN']}>
+            <SalaryStructuresPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/payroll/structures" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'SUPER_ADMIN']}>
+            <SalaryStructuresPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/payroll/reimbursements" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <ReimbursementsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/payroll/loans-advances" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <LoansAdvancesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/payroll/loans" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <LoansAdvancesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/payroll/tax-slabs" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <TaxSlabsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/payroll/analytics" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <PayrollAnalyticsPage />
+          </ProtectedRoute>
+        } />
         <Route path="/payroll/run" element={<PayrollRunPage />} />
         <Route path="/payroll/runs" element={<PayrollRunsListPage />} />
         <Route path="/payroll/batches" element={<PayrollRunsListPage />} />
         <Route path="/payroll/runs/:id" element={<PayrollDetailPage />} />
         <Route path="/payroll/slips" element={<SalarySlipsPage />} />
         <Route path="/payroll/employee/:id" element={<EmployeeSalaryPage />} />
+
+        {/* Projects & Tasks Routes */}
+        <Route path="/projects" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'SUPER_ADMIN']}>
+            <ProjectsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/projects/create" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <CreateProjectPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/projects/:id" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'SUPER_ADMIN']}>
+            <ProjectDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-projects" element={
+          <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']}>
+            <MyProjectsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-projects/:id" element={
+          <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN']}>
+            <MyProjectDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/clients" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN']}>
+            <ClientsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/projects/:projectId/tasks" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'SUPER_ADMIN']}>
+            <ProjectTasksPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/tasks" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'SUPER_ADMIN']}>
+            <ProjectTasksPage />
+          </ProtectedRoute>
+        } />
 
         {/* Overtime Routes */}
         <Route path="/overtime/rules" element={<OvertimeRulesPage />} />
@@ -452,6 +558,32 @@ export default function App() {
         <Route path="/holidays/assign" element={<HolidayAssignmentPage />} />
 
         {/* Biometric Cards & Hardware Devices */}
+        <Route path="/biometric-cards" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER']}>
+            <BiometricCardListPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/biometric-cards/generate" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN']}>
+            <GenerateCardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/biometric-cards/assign" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER']}>
+            <AssignCardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/biometric-cards/:id" element={
+          <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER']}>
+            <BiometricCardDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-card" element={
+          <ProtectedRoute allowedRoles={['EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN']}>
+            <MyCardPage />
+          </ProtectedRoute>
+        } />
+
         <Route path="/biometric/cards" element={<CardListPage />} />
         <Route path="/biometric/cards/generate" element={<GenerateCardPage />} />
         <Route path="/biometric/cards/:id" element={<CardDetailPage />} />

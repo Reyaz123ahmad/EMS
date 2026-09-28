@@ -25,9 +25,8 @@ export default function CardDetailPage() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['biometric-card-detail', id],
     queryFn: async () => {
-      const res = await api.get('/biometric/cards', { params: { limit: 100 } });
-      const found = res.data?.data?.cards?.find((c) => c.id === id);
-      return found || null;
+      const res = await api.get(`/biometric-cards/${id}`);
+      return res.data?.data || res.data;
     }
   });
 
@@ -70,7 +69,7 @@ export default function CardDetailPage() {
         <CreditCard className="w-16 h-16 text-slate-600 mx-auto" />
         <h2 className="text-xl font-bold text-slate-200">Card Not Found</h2>
         <Link
-          to="/biometric/cards"
+          to="/biometric-cards"
           className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Card Directory
@@ -84,7 +83,7 @@ export default function CardDetailPage() {
       {/* Top Navigation */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate('/biometric/cards')}
+          onClick={() => navigate('/biometric-cards')}
           className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Cards
