@@ -17,20 +17,20 @@ router.get('/my/:id', projectsController.getMyProjectDetail);
 router.get('/', projectsController.listProjects);
 router.post('/', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN'), projectsController.createProject);
 
-// Single Project Details
-router.get('/:id', projectsController.getProjectDetail);
-
 // Project Manager Assignment
 router.patch('/:id/manager', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'MANAGER', 'SUPER_ADMIN'), projectsController.assignManager);
 
-// Project Members & Team Progress
+// Project Tasks (Defined BEFORE /:id to prevent route shadowing)
+router.get('/:id/tasks', projectsController.getProjectTasks);
+router.post('/:id/tasks', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'MANAGER', 'SUPER_ADMIN'), projectsController.createProjectTask);
+
+// Project Members & Team Progress (Defined BEFORE /:id)
+router.get('/:id/members/progress', projectsController.getMemberProgress);
 router.get('/:id/members', projectsController.listMembers);
 router.post('/:id/members', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'MANAGER', 'SUPER_ADMIN'), projectsController.addMember);
 router.delete('/:id/members/:memberId', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'MANAGER', 'SUPER_ADMIN'), projectsController.removeMember);
-router.get('/:id/members/progress', projectsController.getMemberProgress);
 
-// Project Tasks
-router.get('/:id/tasks', projectsController.getProjectTasks);
-router.post('/:id/tasks', requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'MANAGER', 'SUPER_ADMIN'), projectsController.createProjectTask);
+// Single Project Details (Generic :id wildcard route)
+router.get('/:id', projectsController.getProjectDetail);
 
 export default router;

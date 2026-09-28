@@ -40,6 +40,33 @@ export const tasksController = {
   },
 
   /**
+   * POST /tasks
+   */
+  async createTask(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const { projectId, employeeId, title, description, assigneeId, priority, status, dueDate } = req.body;
+
+      const task = await tasksService.createTask({
+        companyId,
+        projectId,
+        employeeId,
+        assigneeId,
+        title,
+        description,
+        priority,
+        status,
+        dueDate,
+        createdBy: req.user.id
+      });
+
+      res.status(201).json({ status: 'ok', success: true, message: 'Task created successfully', data: task });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * PUT /tasks/:id/progress
    */
   async updateTaskProgress(req, res, next) {
@@ -93,6 +120,7 @@ export const tasksController = {
 
 export const listTasks = tasksController.listTasks;
 export const getTaskDetail = tasksController.getTaskDetail;
+export const createTask = tasksController.createTask;
 export const updateTaskProgress = tasksController.updateTaskProgress;
 export const addTaskComment = tasksController.addTaskComment;
 

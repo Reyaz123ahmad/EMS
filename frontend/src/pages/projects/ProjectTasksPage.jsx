@@ -44,14 +44,21 @@ export default function ProjectTasksPage() {
     queryFn: () => projectService.getProjectTasks(projectId)
   });
 
-  // 2. Fetch Projects (for project selector if on all tasks board)
+  // 2. Fetch Current Project Detail (if viewing a specific project's task board)
+  const { data: currentProject } = useQuery({
+    queryKey: ['project-detail', projectId],
+    queryFn: () => projectService.getProjectDetail(projectId),
+    enabled: Boolean(projectId && projectId !== 'all')
+  });
+
+  // 3. Fetch Projects (for project selector if on all tasks board)
   const { data: projectsData } = useQuery({
     queryKey: ['projects-dropdown'],
     queryFn: () => projectService.getProjects(),
     enabled: isAddTaskModalOpen && projectId === 'all'
   });
 
-  // 3. Fetch Employees (for assignee selector)
+  // 4. Fetch Employees (for assignee selector)
   const { data: employeesData } = useQuery({
     queryKey: ['employees-assignee-dropdown'],
     queryFn: () => employeeService.getEmployees(),
@@ -344,8 +351,22 @@ export default function ProjectTasksPage() {
             )}
 
             <form onSubmit={handleCreateTask} className="space-y-4 text-xs">
-              {/* If on all tasks page, select project */}
-              {projectId === 'all' && (
+              {/* If on a specific project page, show the auto-injected project banner */}
+              {projectId !== 'all' ? (
+                <div className="p-3 bg-indigo-950/40 border border-indigo-500/20 rounded-lg flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider block">Target Project (Auto-Assigned)</span>
+                    <span className="text-xs font-semibold text-slate-200">{currentProject?.name || 'Active Project Workspace'}</span>
+                    {currentProject?.client && (
+                      <span className="text-[11px] text-slate-400 ml-2">• Client: {currentProject.client.name || currentProject.client.companyName}</span>
+                    )}
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                    Bound to Project
+                  </span>
+                </div>
+              ) : (
+                /* If on all tasks page, render required project selection dropdown */
                 <div>
                   <label className="block font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                     Target Project <span className="text-rose-400">*</span>
@@ -359,7 +380,7 @@ export default function ProjectTasksPage() {
                     <option value="">-- Choose Project Workspace --</option>
                     {projects.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name}
+                        {p.name} {p.client ? `(${p.client.name || p.client.companyName})` : ''}
                       </option>
                     ))}
                   </select>

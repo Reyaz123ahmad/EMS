@@ -8,8 +8,9 @@ const router = Router();
 router.use(authenticate);
 router.use(requireActiveSubscription);
 
-// Tasks query
+// Tasks query & creation
 router.get('/', tasksController.listTasks);
+router.post('/', tasksController.createTask);
 router.get('/:id', tasksController.getTaskDetail);
 
 // Task progress & comments

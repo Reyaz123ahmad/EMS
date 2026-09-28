@@ -144,6 +144,85 @@ export const tasksService = {
   },
 
   /**
+   * Create Task (supports both project tasks and standalone employee tasks)
+   */
+  async createTask({ companyId, projectId, employeeId, title, description, assigneeId, priority, status, dueDate, createdBy }) {
+    if (!title || !title.trim()) {
+      const error = new Error('Task title is required');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    if (projectId) {
+      // Validate project exists and belongs to company
+      const project = await prisma.project.findFirst({
+        where: { id: projectId, companyId }
+      });
+      if (!project) {
+        const error = new Error('Project not found or does not belong to this company');
+        error.statusCode = 404;
+        throw error;
+      }
+
+      const projectTask = await prisma.projectTask.create({
+        data: {
+          projectId,
+          title: title.trim(),
+          description: description || null,
+          assigneeId: assigneeId || employeeId || null,
+          priority: priority || 'MEDIUM',
+          status: status || 'TODO',
+          dueDate: dueDate ? new Date(dueDate) : null
+        }
+      });
+
+      let employee = null;
+      if (projectTask.assigneeId) {
+        employee = await prisma.employee.findFirst({
+          where: { id: projectTask.assigneeId, companyId },
+          select: { id: true, firstName: true, lastName: true, employeeCode: true, email: true }
+        });
+      }
+
+      return { ...projectTask, employee, project: { id: project.id, name: project.name } };
+    }
+
+    // Standalone employee task
+    const targetEmployeeId = employeeId || assigneeId;
+    if (!targetEmployeeId) {
+      const error = new Error('Employee ID or Project ID is required to create a task');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const employee = await prisma.employee.findFirst({
+      where: { id: targetEmployeeId, companyId }
+    });
+    if (!employee) {
+      const error = new Error('Employee not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return prisma.task.create({
+      data: {
+        companyId,
+        employeeId: targetEmployeeId,
+        title: title.trim(),
+        description: description || null,
+        priority: priority || 'MEDIUM',
+        status: status || 'TODO',
+        dueDate: dueDate ? new Date(dueDate) : null
+      },
+      include: {
+        employee: {
+          select: { id: true, firstName: true, lastName: true, employeeCode: true, email: true }
+        }
+      }
+    });
+  },
+
+  /**
    * Add Task Comment
    */
   async addComment({ taskId, content, userId, companyId }) {
