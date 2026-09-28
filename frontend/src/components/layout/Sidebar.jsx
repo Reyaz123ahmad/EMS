@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/auth.store';
 import useNotificationStore from '../../store/notification.store';
 import SidebarMenuItem from './SidebarMenuItem';
+import Avatar from '../ui/Avatar';
 import {
   LayoutDashboard,
   Building2,
@@ -75,10 +76,71 @@ export const Sidebar = ({
           { label: 'Queue Monitor', to: '/admin/queues', icon: Cpu },
           { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles }
         ];
-      case 'COMPANY_ADMIN':
       case 'HR_ADMIN':
         return [
-          { label: 'Dashboard', to: role === 'COMPANY_ADMIN' ? '/dashboard/company-admin' : '/dashboard/hr-admin', icon: LayoutDashboard },
+          { label: 'Dashboard', to: '/dashboard/hr-admin', icon: LayoutDashboard },
+          { label: 'Employees', to: '/employees', icon: Users },
+          {
+            label: 'Organization',
+            icon: Building2,
+            children: [
+              { label: 'Branches', to: '/organization/branches' },
+              { label: 'Departments', to: '/organization/departments' },
+              { label: 'Designations', to: '/organization/designations' }
+            ]
+          },
+          {
+            label: 'Attendance',
+            icon: CalendarCheck,
+            children: [
+              { label: "Today's Status", to: '/attendance' },
+              { label: 'Attendance Logs', to: '/attendance/logs' },
+              { label: 'Monthly Summary', to: '/attendance/monthly-summary' },
+              { label: 'Calendar View', to: '/attendance/calendar' },
+              { label: 'Exceptions', to: '/attendance/exceptions' }
+            ]
+          },
+          {
+            label: 'Leave Management',
+            icon: PlaneTakeoff,
+            children: [
+              { label: 'Leave Requests', to: '/leave/requests' },
+              { label: 'Leave Balances', to: '/leave/balances' },
+              { label: 'Leave Types', to: '/leave/types' },
+              { label: 'Leave Calendar', to: '/leave/calendar' }
+            ]
+          },
+          { label: 'Overtime', to: '/overtime/records', icon: Clock },
+          { label: 'Shifts', to: '/shifts', icon: Clock },
+          { label: 'Rosters', to: '/shifts/rosters', icon: CalendarDays },
+          { label: 'Holidays', to: '/holidays', icon: Calendar },
+          {
+            label: 'Payroll',
+            icon: DollarSign,
+            children: [
+              { label: 'Payroll Runs', to: '/payroll/runs' },
+              { label: 'Salary Slips', to: '/payroll/slips' },
+              { label: 'Salary Structures', to: '/payroll/salary-structure' }
+            ]
+          },
+          { label: 'Documents', to: '/documents', icon: FileText },
+          { label: 'Performance', to: '/performance', icon: Award },
+          { label: 'Tasks', to: '/tasks', icon: CheckSquare },
+          { label: 'Approvals', to: '/approvals/requests', icon: FileCheck2 },
+          { label: 'Face Registration', to: '/face/register', icon: Camera },
+          { label: 'Certificates', to: '/documents', icon: Award },
+          { label: 'Onboarding', to: '/employees/create', icon: Users },
+          { label: 'Assets', to: '/assets', icon: Package },
+          { label: 'Reports', to: '/reports', icon: FileText },
+          { label: 'Security (view)', to: '/security/dashboard', icon: ShieldAlert },
+          { label: 'Settings (view)', to: '/settings/general', icon: Settings },
+          { label: 'My Shift', to: '/my-shift', icon: Clock },
+          { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
+          { label: 'My Profile', to: '/profile', icon: User }
+        ];
+      case 'COMPANY_ADMIN':
+        return [
+          { label: 'Dashboard', to: '/dashboard/company-admin', icon: LayoutDashboard },
           { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Employees', to: '/employees', icon: Users },
           {
@@ -99,277 +161,114 @@ export const Sidebar = ({
               { label: 'Monthly Summary', to: '/attendance/monthly-summary' },
               { label: 'Calendar View', to: '/attendance/calendar' },
               { label: 'Exceptions', to: '/attendance/exceptions' },
-              { label: 'Manual Entry', to: '/attendance/manual' }
-            ]
-          },
-          {
-            label: 'Emergency Check-in',
-            icon: AlertOctagon,
-            children: [
-              { label: 'Submit Request', to: '/emergency-attendance' },
-              { label: 'Pending Requests', to: '/emergency-attendance/requests' },
-              { label: 'Emergency Stats', to: '/emergency-attendance/stats' }
-            ]
-          },
-          {
-            label: 'Approvals Engine',
-            icon: CheckSquare,
-            children: [
-              { label: 'Workflows', to: '/approvals/workflows' },
-              { label: 'Pending Requests', to: '/approvals/requests' },
-              { label: 'Approval History', to: '/approvals/history' }
-            ]
-          },
-          {
-            label: 'Asset Management',
-            icon: Package,
-            children: [
-              { label: 'Asset Inventory', to: '/assets' },
-              { label: 'Assign Asset', to: '/assets/assign' },
-              { label: 'Return Asset', to: '/assets/return' },
-              { label: 'Categories', to: '/assets/categories' }
+              { label: 'Overtime Tracker', to: '/attendance/overtime' },
+              { label: 'Shift Roster', to: '/attendance/roster' },
+              { label: 'Attendance Fraud', to: '/attendance/fraud-signals' },
+              { label: 'Card QR Scanner', to: '/attendance/card-scan' },
+              { label: 'Live Location Tracking', to: '/attendance/live-map' }
             ]
           },
           {
             label: 'Leave Management',
             icon: PlaneTakeoff,
             children: [
-              { label: 'Apply Leave', to: '/leave/apply' },
               { label: 'Leave Requests', to: '/leave/requests' },
-              { label: 'Leave Balances', to: '/leave/balance' },
+              { label: 'Leave Balances', to: '/leave/balances' },
+              { label: 'Leave Types', to: '/leave/types' },
               { label: 'Leave Calendar', to: '/leave/calendar' },
-              { label: 'Leave History', to: '/leave/history' },
-              { label: 'Leave Types', to: '/leave/types' }
+              { label: 'Balance Report', to: '/leave/report' }
             ]
           },
           {
-            label: 'Payroll & CTC',
+            label: 'Payroll',
             icon: DollarSign,
             children: [
-              { label: 'Salary Structure', to: '/payroll/salary-structure' },
-              { label: 'Execute Run', to: '/payroll/run' },
-              { label: 'Payroll Batches', to: '/payroll/runs' },
-              { label: 'Salary Slips', to: '/payroll/slips' }
+              { label: 'Payroll Runs', to: '/payroll/runs' },
+              { label: 'Salary Structures', to: '/payroll/structures' },
+              { label: 'Reimbursements', to: '/payroll/reimbursements' },
+              { label: 'Loans & Advances', to: '/payroll/loans' },
+              { label: 'Tax Slabs', to: '/payroll/tax-slabs' },
+              { label: 'Analytics & Reports', to: '/payroll/analytics' }
             ]
           },
-          {
-            label: 'Overtime',
-            icon: Clock,
-            children: [
-              { label: 'Apply Overtime', to: '/overtime/apply' },
-              { label: 'Overtime Requests', to: '/overtime/requests' },
-              { label: 'Overtime Logs', to: '/overtime/records' },
-              { label: 'Rules & Rates', to: '/overtime/rules' },
-              { label: 'Analytics', to: '/overtime/stats' }
-            ]
-          },
-          {
-            label: 'Shifts & Rosters',
-            icon: CalendarDays,
-            children: [
-              { label: 'My Shift', to: '/my-shift' },
-              { label: 'Work Shifts', to: '/shifts' },
-              { label: 'Create Shift', to: '/shifts/create' },
-              { label: 'Assign Shifts', to: '/shifts/assign' },
-              { label: 'Shift Rosters', to: '/rosters' },
-              { label: 'Generate Roster', to: '/rosters/generate' },
-              { label: 'Roster Calendar', to: '/rosters/calendar' }
-            ]
-          },
-          {
-            label: 'Holidays',
-            icon: Calendar,
-            children: [
-              { label: 'Holiday Calendar', to: '/holidays' },
-              { label: 'Holiday List', to: '/holidays/list' },
-              { label: 'Holiday Allocation', to: '/holidays/assign' }
-            ]
-          },
-          {
-            label: 'Biometrics',
-            icon: ShieldCheck,
-            children: [
-              { label: 'Face Approvals', to: '/face/approvals' },
-              { label: 'Face Registration', to: '/face/register' },
-              { label: 'Face Status Directory', to: '/face/directory' },
-              { label: 'Fingerprint Sync', to: '/finger-attendance' },
-              { label: 'QR Badges', to: '/card-attendance' }
-            ]
-          },
-          ...(role === 'COMPANY_ADMIN' ? [
-            {
-              label: 'Subscription',
-              icon: CreditCard,
-              children: [
-                { label: 'Current Plan', to: '/subscription/current' },
-                { label: 'Available Plans', to: '/subscription/plans' },
-                { label: 'Billing History', to: '/subscription/history' }
-              ]
-            },
-            {
-              label: 'Payment Analytics',
-              icon: TrendingUp,
-              children: [
-                { label: 'Revenue Dashboard', to: '/payment-analytics/revenue' },
-                { label: 'Success Rate', to: '/payment-analytics/success-rate' },
-                { label: 'Disputes & Refunds', to: '/payment-analytics/refunds' }
-              ]
-            },
-            { label: 'Refunds', to: '/refunds', icon: RotateCcw }
-          ] : []),
-          {
-            label: 'Advanced Security',
-            icon: ShieldAlert,
-            children: [
-              { label: 'Security Dashboard', to: '/security/dashboard' },
-              { label: 'Fraud Signals', to: '/security/fraud-signals' },
-              { label: 'Security Events', to: '/security/events' },
-              { label: 'Audit Logs', to: '/security/audit-logs' },
-              { label: 'Blocked Employees', to: '/security/blocked-employees' }
-            ]
-          },
+          { label: 'Projects & Tasks', to: '/projects', icon: Briefcase },
+          { label: 'Clients', to: '/clients', icon: Users },
+          { label: 'Tasks Board', to: '/tasks', icon: CheckSquare },
+          { label: 'Asset Management', to: '/assets', icon: Package },
+          { label: 'Subscription & Billing', to: '/subscription/current', icon: CreditCard },
           { label: 'Documents', to: '/documents', icon: FileText },
-          { label: 'Reports', to: '/reports', icon: FileCheck2 },
+          { label: 'Security & Audits', to: '/security/dashboard', icon: ShieldAlert },
+          { label: 'Company Settings', to: '/settings/general', icon: Settings },
           { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
-          { label: 'Company Settings', to: '/settings/general', icon: Settings }
+          { label: 'My Profile', to: '/profile', icon: User }
         ];
       case 'HR_MANAGER':
         return [
           { label: 'Dashboard', to: '/dashboard/hr-manager', icon: LayoutDashboard },
-          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
           { label: 'Employees', to: '/employees', icon: Users },
-          {
-            label: 'Attendance',
-            icon: CalendarCheck,
-            children: [
-              { label: "Today's Status", to: '/attendance' },
-              { label: 'Attendance Logs', to: '/attendance/logs' },
-              { label: 'Calendar View', to: '/attendance/calendar' },
-              { label: 'Exceptions', to: '/attendance/exceptions' }
-            ]
-          },
-          {
-            label: 'Emergency Check-in',
-            icon: AlertOctagon,
-            children: [
-              { label: 'Submit Request', to: '/emergency-attendance' },
-              { label: 'Pending Requests', to: '/emergency-attendance/requests' }
-            ]
-          },
-          {
-            label: 'Approvals',
-            icon: CheckSquare,
-            children: [
-              { label: 'Pending Requests', to: '/approvals/requests' },
-              { label: 'History', to: '/approvals/history' }
-            ]
-          },
-          {
-            label: 'Asset Inventory',
-            icon: Package,
-            to: '/assets'
-          },
-          {
-            label: 'Leave',
-            icon: PlaneTakeoff,
-            children: [
-              { label: 'Leave Requests', to: '/leave/requests' },
-              { label: 'Team Calendar', to: '/leave/calendar' },
-              { label: 'Apply Leave', to: '/leave/apply' }
-            ]
-          },
-          {
-            label: 'Overtime',
-            icon: Clock,
-            children: [
-              { label: 'Overtime Requests', to: '/overtime/requests' },
-              { label: 'Records', to: '/overtime/records' }
-            ]
-          },
-          {
-            label: 'Shifts & Rosters',
-            icon: CalendarDays,
-            children: [
-              { label: 'My Shift', to: '/my-shift' },
-              { label: 'Work Shifts', to: '/shifts' },
-              { label: 'Assign Shifts', to: '/shifts/assign' },
-              { label: 'Roster Calendar', to: '/rosters/calendar' }
-            ]
-          },
+          { label: 'Attendance', to: '/attendance', icon: CalendarCheck },
+          { label: 'Leave', to: '/leave/requests', icon: PlaneTakeoff },
           { label: 'Documents', to: '/documents', icon: FileText },
-          { label: 'Reports', to: '/reports', icon: FileCheck2 },
-          { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null }
+          { label: 'Performance', to: '/performance', icon: Award },
+          { label: 'Tasks', to: '/tasks', icon: CheckSquare },
+          { label: 'Approvals', to: '/approvals/requests', icon: FileCheck2 },
+          { label: 'Assets', to: '/assets', icon: Package },
+          { label: 'Reports', to: '/reports', icon: FileText },
+          { label: 'My Shift', to: '/my-shift', icon: Clock },
+          { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
+          { label: 'My Profile', to: '/profile', icon: User }
         ];
       case 'MANAGER':
         return [
           { label: 'Dashboard', to: '/dashboard/manager', icon: LayoutDashboard },
-          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
+          { label: 'My Team', to: '/employees', icon: Users },
+          { label: 'Team Attendance', to: '/attendance', icon: CalendarCheck },
+          { label: 'Team Leave', to: '/leave/requests', icon: PlaneTakeoff },
+          { label: 'Tasks', to: '/tasks', icon: CheckSquare },
+          { label: 'Projects', to: '/projects', icon: Briefcase },
+          { label: 'Team Performance', to: '/performance', icon: Award },
+          { label: 'Approvals', to: '/approvals/requests', icon: FileCheck2 },
+          { label: 'Assets', to: '/assets', icon: Package },
           { label: 'My Shift', to: '/my-shift', icon: Clock },
-          { label: 'Team Members', to: '/employees', icon: Users },
-          { label: 'Attendance Review', to: '/attendance/logs', icon: CalendarCheck },
-          { label: 'Emergency Requests', to: '/emergency-attendance/requests', icon: AlertOctagon },
-          { label: 'Approvals & Reviews', to: '/approvals/requests', icon: CheckSquare },
-          { label: 'Leave Approvals', to: '/leave/requests', icon: PlaneTakeoff },
-          { label: 'Overtime Approvals', to: '/overtime/requests', icon: Clock },
-          { label: 'Roster Schedule', to: '/rosters/calendar', icon: CalendarDays },
-          { label: 'Reports', to: '/reports', icon: FileCheck2 },
-          { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null }
+          { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
+          { label: 'My Profile', to: '/profile', icon: User }
         ];
       case 'CLIENT':
         return [
-          { label: 'Dashboard', to: '/client-portal', icon: LayoutDashboard },
+          { label: 'Dashboard', to: '/dashboard/client', icon: LayoutDashboard },
           { label: 'Projects', to: '/client-portal/projects', icon: Briefcase },
-          { label: 'Requirements', to: '/client-portal/requirements', icon: FileText },
-          { label: 'Invoices', to: '/client-portal/invoices', icon: DollarSign },
-          { label: 'Discussions', to: '/client-portal/comments', icon: MessageSquare },
-          { label: 'Payment History', to: '/client-portal/payments', icon: CreditCard },
-          { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null }
+          { label: 'Requirements', to: '/client-portal/requirements', icon: FileCheck2 },
+          { label: 'Comments', to: '/client-portal/comments', icon: MessageSquare },
+          { label: 'Invoices', to: '/client-portal/invoices', icon: Receipt },
+          { label: 'Payments', to: '/client-portal/payments', icon: DollarSign },
+          { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
+          { label: 'Profile', to: '/profile', icon: User }
         ];
       case 'EMPLOYEE':
       default:
         return [
           { label: 'Dashboard', to: '/dashboard/employee', icon: LayoutDashboard },
-          { label: 'AI Intelligence', to: '/ai/hub', icon: Sparkles },
-          { label: 'My Shift', to: '/my-shift', icon: Clock },
           {
-            label: 'Attendance',
-            icon: CalendarCheck,
-            children: [
-              { label: 'Mark Attendance', to: '/attendance' },
-              { label: 'My Logs', to: '/attendance/logs' },
-              { label: 'My Calendar', to: '/attendance/calendar' }
-            ]
-          },
-          {
-            label: 'Face Biometrics',
+            label: 'Attendance & Punch',
             icon: Camera,
             children: [
-              { label: 'Face Status', to: '/face/status' },
-              { label: 'Register Face', to: '/face/register' }
+              { label: 'Clock In / Out', to: '/attendance' },
+              { label: 'My Attendance Logs', to: '/attendance/logs' },
+              { label: 'Monthly Summary', to: '/attendance/monthly-summary' },
+              { label: 'Attendance Calendar', to: '/attendance/calendar' }
             ]
           },
-          {
-            label: 'Emergency Attendance',
-            icon: AlertOctagon,
-            to: '/emergency-attendance'
-          },
-          {
-            label: 'My Approvals',
-            icon: CheckSquare,
-            to: '/approvals/requests'
-          },
-          {
-            label: 'My Assets',
-            icon: Package,
-            to: '/assets'
-          },
+          { label: 'Emergency Attendance', icon: AlertOctagon, to: '/emergency-attendance' },
+          { label: 'My Approvals', icon: CheckSquare, to: '/approvals/requests' },
+          { label: 'My Assets', icon: Package, to: '/assets' },
           {
             label: 'My Leave',
             icon: PlaneTakeoff,
             children: [
+              { label: 'My Leave', to: '/leave/my' },
               { label: 'Apply Leave', to: '/leave/apply' },
-              { label: 'My Leave History', to: '/leave/history' },
-              { label: 'Leave Balances', to: '/leave/balance' },
+              { label: 'My Balance', to: '/leave/balances' },
+              { label: 'Leave History', to: '/leave/history' },
               { label: 'Leave Calendar', to: '/leave/calendar' }
             ]
           },
@@ -382,8 +281,7 @@ export const Sidebar = ({
             ]
           },
           { label: 'My Payslips', to: '/payroll/slips', icon: DollarSign },
-          { label: 'Roster Schedule', to: '/rosters/calendar', icon: CalendarDays },
-          { label: 'Holiday Calendar', to: '/holidays', icon: Calendar },
+          { label: 'My Shift', to: '/my-shift', icon: Clock },
           { label: 'Documents', to: '/documents', icon: FileText },
           { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
           { label: 'My Profile', to: '/profile', icon: User }
@@ -394,21 +292,21 @@ export const Sidebar = ({
   const menuItems = getMenuForRole(primaryRole);
 
   const sidebarContent = (
-    <div className="flex h-full flex-col justify-between p-4">
-      <div className="space-y-6">
-        {/* Logo & Brand */}
-        <div className="flex items-center justify-between px-2">
-          <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-violet-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/30">
+    <div className="flex h-full flex-col justify-between p-3">
+      <div className="space-y-4">
+        {/* Logo & Brand (56px / h-14) */}
+        <div className="flex h-11 items-center justify-between px-2">
+          <Link to="/dashboard" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-md bg-[#111827] dark:bg-white flex items-center justify-center text-white dark:text-[#111827] font-bold text-sm">
               E
             </div>
             {!collapsed && (
               <div className="flex flex-col">
-                <span className="text-base font-black tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-                  EMS Cloud
+                <span className="text-[13px] font-semibold tracking-tight text-[#111827] dark:text-[#fafafa]">
+                  EMS Platform
                 </span>
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
-                  Enterprise
+                <span className="text-[10px] font-medium text-[#6b7280] dark:text-[#a3a3a3]">
+                  Enterprise Suite
                 </span>
               </div>
             )}
@@ -418,7 +316,7 @@ export const Sidebar = ({
             <button
               type="button"
               onClick={() => setCollapsed(!collapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="hidden lg:flex p-1 rounded-md text-[#6b7280] hover:text-[#111827] dark:text-[#a3a3a3] dark:hover:text-white hover:bg-[#f3f4f6] dark:hover:bg-[#262626] transition-colors"
             >
               {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
             </button>
@@ -426,11 +324,11 @@ export const Sidebar = ({
         </div>
 
         {/* Navigation Menu */}
-        <div className="space-y-1.5 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar pr-1">
+        <div className="space-y-1 max-h-[calc(100vh-160px)] overflow-y-auto pr-0.5">
           {!collapsed && (
-            <span className="px-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              Navigation
-            </span>
+            <div className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-[#9ca3af] dark:text-[#737373]">
+              Menu
+            </div>
           )}
           {menuItems.map((item, index) => (
             <SidebarMenuItem
@@ -446,17 +344,22 @@ export const Sidebar = ({
         </div>
       </div>
 
-      {/* Footer / Role indicator */}
+      {/* Footer / User Profile */}
       {!collapsed && (
-        <div className="rounded-xl border border-slate-200/80 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="rounded-xl border border-[#e5e7eb] dark:border-[#262626] bg-white dark:bg-[#171717] p-2.5 shadow-sm">
           <div className="flex items-center gap-2.5">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <div className="flex flex-col">
-              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">
-                Connected
+            <Avatar
+              src={user?.photoUrl || user?.employee?.photoUrl}
+              name={user?.name || user?.email || 'User'}
+              size="sm"
+              status="online"
+            />
+            <div className="flex flex-col min-w-0">
+              <span className="text-[12px] font-medium text-[#111827] dark:text-[#fafafa] truncate">
+                {user?.name || (user?.employee ? `${user.employee.firstName || ''} ${user.employee.lastName || ''}`.trim() : '') || user?.email?.split('@')[0] || 'Active User'}
               </span>
-              <span className="text-[10px] text-slate-400 font-medium">
-                Role: {primaryRole.replace('_', ' ')}
+              <span className="text-[10px] text-[#6b7280] dark:text-[#a3a3a3] capitalize truncate">
+                {primaryRole.toLowerCase().replace('_', ' ')}
               </span>
             </div>
           </div>
@@ -467,10 +370,10 @@ export const Sidebar = ({
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar: 240px (w-60) or 64px (w-16) when collapsed */}
       <aside
-        className={`hidden lg:flex flex-col border-r border-slate-200/80 bg-white/80 dark:border-slate-800 dark:bg-slate-950/80 backdrop-blur-xl transition-all duration-300 z-30 ${
-          collapsed ? 'w-20' : 'w-64'
+        className={`hidden lg:flex flex-col border-r border-[#e5e7eb] dark:border-[#262626] bg-[#fafafa] dark:bg-[#171717] transition-all duration-200 z-30 ${
+          collapsed ? 'w-16' : 'w-60'
         }`}
       >
         {sidebarContent}
@@ -480,10 +383,10 @@ export const Sidebar = ({
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in-0"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in-0"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="fixed top-0 bottom-0 left-0 w-72 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 z-50 shadow-2xl animate-in slide-in-from-left duration-300">
+          <aside className="fixed top-0 bottom-0 left-0 w-60 bg-[#fafafa] dark:bg-[#171717] border-r border-[#e5e7eb] dark:border-[#262626] z-50 animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </aside>
         </div>

@@ -131,8 +131,9 @@ export class AIController {
       const { message, context } = req.body;
       const userId = req.user.id;
       const companyId = req.user.companyId;
+      const role = req.user.role || 'EMPLOYEE';
 
-      const result = await AIModuleService.chat({ userId, companyId, message, context });
+      const result = await AIModuleService.chat({ userId, companyId, message, context, role });
       res.json({
         status: 'ok',
         data: result

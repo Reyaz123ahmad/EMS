@@ -40,8 +40,10 @@ import { sanitizeInput } from '../middlewares/security.middleware.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { requireCompany } from '../middlewares/tenant.middleware.js';
 import { requireRole } from '../middlewares/role.middleware.js';
+import { cacheResponse, invalidateCache } from '../middlewares/cache.middleware.js';
 import { successResponse } from '../utils/response.js';
 import prisma from '../config/prisma.js';
+import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds, getAuthClientId } from '../security/data-scope.js';
 
 const router = Router();
 
@@ -75,35 +77,28 @@ router.use('/notifications', notificationRoutes);
 // ================= ANALYTICS & TREND HELPERS =================
 async function get6MonthCompanyGrowthTrend() {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const trend = [];
   const now = new Date();
 
-  for (let i = 5; i >= 0; i--) {
+  const promises = [5, 4, 3, 2, 1, 0].map(async (i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
     const monthName = months[d.getMonth()];
 
     const count = await prisma.company.count({
-      where: {
-        createdAt: { lte: endOfMonth }
-      }
+      where: { createdAt: { lte: endOfMonth } }
     }).catch(() => 0);
 
-    trend.push({
-      month: monthName,
-      companies: count
-    });
-  }
+    return { month: monthName, companies: count };
+  });
 
-  return trend;
+  return Promise.all(promises);
 }
 
 async function get6MonthRevenueTrend() {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const trend = [];
   const now = new Date();
 
-  for (let i = 5; i >= 0; i--) {
+  const promises = [5, 4, 3, 2, 1, 0].map(async (i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
     const monthName = months[d.getMonth()];
@@ -116,21 +111,22 @@ async function get6MonthRevenueTrend() {
       _sum: { amount: true }
     }).catch(() => ({ _sum: { amount: 0 } }));
 
-    trend.push({
+    return {
       month: monthName,
       revenue: Number(result._sum?.amount || 0)
-    });
-  }
+    };
+  });
 
-  return trend;
+  return Promise.all(promises);
 }
 
 async function get7DayAttendanceTrend(companyId, employeeIds = null) {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const trend = [];
   const now = new Date();
 
-  for (let i = 6; i >= 0; i--) {
+  const activeCountPromise = employeeIds ? Promise.resolve(employeeIds.length) : prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 1);
+
+  const dayPromises = [6, 5, 4, 3, 2, 1, 0].map(async (i) => {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().split('T')[0];
@@ -148,25 +144,24 @@ async function get7DayAttendanceTrend(companyId, employeeIds = null) {
       prisma.attendanceLog.count({ where: { ...where, OR: [{ status: 'LATE' }, { isLate: true }] } }).catch(() => 0)
     ]);
 
-    const activeCount = employeeIds ? employeeIds.length : (await prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 1)) || 1;
-    const presentPct = Math.min(100, Math.round((totalPresent / Math.max(1, activeCount)) * 100));
-    const latePct = Math.min(100, Math.round((totalLate / Math.max(1, activeCount)) * 100));
+    return { dateStr, dayName, totalPresent, totalLate };
+  });
 
-    trend.push({
-      date: dateStr,
-      day: dayName,
-      present: presentPct,
-      late: latePct,
-      presentCount: totalPresent,
-      lateCount: totalLate
-    });
-  }
+  const [activeCount, dayResults] = await Promise.all([activeCountPromise, Promise.all(dayPromises)]);
+  const safeActive = Math.max(1, activeCount || 1);
 
-  return trend;
+  return dayResults.map(({ dateStr, dayName, totalPresent, totalLate }) => ({
+    date: dateStr,
+    day: dayName,
+    present: Math.min(100, Math.round((totalPresent / safeActive) * 100)),
+    late: Math.min(100, Math.round((totalLate / safeActive) * 100)),
+    presentCount: totalPresent,
+    lateCount: totalLate
+  }));
 }
 
 // Platform-Level Super Admin Dashboard API
-router.get('/dashboard/super-admin', authenticate, requireRole('SUPER_ADMIN'), async (req, res, next) => {
+router.get('/dashboard/super-admin', authenticate, requireRole('SUPER_ADMIN'), cacheResponse('cache:super_admin_dash', 120), async (req, res, next) => {
   try {
     const [
       totalCompanies,
@@ -238,15 +233,15 @@ router.get('/dashboard/super-admin', authenticate, requireRole('SUPER_ADMIN'), a
   }
 });
 
-router.get('/roles', authenticate, (req, res) => {
+router.get('/roles', authenticate, cacheResponse('cache:roles', 3600), (req, res) => {
   return successResponse(res, ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'CLIENT'], 'Roles retrieved');
 });
 
-router.get('/permissions', authenticate, (req, res) => {
+router.get('/permissions', authenticate, cacheResponse('cache:permissions', 3600), (req, res) => {
   return successResponse(res, ['READ', 'WRITE', 'DELETE', 'ADMIN'], 'Permissions retrieved');
 });
 
-router.get('/users', authenticate, requireRole('SUPER_ADMIN'), async (req, res, next) => {
+router.get('/users', authenticate, requireRole('SUPER_ADMIN'), cacheResponse('cache:users', 120), async (req, res, next) => {
   try {
     const total = await prisma.user.count();
     const users = await prisma.user.findMany({
@@ -267,6 +262,7 @@ router.use('/branches', authenticate, requireCompany, branchRoutes);
 router.use('/departments', authenticate, requireCompany, departmentRoutes);
 router.use('/designations', authenticate, requireCompany, designationRoutes);
 router.use('/documents', authenticate, requireCompany, documentRoutes);
+router.use('/employee-documents', authenticate, requireCompany, documentRoutes);
 router.use('/reports', authenticate, reportRoutes);
 router.use('/attendance', authenticate, requireCompany, attendanceRoutes);
 router.use('/leave', authenticate, requireCompany, leaveRoutes);
@@ -291,7 +287,7 @@ router.use('/client-portal', authenticate, requireCompany, clientPortalRoutes);
 router.use('/client', authenticate, requireCompany, clientPortalRoutes);
 
 // Company-level dashboard & detail routes
-router.get('/dashboard/company-admin', authenticate, requireCompany, async (req, res, next) => {
+router.get('/dashboard/company-admin', authenticate, requireCompany, cacheResponse('cache:company_admin_dash', 60), async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
     const today = new Date(new Date().toISOString().split('T')[0]);
@@ -400,7 +396,7 @@ router.get('/dashboard/company-admin', authenticate, requireCompany, async (req,
   }
 });
 
-router.get('/dashboard/hr-admin', authenticate, requireCompany, async (req, res, next) => {
+router.get('/dashboard/hr-admin', authenticate, requireCompany, cacheResponse('cache:hr_admin_dash', 60), async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
     const today = new Date(new Date().toISOString().split('T')[0]);
@@ -477,18 +473,29 @@ router.get('/dashboard/hr-admin', authenticate, requireCompany, async (req, res,
   }
 });
 
-router.get('/dashboard/hr-manager', authenticate, requireCompany, async (req, res, next) => {
+router.get('/dashboard/hr-manager', authenticate, requireCompany, cacheResponse('cache:hr_manager_dash', 60), async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
+    const emp = await getAuthEmployee(req);
+    const departmentId = emp?.departmentId;
     const today = new Date(new Date().toISOString().split('T')[0]);
 
+    const employeeWhere = { companyId, status: 'ACTIVE' };
+    if (departmentId) employeeWhere.departmentId = departmentId;
+
+    const attendanceWhere = { companyId, attendanceDate: today, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } };
+    if (departmentId) attendanceWhere.employee = { departmentId };
+
+    const lateWhere = { companyId, attendanceDate: today, OR: [{ status: 'LATE' }, { isLate: true }] };
+    if (departmentId) lateWhere.employee = { departmentId };
+
     const [teamSize, presentToday, lateToday, pendingApprovals, teamMembers, attendanceTrend] = await Promise.all([
-      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
-      prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } } }).catch(() => 0),
-      prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, OR: [{ status: 'LATE' }, { isLate: true }] } }).catch(() => 0),
+      prisma.employee.count({ where: employeeWhere }).catch(() => 0),
+      prisma.attendanceLog.count({ where: attendanceWhere }).catch(() => 0),
+      prisma.attendanceLog.count({ where: lateWhere }).catch(() => 0),
       prisma.approvalRequest.count({ where: { workflow: { companyId }, status: 'PENDING' } }).catch(() => 0),
       prisma.employee.findMany({
-        where: { companyId },
+        where: departmentId ? { companyId, departmentId } : { companyId },
         take: 10,
         orderBy: { createdAt: 'desc' },
         include: {
@@ -529,24 +536,26 @@ router.get('/dashboard/hr-manager', authenticate, requireCompany, async (req, re
   }
 });
 
-router.get('/dashboard/manager', authenticate, requireCompany, async (req, res, next) => {
+router.get('/dashboard/manager', authenticate, requireCompany, cacheResponse('cache:manager_dash', 60), async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
+    const emp = await getAuthEmployee(req);
+    const teamIds = await getManagerTeamIds(emp?.id);
     const today = new Date(new Date().toISOString().split('T')[0]);
 
     const [directReports, presentToday, pendingApprovals, tasks, teamMembers, attendanceTrend] = await Promise.all([
-      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
-      prisma.attendanceLog.count({ where: { companyId, attendanceDate: today, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } } }).catch(() => 0),
+      prisma.employee.count({ where: { id: { in: teamIds }, status: 'ACTIVE' } }).catch(() => 0),
+      prisma.attendanceLog.count({ where: { companyId, employeeId: { in: teamIds }, attendanceDate: today, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } } }).catch(() => 0),
       prisma.approvalRequest.count({ where: { workflow: { companyId }, status: 'PENDING' } }).catch(() => 0),
-      prisma.task.findMany({ where: { companyId }, take: 5, orderBy: { createdAt: 'desc' } }).catch(() => []),
+      prisma.task.findMany({ where: { companyId, employeeId: { in: teamIds } }, take: 5, orderBy: { createdAt: 'desc' } }).catch(() => []),
       prisma.employee.findMany({
-        where: { companyId },
+        where: { id: { in: teamIds } },
         take: 10,
         include: {
           attendanceLogs: { where: { attendanceDate: today }, take: 1 }
         }
       }).catch(() => []),
-      get7DayAttendanceTrend(companyId)
+      get7DayAttendanceTrend(companyId, teamIds)
     ]);
 
     const formattedTeam = teamMembers.map(m => {
@@ -575,7 +584,7 @@ router.get('/dashboard/manager', authenticate, requireCompany, async (req, res, 
   }
 });
 
-router.get('/dashboard/employee', authenticate, requireCompany, async (req, res, next) => {
+router.get('/dashboard/employee', authenticate, requireCompany, cacheResponse('cache:emp_dash', 60), async (req, res, next) => {
   try {
     const employee = await prisma.employee.findFirst({
       where: { userId: req.user.id }
@@ -625,12 +634,14 @@ router.get('/dashboard/employee', authenticate, requireCompany, async (req, res,
   }
 });
 
-router.get('/dashboard/client', authenticate, requireCompany, async (req, res, next) => {
+router.get('/dashboard/client', authenticate, requireCompany, cacheResponse('cache:client_dash', 60), async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
+    const clientId = await getAuthClientId(req);
+
     const [projects, invoices] = await Promise.all([
       prisma.project.findMany({
-        where: { companyId },
+        where: { companyId, ...(clientId ? { clientId } : {}) },
         take: 5,
         orderBy: { createdAt: 'desc' }
       }).catch(() => []),
@@ -657,10 +668,22 @@ router.get('/dashboard/client', authenticate, requireCompany, async (req, res, n
 router.get('/hr-manager-dashboard/metrics', authenticate, requireCompany, async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
+    const emp = await getAuthEmployee(req);
+    const departmentId = emp?.departmentId;
+
+    const leaveWhere = { employee: { companyId }, status: 'PENDING' };
+    if (departmentId) leaveWhere.employee.departmentId = departmentId;
+
+    const attWhere = { companyId, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } };
+    if (departmentId) attWhere.employee = { departmentId };
+
+    const lateWhere = { companyId, OR: [{ status: 'LATE' }, { isLate: true }] };
+    if (departmentId) lateWhere.employee = { departmentId };
+
     const [pendingLeaves, presentToday, lateCount] = await Promise.all([
-      prisma.leaveRequest.count({ where: { employee: { companyId }, status: 'PENDING' } }),
-      prisma.attendanceLog.count({ where: { companyId, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } } }),
-      prisma.attendanceLog.count({ where: { companyId, OR: [{ status: 'LATE' }, { isLate: true }] } })
+      prisma.leaveRequest.count({ where: leaveWhere }),
+      prisma.attendanceLog.count({ where: attWhere }),
+      prisma.attendanceLog.count({ where: lateWhere })
     ]);
     return successResponse(res, { pendingLeaves, presentToday, lateCount }, 'HR Manager metrics retrieved');
   } catch (err) {
@@ -670,9 +693,11 @@ router.get('/hr-manager-dashboard/metrics', authenticate, requireCompany, async 
 
 router.get('/manager-dashboard/team-summary', authenticate, requireCompany, async (req, res, next) => {
   try {
-    const companyId = req.user.companyId;
+    const emp = await getAuthEmployee(req);
+    const teamIds = await getManagerTeamIds(emp?.id);
+
     const [teamSize, pendingApprovals] = await Promise.all([
-      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }),
+      prisma.employee.count({ where: { id: { in: teamIds }, status: 'ACTIVE' } }),
       prisma.approvalRequest.count({ where: { status: 'PENDING' } })
     ]);
     return successResponse(res, { teamSize, pendingApprovals }, 'Team summary retrieved');
@@ -738,9 +763,23 @@ router.get('/employee-dashboard/tasks', authenticate, requireCompany, async (req
 
 router.get('/projects', authenticate, requireCompany, async (req, res, next) => {
   try {
-    const projects = await prisma.project.findMany({
-      where: { companyId: req.user.companyId }
-    });
+    const role = req.user?.role || 'EMPLOYEE';
+    const companyId = req.user.companyId;
+    const where = { companyId };
+
+    if (role === 'CLIENT') {
+      const clientId = await getAuthClientId(req);
+      if (clientId) where.clientId = clientId;
+    } else if (role === 'EMPLOYEE') {
+      const empId = await getAuthEmployeeId(req);
+      if (empId) where.members = { some: { employeeId: empId } };
+    } else if (role === 'MANAGER') {
+      const emp = await getAuthEmployee(req);
+      const teamIds = await getManagerTeamIds(emp?.id);
+      where.members = { some: { employeeId: { in: teamIds } } };
+    }
+
+    const projects = await prisma.project.findMany({ where });
     return successResponse(res, projects, 'Projects retrieved');
   } catch (err) {
     next(err);
@@ -749,9 +788,16 @@ router.get('/projects', authenticate, requireCompany, async (req, res, next) => 
 
 router.get('/clients', authenticate, requireCompany, async (req, res, next) => {
   try {
-    const clients = await prisma.client.findMany({
-      where: { companyId: req.user.companyId }
-    });
+    const role = req.user?.role || 'EMPLOYEE';
+    const companyId = req.user.companyId;
+    const where = { companyId };
+
+    if (role === 'CLIENT') {
+      const clientId = await getAuthClientId(req);
+      if (clientId) where.id = clientId;
+    }
+
+    const clients = await prisma.client.findMany({ where });
     return successResponse(res, clients, 'Clients retrieved');
   } catch (err) {
     next(err);
@@ -760,9 +806,23 @@ router.get('/clients', authenticate, requireCompany, async (req, res, next) => {
 
 router.get('/tasks', authenticate, requireCompany, async (req, res, next) => {
   try {
-    const tasks = await prisma.task.findMany({
-      where: { companyId: req.user.companyId }
-    });
+    const role = req.user?.role || 'EMPLOYEE';
+    const companyId = req.user.companyId;
+    const where = { companyId };
+
+    if (role === 'EMPLOYEE') {
+      const empId = await getAuthEmployeeId(req);
+      where.employeeId = empId;
+    } else if (role === 'MANAGER') {
+      const emp = await getAuthEmployee(req);
+      const teamIds = await getManagerTeamIds(emp?.id);
+      where.employeeId = { in: teamIds };
+    } else if (role === 'HR_MANAGER') {
+      const emp = await getAuthEmployee(req);
+      if (emp?.departmentId) where.employee = { departmentId: emp.departmentId };
+    }
+
+    const tasks = await prisma.task.findMany({ where });
     return successResponse(res, tasks, 'Tasks retrieved');
   } catch (err) {
     next(err);
@@ -782,9 +842,23 @@ router.get('/performance/cycles', authenticate, requireCompany, async (req, res,
 
 router.get('/performance/reviews', authenticate, requireCompany, async (req, res, next) => {
   try {
-    const reviews = await prisma.performanceReview.findMany({
-      where: { employee: { companyId: req.user.companyId } }
-    });
+    const role = req.user?.role || 'EMPLOYEE';
+    const companyId = req.user.companyId;
+    const where = { employee: { companyId } };
+
+    if (role === 'EMPLOYEE') {
+      const empId = await getAuthEmployeeId(req);
+      where.employeeId = empId;
+    } else if (role === 'MANAGER') {
+      const emp = await getAuthEmployee(req);
+      const teamIds = await getManagerTeamIds(emp?.id);
+      where.employeeId = { in: teamIds };
+    } else if (role === 'HR_MANAGER') {
+      const emp = await getAuthEmployee(req);
+      if (emp?.departmentId) where.employee.departmentId = emp.departmentId;
+    }
+
+    const reviews = await prisma.performanceReview.findMany({ where });
     return successResponse(res, reviews, 'Performance reviews retrieved');
   } catch (err) {
     next(err);
@@ -804,8 +878,24 @@ router.get('/certificates/templates', authenticate, requireCompany, async (req, 
 
 router.get('/certificates', authenticate, requireCompany, async (req, res, next) => {
   try {
+    const role = req.user?.role || 'EMPLOYEE';
+    const companyId = req.user.companyId;
+    const where = { companyId };
+
+    if (role === 'EMPLOYEE') {
+      const empId = await getAuthEmployeeId(req);
+      where.employeeId = empId;
+    } else if (role === 'MANAGER') {
+      const emp = await getAuthEmployee(req);
+      const teamIds = await getManagerTeamIds(emp?.id);
+      where.employeeId = { in: teamIds };
+    } else if (role === 'HR_MANAGER') {
+      const emp = await getAuthEmployee(req);
+      if (emp?.departmentId) where.employee = { departmentId: emp.departmentId };
+    }
+
     const certificates = await prisma.employeeCertificate.findMany({
-      where: { companyId: req.user.companyId },
+      where,
       include: { employee: true, template: true }
     });
     return successResponse(res, certificates, 'Certificates retrieved');
@@ -817,10 +907,20 @@ router.get('/certificates', authenticate, requireCompany, async (req, res, next)
 router.get('/certificates/:id/download', authenticate, async (req, res, next) => {
   try {
     const { id } = req.params;
+    const role = req.user?.role || 'EMPLOYEE';
     let cert = await prisma.employeeCertificate.findFirst({
       where: { id },
       include: { employee: true, template: true }
     }).catch(() => null);
+
+    if (cert) {
+      if (role === 'EMPLOYEE') {
+        const authEmpId = await getAuthEmployeeId(req);
+        if (cert.employeeId !== authEmpId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: You can only download your own certificates' });
+        }
+      }
+    }
 
     if (!cert) {
       cert = {

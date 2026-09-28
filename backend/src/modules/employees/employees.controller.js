@@ -6,8 +6,178 @@ import {
   updateEmployeeSchema,
   employeeFiltersSchema
 } from './employees.validator.js';
+import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
+import { prisma } from '../../config/prisma.js';
+import cloudinary, { uploadBuffer, uploadBase64Image } from '../../config/cloudinary.js';
 
 export const employeesController = {
+  /**
+   * GET /employees/me/photo
+   */
+  async getMyPhoto(req, res, next) {
+    try {
+      const userId = req.user?.id;
+      let employee = await prisma.employee.findFirst({ where: { userId } });
+      if (!employee && req.user?.companyId) {
+        employee = await prisma.employee.findFirst({ where: { email: req.user.email, companyId: req.user.companyId } });
+      }
+      res.status(200).json({ status: 'ok', success: true, photoUrl: employee?.photoUrl || null, data: { photoUrl: employee?.photoUrl || null } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /employees/me/photo
+   */
+  async uploadMyPhoto(req, res, next) {
+    try {
+      const userId = req.user?.id;
+      let employee = await prisma.employee.findFirst({ where: { userId } });
+      if (!employee && req.user?.companyId) {
+        employee = await prisma.employee.findFirst({ where: { email: req.user.email, companyId: req.user.companyId } });
+      }
+
+      const file = req.file || (req.files && req.files[0]);
+      let photoUrl = null;
+      let photoPublicId = null;
+
+      if (file) {
+        try {
+          const uploadResult = await uploadBuffer(file.buffer, {
+            folder: 'ems/profiles',
+            resource_type: 'image'
+          });
+          if (uploadResult?.secure_url) {
+            photoUrl = uploadResult.secure_url;
+            photoPublicId = uploadResult.public_id;
+          }
+        } catch (cloudErr) {
+          const mime = file.mimetype || 'image/jpeg';
+          photoUrl = `data:${mime};base64,${file.buffer.toString('base64')}`;
+        }
+      } else if (req.body?.photo || req.body?.photoUrl || req.body?.image) {
+        const photoData = req.body.photo || req.body.photoUrl || req.body.image;
+        if (typeof photoData === 'string' && photoData.startsWith('data:')) {
+          try {
+            const uploadResult = await uploadBase64Image(photoData, 'ems/profiles');
+            if (uploadResult?.secure_url) {
+              photoUrl = uploadResult.secure_url;
+              photoPublicId = uploadResult.public_id;
+            }
+          } catch (cloudErr) {
+            photoUrl = photoData;
+          }
+        } else {
+          photoUrl = photoData;
+        }
+      }
+
+      if (!photoUrl) {
+        return res.status(400).json({ status: 'error', message: 'No photo provided' });
+      }
+
+      if (employee) {
+        employee = await prisma.employee.update({
+          where: { id: employee.id },
+          data: { photoUrl, photoPublicId }
+        });
+      }
+
+      res.status(200).json({
+        status: 'ok',
+        success: true,
+        message: 'Profile photo updated successfully',
+        photoUrl,
+        data: { photoUrl, employee }
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * DELETE /employees/me/photo
+   */
+  async deleteMyPhoto(req, res, next) {
+    try {
+      const userId = req.user?.id;
+      let employee = await prisma.employee.findFirst({ where: { userId } });
+      if (!employee && req.user?.companyId) {
+        employee = await prisma.employee.findFirst({ where: { email: req.user.email, companyId: req.user.companyId } });
+      }
+      if (employee) {
+        if (employee.photoPublicId) {
+          try {
+            await cloudinary.uploader.destroy(employee.photoPublicId);
+          } catch (e) {
+            // ignore
+          }
+        }
+        employee = await prisma.employee.update({
+          where: { id: employee.id },
+          data: { photoUrl: null, photoPublicId: null }
+        });
+      }
+      res.status(200).json({ status: 'ok', success: true, message: 'Profile photo removed' });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * PUT /employees/me/profile
+   */
+  async updateMyProfile(req, res, next) {
+    try {
+      const userId = req.user?.id;
+      const role = req.user?.role || 'EMPLOYEE';
+      let employee = await prisma.employee.findFirst({ where: { userId } });
+      if (!employee && req.user?.companyId) {
+        employee = await prisma.employee.findFirst({ where: { email: req.user.email, companyId: req.user.companyId } });
+      }
+      if (!employee) {
+        return res.status(404).json({ status: 'error', message: 'Employee profile not found' });
+      }
+
+      const updateData = {};
+      if (req.body.phone !== undefined) {
+        updateData.phone = req.body.phone;
+        if (userId) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { phone: req.body.phone }
+          }).catch(() => {});
+        }
+      }
+      if (req.body.gender !== undefined) updateData.gender = req.body.gender;
+      if (req.body.dateOfBirth) updateData.dateOfBirth = new Date(req.body.dateOfBirth);
+
+      if (role !== 'EMPLOYEE') {
+        if (req.body.firstName) updateData.firstName = req.body.firstName;
+        if (req.body.lastName) updateData.lastName = req.body.lastName;
+      }
+
+      const updated = await prisma.employee.update({
+        where: { id: employee.id },
+        data: updateData,
+        include: {
+          department: true,
+          designation: true,
+          branch: true
+        }
+      });
+
+      res.status(200).json({
+        status: 'ok',
+        success: true,
+        message: 'Profile details saved successfully',
+        data: { employee: updated }
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
   /**
    * POST /employees/send-otp
    */
@@ -88,8 +258,20 @@ export const employeesController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user?.companyId;
       const { page, limit, ...filters } = value;
+
+      if (role === 'EMPLOYEE') {
+        const authEmpId = await getAuthEmployeeId(req);
+        filters.id = authEmpId;
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        filters.employeeIds = await getManagerTeamIds(emp?.id);
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) filters.departmentId = emp.departmentId;
+      }
 
       const result = await employeesService.listEmployees(companyId, filters, { page, limit });
       res.status(200).json({ status: 'ok', data: result });
@@ -104,7 +286,32 @@ export const employeesController = {
   async getEmployee(req, res, next) {
     try {
       const { id } = req.params;
+      const role = req.user?.role || 'EMPLOYEE';
+
       const employee = await employeesService.getEmployeeById(id);
+      if (!employee) {
+        return res.status(404).json({ status: 'error', message: 'Employee not found' });
+      }
+
+      // Check authorization
+      if (role === 'EMPLOYEE') {
+        const authEmpId = await getAuthEmployeeId(req);
+        if (employee.id !== authEmpId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: You can only view your own profile' });
+        }
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        const teamIds = await getManagerTeamIds(emp?.id);
+        if (!teamIds.includes(employee.id)) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Employee is outside your team' });
+        }
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (employee.departmentId && emp?.departmentId && employee.departmentId !== emp.departmentId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Employee belongs to a different department' });
+        }
+      }
+
       res.status(200).json({ status: 'ok', data: { employee } });
     } catch (err) {
       next(err);
@@ -156,6 +363,15 @@ export const employeesController = {
   async getDashboard(req, res, next) {
     try {
       const { id } = req.params;
+      const role = req.user?.role || 'EMPLOYEE';
+
+      if (role === 'EMPLOYEE') {
+        const authEmpId = await getAuthEmployeeId(req);
+        if (id !== authEmpId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: You can only view your own dashboard' });
+        }
+      }
+
       const dashboard = await employeesService.getEmployeeDashboard(id);
       res.status(200).json({ status: 'ok', data: dashboard });
     } catch (err) {

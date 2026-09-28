@@ -64,9 +64,22 @@ export function useApplyLeave() {
   return useMutation({
     mutationFn: (data) => leaveService.applyLeave(data),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
       queryClient.invalidateQueries({ queryKey: ['leave', 'requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-balances'] });
+      queryClient.invalidateQueries({ queryKey: ['my-leave-balances'] });
       queryClient.invalidateQueries({ queryKey: ['leave', 'balances'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'history'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'calendar'] });
     }
+  });
+}
+
+export function useMyLeaveRequests(params = {}) {
+  return useQuery({
+    queryKey: ['my-leave-requests', params],
+    queryFn: () => leaveService.getMyRequests(params)
   });
 }
 
@@ -147,6 +160,13 @@ export function useLeaveStats(params = {}) {
   return useQuery({
     queryKey: ['leave', 'stats', params],
     queryFn: () => leaveService.getStats(params)
+  });
+}
+
+export function useLeaveHistory(params = {}) {
+  return useQuery({
+    queryKey: ['leave', 'history', params],
+    queryFn: () => leaveService.getLeaveHistory(params)
   });
 }
 

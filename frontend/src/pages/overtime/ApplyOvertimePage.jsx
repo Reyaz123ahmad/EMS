@@ -20,10 +20,13 @@ export default function ApplyOvertimePage() {
   const applyMutation = useMutation({
     mutationFn: (data) => overtimeService.applyOvertime(data),
     onSuccess: () => {
-      toast.success('Overtime request submitted successfully');
+      toast.success('Overtime claim submitted successfully');
+      queryClient.invalidateQueries({ queryKey: ['my-overtime'] });
+      queryClient.invalidateQueries({ queryKey: ['overtime-records'] });
+      queryClient.invalidateQueries({ queryKey: ['overtime', 'records'] });
       queryClient.invalidateQueries({ queryKey: ['overtime', 'requests'] });
       queryClient.invalidateQueries({ queryKey: ['overtime-requests'] });
-      navigate('/overtime/requests');
+      navigate('/overtime/my');
     },
     onError: (error) => {
       console.error('Overtime apply error:', error);

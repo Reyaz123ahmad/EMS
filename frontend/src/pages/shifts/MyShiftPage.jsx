@@ -1,16 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMyShift } from '../../hooks/useShifts';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
-import { Clock, Calendar, CheckCircle2, Coffee, ShieldAlert, User, ArrowRight } from 'lucide-react';
+import { Clock, Calendar, CheckCircle2, Coffee, ShieldAlert, User, ArrowRight, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/auth.store';
+import { toast } from 'sonner';
 
 export default function MyShiftPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { data: myShiftData, isLoading, refetch } = useMyShift();
+  const [isManualRefreshing, setIsManualRefreshing] = useState(false);
+  const { data: myShiftData, isLoading, isFetching, refetch } = useMyShift();
+
+  const handleRefresh = async () => {
+    setIsManualRefreshing(true);
+    try {
+      await refetch();
+      toast.success('Shift schedule updated');
+    } catch (err) {
+      toast.error('Failed to refresh shift');
+    } finally {
+      setTimeout(() => {
+        setIsManualRefreshing(false);
+      }, 400);
+    }
+  };
+
+  const isSpinning = isManualRefreshing || isFetching;
 
   const isManagement = user?.role === 'COMPANY_ADMIN' || user?.role === 'HR_ADMIN' || user?.role === 'HR_MANAGER';
 
@@ -30,14 +48,27 @@ export default function MyShiftPage() {
   if (!shift) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2.5">
-            <Clock className="w-8 h-8 text-indigo-400" />
-            My Work Schedule & Shift
-          </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            View your active work roster, timing boundaries, and break allowances.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2.5">
+              <Clock className="w-8 h-8 text-indigo-400" />
+              My Work Schedule & Shift
+            </h1>
+            <p className="text-sm text-slate-400 mt-1">
+              View your active work roster, timing boundaries, and break allowances.
+            </p>
+          </div>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isSpinning}
+            className="flex items-center gap-2 w-fit"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSpinning ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
 
         <Card className="p-12 text-center bg-slate-900/60 border-slate-800 space-y-4">
@@ -73,7 +104,14 @@ export default function MyShiftPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isSpinning}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isSpinning ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           {isManagement && (

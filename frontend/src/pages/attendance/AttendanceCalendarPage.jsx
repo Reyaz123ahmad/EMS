@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import AttendanceCalendar from '../../components/attendance/AttendanceCalendar.jsx';
 import { useAttendanceCalendar } from '../../hooks/useAttendance.js';
 import { useEmployees } from '../../hooks/useEmployee.js';
+import useAuthStore from '../../store/auth.store.js';
 import Header from '../../components/layout/Header.jsx';
 import Spinner from '../../components/ui/Spinner.jsx';
 import Badge from '../../components/ui/Badge.jsx';
 import { Calendar as CalendarIcon, Filter, Users } from 'lucide-react';
 
 export default function AttendanceCalendarPage() {
+  const { user } = useAuthStore();
+  const role = user?.role || 'EMPLOYEE';
+  const isEmployee = role === 'EMPLOYEE';
+
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [selectedEmployee, setSelectedEmployee] = useState('');
@@ -16,10 +21,10 @@ export default function AttendanceCalendarPage() {
   const { data: calendarData, isLoading } = useAttendanceCalendar({
     month: currentMonth,
     year: currentYear,
-    employeeId: selectedEmployee || undefined
+    employeeId: isEmployee ? undefined : (selectedEmployee || undefined)
   });
 
-  const { data: employeesRes } = useEmployees({ limit: 100 });
+  const { data: employeesRes } = useEmployees({ limit: 100 }, { enabled: !isEmployee });
   const employees = employeesRes?.data?.employees || [];
 
   const handleMonthChange = (m, y) => {
@@ -31,24 +36,32 @@ export default function AttendanceCalendarPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">Attendance Calendar</h1>
-          <p className="text-sm text-slate-400">Day-by-day attendance heatmaps and individual records</p>
+          <h1 className="text-2xl font-black text-white">
+            {isEmployee ? 'My Attendance Calendar' : 'Attendance Calendar'}
+          </h1>
+          <p className="text-sm text-slate-400">
+            {isEmployee
+              ? 'Day-by-day personal attendance heatmap and records'
+              : 'Day-by-day attendance heatmaps and individual records'}
+          </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedEmployee}
-            onChange={(e) => setSelectedEmployee(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-          >
-            <option value="">All Employees</option>
-            {employees.map((emp) => (
-              <option key={emp.id} value={emp.id}>
-                {emp.firstName} {emp.lastName} ({emp.employeeCode})
-              </option>
-            ))}
-          </select>
-        </div>
+        {!isEmployee && (
+          <div className="flex items-center gap-3">
+            <select
+              value={selectedEmployee}
+              onChange={(e) => setSelectedEmployee(e.target.value)}
+              className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+            >
+              <option value="">All Employees</option>
+              {employees.map((emp) => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.firstName} {emp.lastName} ({emp.employeeCode})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {isLoading ? (

@@ -15,18 +15,33 @@ import { Navigate } from 'react-router-dom';
 
 export const SettingsLayout = () => {
   const { user } = useAuthStore();
-  const isSuperAdmin = user?.roles?.includes('SUPER_ADMIN') || user?.role === 'SUPER_ADMIN';
+  const userRoles = user?.roles || (user?.role ? [user.role] : ['EMPLOYEE']);
+  const isSuperAdmin = userRoles.includes('SUPER_ADMIN');
+  const isCompanyAdmin = userRoles.includes('COMPANY_ADMIN');
+  const isHrAdmin = userRoles.includes('HR_ADMIN');
+
   if (isSuperAdmin) {
     return <Navigate to="/dashboard/super-admin" replace />;
   }
-  const tabs = [
-    { label: 'General & Branding', to: '/settings/general', icon: Building },
-    { label: 'Attendance & Shifts', to: '/settings/attendance', icon: CalendarCheck },
-    { label: 'Zero-Trust Security', to: '/settings/security', icon: ShieldCheck },
-    { label: 'Leave & Holidays', to: '/settings/leave', icon: Calendar },
-    { label: 'Payroll & CTC', to: '/settings/payroll', icon: DollarSign },
-    { label: 'Notifications', to: '/settings/notifications', icon: Bell }
+
+  // Non-admins (Employees, Managers, Clients) cannot access Settings
+  if (!isCompanyAdmin && !isHrAdmin) {
+    return <Navigate to="/profile" replace />;
+  }
+
+  const allTabs = [
+    { label: 'General & Branding', to: '/settings/general', icon: Building, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] },
+    { label: 'Attendance & Shifts', to: '/settings/attendance', icon: CalendarCheck, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] },
+    { label: 'Zero-Trust Security', to: '/settings/security', icon: ShieldCheck, allowed: ['COMPANY_ADMIN'] },
+    { label: 'Leave & Holidays', to: '/settings/leave', icon: Calendar, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] },
+    { label: 'Payroll & CTC', to: '/settings/payroll', icon: DollarSign, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] },
+    { label: 'Notifications', to: '/settings/notifications', icon: Bell, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] }
   ];
+
+  const tabs = allTabs.filter(tab => {
+    if (isCompanyAdmin) return true;
+    return tab.allowed.includes('HR_ADMIN');
+  });
 
   return (
     <div className="space-y-6 animate-in fade-in-0 duration-200">

@@ -123,7 +123,11 @@ export const attendanceRepository = {
     const skip = (page - 1) * limit;
 
     const where = { companyId };
-    if (employeeId) where.employeeId = employeeId;
+    if (filters.employeeIds && Array.isArray(filters.employeeIds)) {
+      where.employeeId = { in: filters.employeeIds };
+    } else if (employeeId) {
+      where.employeeId = employeeId;
+    }
     if (status) where.status = status;
 
     if (departmentId || branchId || search) {
@@ -299,7 +303,11 @@ export const attendanceRepository = {
       }
     };
 
-    if (filters.employeeId) where.employeeId = filters.employeeId;
+    if (filters.employeeIds && Array.isArray(filters.employeeIds)) {
+      where.employeeId = { in: filters.employeeIds };
+    } else if (filters.employeeId) {
+      where.employeeId = filters.employeeId;
+    }
     if (filters.departmentId) where.employee = { departmentId: filters.departmentId };
     if (filters.branchId) {
       where.employee = { ...(where.employee || {}), branchId: filters.branchId };

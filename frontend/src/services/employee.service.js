@@ -2,6 +2,44 @@ import api from './api.js';
 
 export const employeeService = {
   /**
+   * Upload / Update self profile photo
+   */
+  async uploadMyPhoto(formDataOrBase64) {
+    let payload = formDataOrBase64;
+    let headers = {};
+    if (formDataOrBase64 instanceof FormData) {
+      headers = { 'Content-Type': 'multipart/form-data' };
+    } else if (typeof formDataOrBase64 === 'string') {
+      payload = { photo: formDataOrBase64 };
+    }
+    const response = await api.post('/employees/me/photo', payload, { headers });
+    return response.data;
+  },
+
+  /**
+   * Get self profile photo
+   */
+  async getMyPhoto() {
+    const response = await api.get('/employees/me/photo');
+    return response.data;
+  },
+
+  /**
+   * Delete self profile photo
+   */
+  async deleteMyPhoto() {
+    const response = await api.delete('/employees/me/photo');
+    return response.data;
+  },
+
+  /**
+   * Update self profile details (phone, emergency contact, etc.)
+   */
+  async updateMyProfile(data) {
+    const response = await api.put('/employees/me/profile', data);
+    return response.data;
+  },
+  /**
    * Step 1: Send Employee Verification OTP
    * @param {Object} data { employeeData, companyId }
    */

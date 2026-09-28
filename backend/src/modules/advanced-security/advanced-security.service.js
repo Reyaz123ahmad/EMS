@@ -159,7 +159,7 @@ export const advancedSecurityService = {
       prisma.fraudSignal.count({ where }).catch(() => 0),
       employeeId
         ? 0
-        : prisma.deviceAttestation.count({ where: { passed: false, employee: { companyId } } }).catch(() => 0),
+        : prisma.deviceAttestation.count({ where: { passed: false } }).catch(() => 0),
       prisma.securityEvent.count({ where: { companyId, severity: 'CRITICAL' } }).catch(() => 0),
       prisma.securityEvent.count({ where: { companyId, severity: 'HIGH' } }).catch(() => 0),
       prisma.securityEvent.count({ where: { companyId } }).catch(() => 0)

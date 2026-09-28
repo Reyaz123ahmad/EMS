@@ -30,47 +30,56 @@ export const UserDropdown = () => {
   return (
     <Dropdown
       align="right"
-      width="w-56"
+      width="w-52"
       trigger={
-        <div className="flex items-center gap-2.5 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-          <Avatar name={user?.name || user?.email || 'User'} size="sm" status="online" />
+        <div className="flex items-center gap-2 p-1 rounded-md hover:bg-[#f3f4f6] dark:hover:bg-[#262626] cursor-pointer transition-colors">
+          <Avatar
+            src={user?.photoUrl || user?.employee?.photoUrl}
+            name={user?.name || user?.email || 'User'}
+            size="xs"
+            className="w-7 h-7 rounded-full text-xs"
+          />
           <div className="hidden md:flex flex-col text-left">
-            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate max-w-[120px]">
-              {user?.name || user?.email?.split('@')[0] || 'User'}
+            <span className="text-xs font-medium text-[#111827] dark:text-[#fafafa] truncate max-w-[110px]">
+              {user?.name || (user?.employee ? `${user.employee.firstName || ''} ${user.employee.lastName || ''}`.trim() : '') || user?.email?.split('@')[0] || 'User'}
             </span>
-            <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 capitalize">
+            <span className="text-[10px] text-[#6b7280] dark:text-[#a3a3a3] capitalize">
               {primaryRole.toLowerCase().replace('_', ' ')}
             </span>
           </div>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden md:block" />
+          <ChevronDown className="w-3 h-3 text-[#9ca3af] hidden md:block" />
         </div>
       }
     >
-      <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-        <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+      <div className="px-3 py-2 border-b border-[#e5e7eb] dark:border-[#262626]">
+        <p className="text-xs font-medium text-[#111827] dark:text-[#fafafa] truncate">
           {user?.name || 'Account'}
         </p>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+        <p className="text-[11px] text-[#6b7280] dark:text-[#a3a3a3] truncate">
           {user?.email}
         </p>
       </div>
 
       <div className="p-1">
-        <DropdownItem icon={User} onClick={() => navigate('/profile')}>
+        <DropdownItem icon={User} onClick={() => navigate('/profile')} className="text-xs py-1.5 rounded-md">
           My Profile
         </DropdownItem>
-        <DropdownItem icon={Settings} onClick={() => navigate('/settings')}>
-          System Settings
+        <DropdownItem icon={Settings} onClick={() => navigate('/settings/general')} className="text-xs py-1.5 rounded-md">
+          Settings
         </DropdownItem>
-        <DropdownItem icon={Shield} onClick={() => navigate('/profile/2fa')}>
-          2FA Security
+        <DropdownItem icon={Shield} onClick={() => navigate('/profile/2fa')} className="text-xs py-1.5 rounded-md">
+          Security (2FA)
         </DropdownItem>
       </div>
 
-      <DropdownDivider />
+      <DropdownDivider className="my-1 border-[#e5e7eb] dark:border-[#262626]" />
 
       <div className="p-1">
-        <DropdownItem icon={LogOut} danger onClick={handleLogout}>
+        <DropdownItem
+          icon={LogOut}
+          onClick={handleLogout}
+          className="text-xs py-1.5 rounded-md text-[#ef4444] hover:bg-[#fef2f2] dark:hover:bg-[#450a0a]"
+        >
           Sign Out
         </DropdownItem>
       </div>

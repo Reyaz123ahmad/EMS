@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAssets, useAssetStats, useCreateAsset, useAssetCategories } from '../../hooks/useAssets.js';
+import { useAssets, useMyAssets, useAssetStats, useCreateAsset, useAssetCategories } from '../../hooks/useAssets.js';
+import useAuthStore from '../../store/auth.store.js';
 import AssetCard from '../../components/assets/AssetCard.jsx';
-import { Laptop, Plus, Upload, Download, Filter, Search } from 'lucide-react';
+import { Laptop, Plus, Download, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function AssetListPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const role = user?.role || 'EMPLOYEE';
+  const isEmployee = role === 'EMPLOYEE';
+
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const { data: assets = [], isLoading } = useAssets({
-    search,
-    category: categoryFilter,
-  });
+  const { data: myAssetsData = [], isLoading: isMyLoading } = useMyAssets();
+  const { data: allAssetsData = [], isLoading: isAllLoading } = useAssets(
+    { search, category: categoryFilter },
+    { enabled: !isEmployee }
+  );
+
+  const assets = isEmployee ? myAssetsData : allAssetsData;
+  const isLoading = isEmployee ? isMyLoading : isAllLoading;
+
   const { data: stats } = useAssetStats();
   const { data: rawCategories = [] } = useAssetCategories();
   const categories = Array.isArray(rawCategories) ? rawCategories : [];
@@ -52,83 +62,91 @@ export function AssetListPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-            Asset Inventory
+            {isEmployee ? 'My Assets' : 'Asset Inventory'}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Track company hardware, workstations, peripherals, and assignment life-cycles.
+            {isEmployee
+              ? 'Assets assigned to you'
+              : 'Track company hardware, workstations, peripherals, and assignment life-cycles.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link
-            to="/assets/categories"
-            className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            Categories
-          </Link>
-          <button
-            onClick={handleExport}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            <Download className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition-colors"
-          >
-            <Plus className="h-4 w-4" /> Add Asset
-          </button>
-        </div>
+        {!isEmployee && (
+          <div className="flex items-center gap-2">
+            <Link
+              to="/assets/categories"
+              className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              Categories
+            </Link>
+            <button
+              onClick={handleExport}
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              <Download className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition-colors"
+            >
+              <Plus className="h-4 w-4" /> Add Asset
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Stats Counters */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-          <span className="text-xs font-medium text-slate-400">Total Assets</span>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{stats?.totalAssets || 0}</p>
+      {/* Stats Counters (HR / Admin only) */}
+      {!isEmployee && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+            <span className="text-xs font-medium text-slate-400">Total Assets</span>
+            <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{stats?.totalAssets || 0}</p>
+          </div>
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+            <span className="text-xs font-medium text-slate-400">Assigned</span>
+            <p className="text-2xl font-black text-amber-600 mt-1">{stats?.assignedAssets || 0}</p>
+          </div>
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+            <span className="text-xs font-medium text-slate-400">Available</span>
+            <p className="text-2xl font-black text-emerald-600 mt-1">{stats?.availableAssets || 0}</p>
+          </div>
+          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+            <span className="text-xs font-medium text-slate-400">Active</span>
+            <p className="text-2xl font-black text-indigo-600 mt-1">{stats?.activeAssets || 0}</p>
+          </div>
         </div>
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-          <span className="text-xs font-medium text-slate-400">Assigned</span>
-          <p className="text-2xl font-black text-amber-600 mt-1">{stats?.assignedAssets || 0}</p>
-        </div>
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-          <span className="text-xs font-medium text-slate-400">Available</span>
-          <p className="text-2xl font-black text-emerald-600 mt-1">{stats?.availableAssets || 0}</p>
-        </div>
-        <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-          <span className="text-xs font-medium text-slate-400">Active</span>
-          <p className="text-2xl font-black text-indigo-600 mt-1">{stats?.activeAssets || 0}</p>
-        </div>
-      </div>
+      )}
 
-      {/* Search & Filter */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by asset name or asset code..."
-            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600"
-          />
+      {/* Search & Filter (HR / Admin only) */}
+      {!isEmployee && (
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by asset name or asset code..."
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 pl-9 pr-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            />
+          </div>
+
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium"
+          >
+            <option value="">All Categories</option>
+            {categories.map((cat, idx) => (
+              <option key={idx} value={typeof cat === 'object' ? cat.name || cat.category : cat}>
+                {typeof cat === 'object' ? cat.name || cat.category : cat}
+              </option>
+            ))}
+          </select>
         </div>
+      )}
 
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-medium"
-        >
-          <option value="">All Categories</option>
-          {categories.map((cat, idx) => (
-            <option key={idx} value={typeof cat === 'object' ? cat.name || cat.category : cat}>
-              {typeof cat === 'object' ? cat.name || cat.category : cat}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Assets Grid */}
+      {/* Assets Content */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -138,10 +156,66 @@ export function AssetListPage() {
       ) : assets.length === 0 ? (
         <div className="p-12 text-center rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
           <Laptop className="mx-auto h-8 w-8 text-slate-300" />
-          <h3 className="font-bold text-slate-900 dark:text-white">No Assets Found</h3>
+          <h3 className="font-bold text-slate-900 dark:text-white">
+            {isEmployee ? 'No assets assigned to you' : 'No Assets Found'}
+          </h3>
           <p className="text-xs text-slate-400 max-w-sm mx-auto">
-            Add physical laptops, monitors, or phones to start tracking custody.
+            {isEmployee
+              ? 'You currently do not have any company hardware or equipment assigned to your account.'
+              : 'Add physical laptops, monitors, or phones to start tracking custody.'}
           </p>
+        </div>
+      ) : isEmployee ? (
+        <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <tr>
+                  <th className="px-5 py-3.5">Asset Name</th>
+                  <th className="px-5 py-3.5">Asset Code</th>
+                  <th className="px-5 py-3.5">Assigned Date</th>
+                  <th className="px-5 py-3.5">Condition</th>
+                  <th className="px-5 py-3.5">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {assets.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="px-5 py-4 font-semibold text-slate-900 dark:text-white">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600">
+                          <Laptop className="h-4 w-4" />
+                        </div>
+                        <span>{item.asset?.name || item.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 font-mono text-slate-500 dark:text-slate-400">
+                      {item.asset?.code || item.code}
+                    </td>
+                    <td className="px-5 py-4 text-slate-600 dark:text-slate-300">
+                      {item.assignedAt ? new Date(item.assignedAt).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                        {item.condition || item.asset?.condition || 'GOOD'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                          !item.returnedAt
+                            ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                        }`}
+                      >
+                        {!item.returnedAt ? 'Assigned' : 'Returned'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -155,8 +229,8 @@ export function AssetListPage() {
         </div>
       )}
 
-      {/* Create Asset Modal */}
-      {showAddModal && (
+      {/* Create Asset Modal (HR / Admin only) */}
+      {!isEmployee && showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <h3 className="font-bold text-lg text-slate-900 dark:text-white">Add New Asset</h3>

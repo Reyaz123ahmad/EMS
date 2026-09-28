@@ -1,10 +1,29 @@
 import { assetsService } from './assets.service.js';
 import { sendSuccess, sendError } from '../../utils/response.js';
+import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
 
 export const assetsController = {
+  async getMyAssets(req, res) {
+    try {
+      const empId = await getAuthEmployeeId(req) || req.user?.id;
+      const assets = await assetsService.getMyAssets(empId);
+      return sendSuccess(res, assets, 'My assets retrieved successfully');
+    } catch (err) {
+      return sendError(res, err.message, 400);
+    }
+  },
+
   async getAssets(req, res) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user?.companyId || req.query.companyId;
+
+      if (role === 'EMPLOYEE') {
+        const empId = await getAuthEmployeeId(req);
+        const assets = await assetsService.getEmployeeAssets(empId);
+        return sendSuccess(res, assets, 'Assets retrieved successfully');
+      }
+
       const assets = await assetsService.getAssets(companyId, req.query);
       return sendSuccess(res, assets, 'Assets retrieved successfully');
     } catch (err) {

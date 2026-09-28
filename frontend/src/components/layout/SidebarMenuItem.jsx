@@ -18,46 +18,46 @@ export const SidebarMenuItem = ({
 
   if (hasChildren) {
     return (
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         <button
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`flex w-full items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
+          className={`flex w-full h-8 items-center justify-between gap-2.5 px-2.5 rounded-md text-[13px] font-medium transition-colors ${
             isChildActive
-              ? 'bg-indigo-50/80 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/60'
+              ? 'bg-[#eff6ff] text-[#3b82f6] dark:bg-[#1e293b] dark:text-[#60a5fa]'
+              : 'text-[#6b7280] hover:text-[#111827] hover:bg-[#f3f4f6] dark:text-[#a3a3a3] dark:hover:text-[#fafafa] dark:hover:bg-[#262626]'
           }`}
         >
-          <div className="flex items-center gap-3 truncate">
+          <div className="flex items-center gap-2.5 truncate">
             {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
             {!collapsed && <span className="truncate">{label}</span>}
           </div>
           {!collapsed && (
             <ChevronDown
-              className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                isOpen ? 'rotate-180 text-indigo-600 dark:text-indigo-400' : 'text-slate-400'
+              className={`w-3.5 h-3.5 transition-transform duration-150 ${
+                isOpen ? 'rotate-180 text-[#3b82f6] dark:text-[#60a5fa]' : 'text-[#9ca3af]'
               }`}
             />
           )}
         </button>
 
         {isOpen && !collapsed && (
-          <div className="pl-7 pr-1 py-1 space-y-1 border-l border-slate-200 dark:border-slate-800 ml-5 animate-in fade-in-0 duration-150">
+          <div className="pl-6 pr-1 py-0.5 space-y-0.5 border-l border-[#e5e7eb] dark:border-[#262626] ml-4 animate-in fade-in-0 duration-100">
             {children.map((child, index) => (
               <NavLink
                 key={index}
                 to={child.to}
                 className={({ isActive }) =>
-                  `flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  `flex h-7 items-center justify-between px-2.5 rounded-md text-xs font-medium transition-colors ${
                     isActive
-                      ? 'text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/50 font-semibold'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/40'
+                      ? 'text-[#3b82f6] bg-[#eff6ff] dark:text-[#60a5fa] dark:bg-[#1e293b]'
+                      : 'text-[#6b7280] hover:text-[#111827] hover:bg-[#f3f4f6] dark:text-[#a3a3a3] dark:hover:text-[#fafafa] dark:hover:bg-[#262626]'
                   }`
                 }
               >
                 <span>{child.label}</span>
                 {child.badge && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#e5e7eb] dark:bg-[#262626] text-[#374151] dark:text-[#d1d5db]">
                     {child.badge}
                   </span>
                 )}
@@ -73,24 +73,24 @@ export const SidebarMenuItem = ({
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
+        `flex h-8 items-center justify-between gap-2.5 px-2.5 rounded-md text-[13px] font-medium transition-colors ${
           isActive
-            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/60'
+            ? 'bg-[#eff6ff] text-[#3b82f6] dark:bg-[#1e293b] dark:text-[#60a5fa]'
+            : 'text-[#6b7280] hover:text-[#111827] hover:bg-[#f3f4f6] dark:text-[#a3a3a3] dark:hover:text-[#fafafa] dark:hover:bg-[#262626]'
         }`
       }
     >
-      <div className="flex items-center gap-3 truncate">
+      <div className="flex items-center gap-2.5 truncate">
         {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
         {!collapsed && <span className="truncate">{label}</span>}
       </div>
 
       {!collapsed && badge && (
         <span
-          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+          className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
             badgeVariant === 'danger'
-              ? 'bg-rose-500 text-white'
-              : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+              ? 'bg-[#fee2e2] text-[#dc2626] dark:bg-[#450a0a] dark:text-[#f87171]'
+              : 'bg-[#eff6ff] text-[#2563eb] dark:bg-[#172554] dark:text-[#93c5fd]'
           }`}
         >
           {badge}

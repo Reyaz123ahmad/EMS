@@ -17,6 +17,8 @@ import { formatDate } from '../../utils/formatters';
 export default function LeaveRequestsPage() {
   const { user } = useAuthStore();
   const companyId = user?.companyId;
+  const userRoles = user?.roles || (user?.role ? [user.role] : ['EMPLOYEE']);
+  const isEmployee = userRoles.includes('EMPLOYEE') && !userRoles.some((r) => ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER'].includes(r));
 
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
@@ -50,7 +52,12 @@ export default function LeaveRequestsPage() {
         if (!r) return false;
         const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
         const typeName = (r.leaveType?.name || '').toLowerCase();
-        return empName.includes(search.toLowerCase()) || typeName.includes(search.toLowerCase());
+        const reason = (r.reason || '').toLowerCase();
+        const term = search.toLowerCase();
+        if (isEmployee) {
+          return typeName.includes(term) || reason.includes(term);
+        }
+        return empName.includes(term) || typeName.includes(term) || reason.includes(term);
       })
     : [];
 
@@ -98,37 +105,41 @@ export default function LeaveRequestsPage() {
   };
 
   const columns = [
-    {
-      header: (
-        <input
-          type="checkbox"
-          onChange={handleSelectAll}
-          checked={selectedIds.length > 0 && selectedIds.length === filteredRequests.length}
-          className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
-        />
-      ),
-      accessor: 'select',
-      cell: (row) => (
-        <input
-          type="checkbox"
-          checked={selectedIds.includes(row.id)}
-          onChange={() => handleToggleSelect(row.id)}
-          className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
-        />
-      ),
-    },
-    {
-      header: 'Employee',
-      accessor: 'employee',
-      cell: (row) => (
-        <div>
-          <div className="font-semibold text-white">
-            {row.employee ? `${row.employee.firstName} ${row.employee.lastName}` : 'N/A'}
-          </div>
-          <div className="text-xs text-slate-400">{row.employee?.department?.name || 'Department'}</div>
-        </div>
-      ),
-    },
+    ...(!isEmployee
+      ? [
+          {
+            header: (
+              <input
+                type="checkbox"
+                onChange={handleSelectAll}
+                checked={selectedIds.length > 0 && selectedIds.length === filteredRequests.length}
+                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
+              />
+            ),
+            accessor: 'select',
+            cell: (row) => (
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(row.id)}
+                onChange={() => handleToggleSelect(row.id)}
+                className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
+              />
+            ),
+          },
+          {
+            header: 'Employee',
+            accessor: 'employee',
+            cell: (row) => (
+              <div>
+                <div className="font-semibold text-white">
+                  {row.employee ? `${row.employee.firstName} ${row.employee.lastName}` : 'N/A'}
+                </div>
+                <div className="text-xs text-slate-400">{row.employee?.department?.name || 'Department'}</div>
+              </div>
+            ),
+          },
+        ]
+      : []),
     {
       header: 'Type',
       accessor: 'leaveType',
@@ -170,25 +181,35 @@ export default function LeaveRequestsPage() {
         </Badge>
       ),
     },
-    {
-      header: 'Actions',
-      cell: (row) => (
-        <Button variant="ghost" size="sm" onClick={() => handleOpenReview(row)}>
-          Review
-        </Button>
-      ),
-    },
+    ...(!isEmployee
+      ? [
+          {
+            header: 'Actions',
+            cell: (row) => (
+              <Button variant="ghost" size="sm" onClick={() => handleOpenReview(row)}>
+                Review
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Leave Requests</h1>
-          <p className="text-sm text-slate-400">Review, approve, and manage employee time-off requests</p>
+          <h1 className="text-2xl font-bold text-white">
+            {isEmployee ? 'My Leave Requests' : 'Leave Requests'}
+          </h1>
+          <p className="text-sm text-slate-400">
+            {isEmployee
+              ? 'Track the status of your submitted time-off requests'
+              : 'Review, approve, and manage employee time-off requests'}
+          </p>
         </div>
         <div className="flex gap-3">
-          {selectedIds.length > 0 && (
+          {!isEmployee && selectedIds.length > 0 && (
             <Button
               variant="success"
               onClick={handleBulkApprove}
@@ -206,7 +227,7 @@ export default function LeaveRequestsPage() {
       <Card className="p-4">
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-4">
           <Input
-            placeholder="Search employee or leave type..."
+            placeholder={isEmployee ? 'Search leave type or reason...' : 'Search employee or leave type...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full sm:w-80"
@@ -228,14 +249,16 @@ export default function LeaveRequestsPage() {
         <Table columns={columns} data={filteredRequests} isLoading={isLoading} />
       </Card>
 
-      <LeaveApprovalModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        request={selectedRequest}
-        onApprove={handleApprove}
-        onReject={handleReject}
-        isSubmitting={approveLeave.isPending || rejectLeave.isPending}
-      />
+      {!isEmployee && (
+        <LeaveApprovalModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          request={selectedRequest}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          isSubmitting={approveLeave.isPending || rejectLeave.isPending}
+        />
+      )}
     </div>
   );
 }

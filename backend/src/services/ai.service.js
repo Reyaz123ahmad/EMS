@@ -690,8 +690,63 @@ export class AIService {
   // ===========================================================================
   // 9. AI CHATBOT
   // ===========================================================================
-  static async chat({ userId, companyId, message, context = {} }) {
-    const systemPrompt = `${AIPromptTemplates.CHATBOT_SYSTEM}\nContext: ${JSON.stringify(context || {})}`;
+  static async chat({ userId, companyId, message, context = {}, role = 'EMPLOYEE' }) {
+    let scopedContext = { role, ...context };
+
+    try {
+      if (role === 'EMPLOYEE' && userId) {
+        const emp = await prisma.employee.findFirst({
+          where: { userId },
+          include: { department: true, designation: true }
+        });
+        if (emp) {
+          const [recentAttendance, leaveBalances, myTasks] = await Promise.all([
+            prisma.attendanceLog.findMany({ where: { employeeId: emp.id }, take: 5, orderBy: { attendanceDate: 'desc' } }).catch(() => []),
+            prisma.leaveBalance.findMany({ where: { employeeId: emp.id }, include: { leaveType: true } }).catch(() => []),
+            prisma.task.findMany({ where: { employeeId: emp.id, status: { not: 'COMPLETED' } }, take: 5 }).catch(() => [])
+          ]);
+          scopedContext.employee = { id: emp.id, name: `${emp.firstName} ${emp.lastName}`, code: emp.employeeCode, department: emp.department?.name, designation: emp.designation?.name };
+          scopedContext.attendance = recentAttendance;
+          scopedContext.leaveBalances = leaveBalances.map(l => ({ type: l.leaveType?.name, remaining: l.remainingDays }));
+          scopedContext.tasks = myTasks.map(t => ({ title: t.title, priority: t.priority, status: t.status }));
+        }
+      } else if (role === 'MANAGER' && userId) {
+        const emp = await prisma.employee.findFirst({ where: { userId } });
+        if (emp) {
+          const team = await prisma.employee.findMany({ where: { managerId: emp.id }, select: { id: true, firstName: true, lastName: true, employeeCode: true } });
+          const teamIds = [emp.id, ...team.map(t => t.id)];
+          const [teamTasks, todayAtt] = await Promise.all([
+            prisma.task.findMany({ where: { employeeId: { in: teamIds } }, take: 10 }).catch(() => []),
+            prisma.attendanceLog.findMany({ where: { employeeId: { in: teamIds }, attendanceDate: new Date(new Date().toISOString().split('T')[0]) } }).catch(() => [])
+          ]);
+          scopedContext.teamSize = team.length;
+          scopedContext.teamMembers = team;
+          scopedContext.teamTasks = teamTasks;
+          scopedContext.teamAttendanceToday = todayAtt;
+        }
+      } else if (role === 'HR_MANAGER' && userId) {
+        const emp = await prisma.employee.findFirst({ where: { userId }, include: { department: true } });
+        if (emp && emp.departmentId) {
+          const [deptEmployees, deptLeaves] = await Promise.all([
+            prisma.employee.count({ where: { departmentId: emp.departmentId, status: 'ACTIVE' } }).catch(() => 0),
+            prisma.leaveRequest.findMany({ where: { employee: { departmentId: emp.departmentId }, status: 'PENDING' }, take: 5 }).catch(() => [])
+          ]);
+          scopedContext.department = emp.department?.name;
+          scopedContext.departmentActiveEmployees = deptEmployees;
+          scopedContext.pendingLeaves = deptLeaves;
+        }
+      } else if (role === 'HR_ADMIN' || role === 'COMPANY_ADMIN') {
+        const [totalEmployees, activeLeaves] = await Promise.all([
+          prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
+          prisma.leaveRequest.count({ where: { employee: { companyId }, status: 'PENDING' } }).catch(() => 0)
+        ]);
+        scopedContext.companyStats = { totalActiveEmployees: totalEmployees, pendingLeaves: activeLeaves };
+      }
+    } catch (err) {
+      logger.warn({ err: err.message }, 'Failed to load scoped context for AI chat');
+    }
+
+    const systemPrompt = `${AIPromptTemplates.CHATBOT_SYSTEM}\nRole Context (${role}): ${JSON.stringify(scopedContext)}`;
     const aiRes = await this.callGemini({
       prompt: message,
       systemPrompt,

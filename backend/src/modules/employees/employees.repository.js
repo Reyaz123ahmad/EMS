@@ -78,10 +78,15 @@ export const employeesRepository = {
     const { departmentId, designationId, branchId, status, search, employeeCode } = filters;
     const { page = 1, limit = 10 } = pagination;
     const skip = (page - 1) * limit;
-
     const where = {};
+
     if (companyId) {
       where.companyId = companyId;
+    }
+    if (filters.employeeIds && Array.isArray(filters.employeeIds)) {
+      where.id = { in: filters.employeeIds };
+    } else if (filters.id) {
+      where.id = filters.id;
     }
     if (departmentId && departmentId !== '') where.departmentId = departmentId;
     if (designationId && designationId !== '') where.designationId = designationId;

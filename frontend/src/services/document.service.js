@@ -6,6 +6,11 @@ export const documentService = {
     return response.data;
   },
 
+  async getMyDocuments(params = {}) {
+    const response = await api.get('/documents/my', { params });
+    return response.data;
+  },
+
   async getDocument(id) {
     const response = await api.get(`/documents/${id}`);
     return response.data;

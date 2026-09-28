@@ -18,8 +18,13 @@ import { toast } from 'sonner';
 import dayjs from 'dayjs';
 import { useAttendanceLogs } from '../../hooks/useAttendance';
 import { DateRangePicker } from '../../components/shared/DateRangePicker';
+import useAuthStore from '../../store/auth.store';
 
 export const AttendanceLogsPage = () => {
+  const { user } = useAuthStore();
+  const role = user?.role || 'EMPLOYEE';
+  const isEmployee = role === 'EMPLOYEE';
+
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
@@ -29,7 +34,12 @@ export const AttendanceLogsPage = () => {
     search: '',
   });
 
-  const { data: logsResponse, isLoading, refetch } = useAttendanceLogs(filters);
+  const queryParams = {
+    ...filters,
+    search: isEmployee ? undefined : (filters.search || undefined)
+  };
+
+  const { data: logsResponse, isLoading, refetch } = useAttendanceLogs(queryParams);
 
   const logs = logsResponse?.data?.logs || [];
   const pagination = logsResponse?.data?.pagination || { page: 1, totalPages: 1, total: 0 };
@@ -40,17 +50,25 @@ export const AttendanceLogsPage = () => {
       return;
     }
 
-    const headers = ['Employee', 'Date', 'Status', 'Check-In', 'Check-Out', 'Worked Mins', 'Late Mins', 'Method'];
-    const rows = logs.map((log) => [
-      log.employee ? `${log.employee.firstName} ${log.employee.lastName}` : log.employeeId,
-      dayjs(log.date).format('YYYY-MM-DD'),
-      log.status,
-      log.checkInAt ? dayjs(log.checkInAt).format('HH:mm:ss') : 'N/A',
-      log.checkOutAt ? dayjs(log.checkOutAt).format('HH:mm:ss') : 'N/A',
-      log.totalWorkedMinutes || 0,
-      log.lateMinutes || 0,
-      log.method || 'FACE',
-    ]);
+    const headers = isEmployee
+      ? ['Date', 'Status', 'Check-In', 'Check-Out', 'Worked Mins', 'Late Mins', 'Method']
+      : ['Employee', 'Date', 'Status', 'Check-In', 'Check-Out', 'Worked Mins', 'Late Mins', 'Method'];
+
+    const rows = logs.map((log) => {
+      const baseRow = [
+        dayjs(log.date).format('YYYY-MM-DD'),
+        log.status,
+        log.checkInAt ? dayjs(log.checkInAt).format('HH:mm:ss') : 'N/A',
+        log.checkOutAt ? dayjs(log.checkOutAt).format('HH:mm:ss') : 'N/A',
+        log.totalWorkedMinutes || 0,
+        log.lateMinutes || 0,
+        log.method || 'FACE',
+      ];
+      if (!isEmployee) {
+        baseRow.unshift(log.employee ? `${log.employee.firstName} ${log.employee.lastName}` : log.employeeId);
+      }
+      return baseRow;
+    });
 
     const csvContent =
       'data:text/csv;charset=utf-8,' +
@@ -81,6 +99,18 @@ export const AttendanceLogsPage = () => {
     }
   };
 
+  const pageTitle = role === 'EMPLOYEE' 
+    ? 'My Attendance Logs' 
+    : role === 'MANAGER' 
+      ? 'Team Attendance Records' 
+      : 'Attendance Records & Logs';
+
+  const pageSubtitle = role === 'EMPLOYEE'
+    ? 'Review your biometric check-ins, worked hours, and break records'
+    : role === 'MANAGER'
+      ? 'Attendance and biometric timestamps for your direct reports'
+      : 'Cryptographically signed biometric event trail with geofencing coordinates';
+
   return (
     <div className="min-h-screen space-y-6 p-6 text-slate-100">
       {/* Header */}
@@ -88,13 +118,13 @@ export const AttendanceLogsPage = () => {
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-indigo-400">
             <ShieldCheck className="h-4 w-4" />
-            <span>Audit & Compliance Terminal</span>
+            <span>{role === 'EMPLOYEE' ? 'Self-Service Attendance' : 'Audit & Compliance Terminal'}</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-            Attendance Records & Logs
+            {pageTitle}
           </h1>
           <p className="mt-1 text-xs text-slate-400">
-            Cryptographically signed biometric event trail with geofencing coordinates
+            {pageSubtitle}
           </p>
         </div>
 
@@ -120,16 +150,18 @@ export const AttendanceLogsPage = () => {
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-xl">
         <div className="flex flex-1 items-center gap-3 min-w-[280px]">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search by employee name, code..."
-              value={filters.search}
-              onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value, page: 1 }))}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950/80 pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
-            />
-          </div>
+          {!isEmployee && (
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search by employee name, code..."
+                value={filters.search}
+                onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value, page: 1 }))}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950/80 pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
+              />
+            </div>
+          )}
 
           <select
             value={filters.status}
@@ -161,7 +193,7 @@ export const AttendanceLogsPage = () => {
           <table className="w-full text-left text-xs">
             <thead className="border-b border-slate-800 bg-slate-950/80 text-[11px] font-bold uppercase tracking-wider text-slate-400">
               <tr>
-                <th className="px-5 py-3.5">Employee</th>
+                {!isEmployee && <th className="px-5 py-3.5">Employee</th>}
                 <th className="px-5 py-3.5">Date</th>
                 <th className="px-5 py-3.5">Status</th>
                 <th className="px-5 py-3.5">Check In / Out</th>
@@ -173,7 +205,7 @@ export const AttendanceLogsPage = () => {
             <tbody className="divide-y divide-slate-800/60">
               {isLoading ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-slate-400">
+                  <td colSpan={isEmployee ? 6 : 7} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
                       <span>Loading attendance audit records...</span>
@@ -182,30 +214,32 @@ export const AttendanceLogsPage = () => {
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-slate-400">
+                  <td colSpan={isEmployee ? 6 : 7} className="py-12 text-center text-slate-400">
                     No biometric attendance records found matching filters.
                   </td>
                 </tr>
               ) : (
                 logs.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500/20 font-bold text-indigo-300">
-                          {log.employee?.firstName?.[0] || 'E'}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-white">
-                            {log.employee
-                              ? `${log.employee.firstName} ${log.employee.lastName}`
-                              : 'Unknown Employee'}
+                    {!isEmployee && (
+                      <td className="px-5 py-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500/20 font-bold text-indigo-300">
+                            {log.employee?.firstName?.[0] || 'E'}
                           </div>
-                          <div className="text-[11px] text-slate-400">
-                            {log.employee?.employeeCode || log.employeeId?.slice(0, 8)}
+                          <div>
+                            <div className="font-semibold text-white">
+                              {log.employee
+                                ? `${log.employee.firstName} ${log.employee.lastName}`
+                                : 'Unknown Employee'}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              {log.employee?.employeeCode || log.employeeId?.slice(0, 8)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
+                    )}
 
                     <td className="px-5 py-4 font-mono text-slate-300">
                       {dayjs(log.date).format('MMM DD, YYYY')}

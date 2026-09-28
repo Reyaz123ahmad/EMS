@@ -8,16 +8,20 @@ import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
 import overtimeService from '../../services/overtime.service.js';
 import { formatDate, formatCurrency, formatDuration } from '../../utils/formatters';
+import { Link } from 'react-router-dom';
+import { PlusCircle } from 'lucide-react';
 
 export default function OvertimeRecordsPage() {
   const { user } = useAuthStore();
   const companyId = user?.companyId;
+  const userRoles = user?.roles || (user?.role ? [user.role] : ['EMPLOYEE']);
+  const isEmployee = userRoles.includes('EMPLOYEE') && !userRoles.some((r) => ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER'].includes(r));
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  const { data: rawData = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['overtime-records', companyId, statusFilter],
+  const { data: rawData = [], isLoading, refetch } = useQuery({
+    queryKey: ['overtime-records', 'my-overtime', companyId, statusFilter],
     queryFn: () => overtimeService.listOvertimeRecords({
       companyId,
       status: statusFilter || undefined,
@@ -40,25 +44,30 @@ export default function OvertimeRecordsPage() {
     if (!r) return false;
     const empName = `${r.employee?.firstName || ''} ${r.employee?.lastName || ''}`.toLowerCase();
     const code = (r.employee?.employeeCode || '').toLowerCase();
+    const reason = (r.reason || '').toLowerCase();
     const term = search.toLowerCase();
-    return empName.includes(term) || code.includes(term);
+    return empName.includes(term) || code.includes(term) || reason.includes(term);
   });
 
   const columns = [
-    {
-      header: 'Employee',
-      accessor: 'employee',
-      cell: (row) => (
-        <div>
-          <div className="font-semibold text-white">
-            {row.employee ? `${row.employee.firstName} ${row.employee.lastName}` : 'N/A'}
-          </div>
-          <div className="text-xs text-slate-400">
-            {row.employee?.employeeCode || row.employee?.department?.name || 'Staff'}
-          </div>
-        </div>
-      ),
-    },
+    ...(!isEmployee
+      ? [
+          {
+            header: 'Employee',
+            accessor: 'employee',
+            cell: (row) => (
+              <div>
+                <div className="font-semibold text-white">
+                  {row.employee ? `${row.employee.firstName} ${row.employee.lastName}` : 'N/A'}
+                </div>
+                <div className="text-xs text-slate-400">
+                  {row.employee?.employeeCode || row.employee?.department?.name || 'Staff'}
+                </div>
+              </div>
+            ),
+          },
+        ]
+      : []),
     {
       header: 'Date',
       accessor: 'date',
@@ -70,6 +79,15 @@ export default function OvertimeRecordsPage() {
       cell: (row) => (
         <span className="font-bold text-amber-400">
           {formatDuration(row.minutes || row.requestedMinutes || (row.duration ? row.duration * 60 : 0))}
+        </span>
+      ),
+    },
+    {
+      header: 'Reason',
+      accessor: 'reason',
+      cell: (row) => (
+        <span className="text-xs text-slate-300 italic max-w-xs truncate block">
+          {row.reason || 'N/A'}
         </span>
       ),
     },
@@ -96,7 +114,7 @@ export default function OvertimeRecordsPage() {
             row.status === 'APPROVED' ? 'success' : row.status === 'REJECTED' ? 'danger' : 'warning'
           }
         >
-          {row.status}
+          {row.status || 'PENDING'}
         </Badge>
       ),
     },
@@ -106,18 +124,32 @@ export default function OvertimeRecordsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Overtime Records & Logs</h1>
-          <p className="text-sm text-slate-400">Comprehensive log of logged overtime hours and payroll calculations</p>
+          <h1 className="text-2xl font-bold text-white">
+            {isEmployee ? 'My Overtime Records' : 'Overtime Records & Logs'}
+          </h1>
+          <p className="text-sm text-slate-400">
+            {isEmployee
+              ? 'View your personal overtime claims and logged hours'
+              : 'Comprehensive log of logged overtime hours and payroll calculations'}
+          </p>
         </div>
-        <Button variant="secondary" onClick={() => refetch()}>
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <Link to="/overtime/apply">
+            <Button variant="primary" className="flex items-center gap-2">
+              <PlusCircle className="w-4 h-4" />
+              Claim Overtime
+            </Button>
+          </Link>
+          <Button variant="secondary" onClick={() => refetch()}>
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <Card className="p-4">
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-4">
           <Input
-            placeholder="Search employee..."
+            placeholder={isEmployee ? 'Search reason or date...' : 'Search employee or reason...'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full sm:w-80"

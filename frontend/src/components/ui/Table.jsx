@@ -21,30 +21,30 @@ export default function Table({
     : [];
 
   return (
-    <div className="w-full overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 shadow-xl">
-      <table className="w-full text-left text-sm text-slate-300">
-        <thead className="border-b border-slate-800 bg-slate-900/90 text-xs font-semibold uppercase tracking-wider text-slate-400">
+    <div className="w-full overflow-x-auto rounded-lg border border-[#e5e7eb] dark:border-[#262626] bg-white dark:bg-[#171717]">
+      <table className="w-full text-left text-[13px] text-[#111827] dark:text-[#fafafa]">
+        <thead className="border-b border-[#e5e7eb] dark:border-[#262626] bg-[#fafafa] dark:bg-[#1c1c1c] text-[11px] font-medium uppercase tracking-wider text-[#6b7280] dark:text-[#a3a3a3]">
           <tr>
             {columns.map((col, idx) => (
-              <th key={col.key || col.accessor || idx} className="px-6 py-4">
+              <th key={col.key || col.accessor || idx} className="px-3.5 py-2.5 font-medium">
                 {col.header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-800/60">
+        <tbody className="divide-y divide-[#e5e7eb] dark:divide-[#262626]">
           {isLoading ? (
             <tr>
-              <td colSpan={columns.length} className="px-6 py-12 text-center text-slate-400">
-                <div className="flex flex-col items-center justify-center gap-2">
-                  <Spinner size="md" className="text-indigo-500" />
+              <td colSpan={columns.length} className="px-4 py-8 text-center text-[#6b7280]">
+                <div className="flex flex-col items-center justify-center gap-1.5">
+                  <Spinner size="sm" className="text-[#3b82f6]" />
                   <span className="text-xs">Loading records...</span>
                 </div>
               </td>
             </tr>
           ) : safeData.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-6 py-12 text-center text-slate-400 text-sm font-medium">
+              <td colSpan={columns.length} className="px-4 py-8 text-center text-[#6b7280] dark:text-[#a3a3a3] text-xs">
                 {emptyMessage}
               </td>
             </tr>
@@ -53,12 +53,12 @@ export default function Table({
               <tr
                 key={row.id || rowIdx}
                 onClick={() => onRowClick && onRowClick(row)}
-                className={`transition-colors ${
-                  onRowClick ? 'cursor-pointer hover:bg-slate-800/50' : 'hover:bg-slate-800/30'
+                className={`h-10 transition-colors ${
+                  onRowClick ? 'cursor-pointer hover:bg-[#fafafa] dark:hover:bg-[#212121]' : 'hover:bg-[#fafafa] dark:hover:bg-[#212121]'
                 }`}
               >
                 {columns.map((col, colIdx) => (
-                  <td key={col.key || col.accessor || colIdx} className="px-6 py-4 text-slate-200">
+                  <td key={col.key || col.accessor || colIdx} className="px-3.5 py-2 text-[#111827] dark:text-[#e5e7eb]">
                     {col.cell
                       ? col.cell(row, rowIdx)
                       : col.render

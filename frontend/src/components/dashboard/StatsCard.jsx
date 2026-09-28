@@ -8,84 +8,49 @@ export const StatsCard = ({
   change,
   changeType = 'increase', // 'increase' | 'decrease' | 'neutral'
   changePeriod = 'vs last month',
-  variant = 'indigo', // 'indigo' | 'emerald' | 'amber' | 'rose' | 'sky' | 'violet'
+  variant = 'indigo',
   onClick
 }) => {
-  const variantStyles = {
-    indigo: {
-      bg: 'bg-indigo-50/70 dark:bg-indigo-950/30',
-      iconBg: 'bg-indigo-600 text-white shadow-indigo-500/20',
-      border: 'hover:border-indigo-300 dark:hover:border-indigo-800'
-    },
-    emerald: {
-      bg: 'bg-emerald-50/70 dark:bg-emerald-950/30',
-      iconBg: 'bg-emerald-600 text-white shadow-emerald-500/20',
-      border: 'hover:border-emerald-300 dark:hover:border-emerald-800'
-    },
-    amber: {
-      bg: 'bg-amber-50/70 dark:bg-amber-950/30',
-      iconBg: 'bg-amber-500 text-white shadow-amber-500/20',
-      border: 'hover:border-amber-300 dark:hover:border-amber-800'
-    },
-    rose: {
-      bg: 'bg-rose-50/70 dark:bg-rose-950/30',
-      iconBg: 'bg-rose-600 text-white shadow-rose-500/20',
-      border: 'hover:border-rose-300 dark:hover:border-rose-800'
-    },
-    sky: {
-      bg: 'bg-sky-50/70 dark:bg-sky-950/30',
-      iconBg: 'bg-sky-600 text-white shadow-sky-500/20',
-      border: 'hover:border-sky-300 dark:hover:border-sky-800'
-    },
-    violet: {
-      bg: 'bg-violet-50/70 dark:bg-violet-950/30',
-      iconBg: 'bg-violet-600 text-white shadow-violet-500/20',
-      border: 'hover:border-violet-300 dark:hover:border-violet-800'
-    }
-  };
-
-  const style = variantStyles[variant] || variantStyles.indigo;
-
   return (
     <div
       onClick={onClick}
-      className={`relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/90 p-5 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 transition-all duration-200 hover:shadow-md ${style.border} ${
+      className={`rounded-lg border border-[#e5e7eb] dark:border-[#262626] bg-white dark:bg-[#171717] p-4 transition-colors hover:border-[#d1d5db] dark:hover:border-[#404040] ${
         onClick ? 'cursor-pointer' : ''
       }`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-[#6b7280] dark:text-[#a3a3a3]">
           {label}
         </span>
         {Icon && (
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-md ${style.iconBg}`}>
-            <Icon className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-md bg-[#f3f4f6] dark:bg-[#262626] flex items-center justify-center text-[#374151] dark:text-[#d1d5db]">
+            <Icon className="w-4 h-4" />
           </div>
         )}
       </div>
 
-      <div className="mt-4">
-        <h3 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+      <div className="mt-2">
+        <div className="text-2xl font-semibold tracking-tight text-[#111827] dark:text-[#fafafa]">
           {value}
-        </h3>
+        </div>
 
         {change !== undefined && change !== null && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs">
+          <div className="mt-1 flex items-center gap-1.5 text-[11px]">
             <span
-              className={`inline-flex items-center gap-0.5 font-semibold ${
+              className={`inline-flex items-center gap-0.5 font-medium ${
                 changeType === 'increase'
-                  ? 'text-emerald-600 dark:text-emerald-400'
+                  ? 'text-[#10b981]'
                   : changeType === 'decrease'
-                  ? 'text-rose-600 dark:text-rose-400'
-                  : 'text-slate-500 dark:text-slate-400'
+                  ? 'text-[#ef4444]'
+                  : 'text-[#6b7280]'
               }`}
             >
-              {changeType === 'increase' && <TrendingUp className="w-3.5 h-3.5" />}
-              {changeType === 'decrease' && <TrendingDown className="w-3.5 h-3.5" />}
-              {changeType === 'neutral' && <Minus className="w-3.5 h-3.5" />}
+              {changeType === 'increase' && <TrendingUp className="w-3 h-3" />}
+              {changeType === 'decrease' && <TrendingDown className="w-3 h-3" />}
+              {changeType === 'neutral' && <Minus className="w-3 h-3" />}
               {change}
             </span>
-            <span className="text-slate-400 dark:text-slate-500">{changePeriod}</span>
+            <span className="text-[#9ca3af] dark:text-[#737373]">{changePeriod}</span>
           </div>
         )}
       </div>

@@ -55,6 +55,19 @@ export const overtimeService = {
     return [];
   },
 
+  async getMyOvertime(params = {}) {
+    const response = await api.get('/overtime/my', { params });
+    const data = response.data?.data || response.data;
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.records)) return data.records;
+    if (Array.isArray(data?.requests)) return data.requests;
+    if (Array.isArray(response.data?.records)) return response.data.records;
+    if (Array.isArray(data?.data)) return data.data;
+
+    return [];
+  },
+
   async getRecords(params = {}) {
     return this.listOvertimeRecords(params);
   },
@@ -65,15 +78,15 @@ export const overtimeService = {
   },
 
   async applyOvertime(payload) {
+    const minutes = parseInt(payload.minutes || payload.requestedMinutes, 10);
     const cleanPayload = {
-      date: payload.date,
-      requestedMinutes: parseInt(payload.requestedMinutes || payload.minutes, 10),
-      reason: payload.reason || null
+      date: payload.date ? new Date(payload.date).toISOString() : new Date().toISOString(),
+      requestedMinutes: isNaN(minutes) ? 60 : minutes,
+      minutes: isNaN(minutes) ? 60 : minutes,
+      reason: payload.reason || ''
     };
 
-    console.log('Sending overtime request:', cleanPayload);
-
-    const response = await api.post('/overtime/apply', cleanPayload);
+    const response = await api.post('/overtime/requests', cleanPayload);
     return response.data?.data || response.data;
   },
 

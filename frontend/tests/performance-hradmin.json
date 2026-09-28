@@ -1,0 +1,58 @@
+[
+  {
+    "role": "HR_ADMIN",
+    "page": "Dashboard",
+    "url": "/dashboard/hr-admin",
+    "loadTime": 930,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "Employees",
+    "url": "/employees",
+    "loadTime": 1069,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "Attendance Logs",
+    "url": "/attendance/logs",
+    "loadTime": 946,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "Leave Requests",
+    "url": "/leave/requests",
+    "loadTime": 1047,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "Payroll",
+    "url": "/payroll/runs",
+    "loadTime": 1015,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "Documents",
+    "url": "/documents",
+    "loadTime": 1488,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "HR_ADMIN",
+    "page": "Security",
+    "url": "/security/dashboard",
+    "loadTime": 1243,
+    "status": "PASS",
+    "apiCalls": []
+  }
+]

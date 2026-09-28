@@ -121,7 +121,14 @@ export const overtimeService = {
       employee: { companyId }
     };
 
-    if (filters.employeeId) where.employeeId = filters.employeeId;
+    if (filters.employeeIds && Array.isArray(filters.employeeIds)) {
+      where.employeeId = { in: filters.employeeIds };
+    } else if (filters.employeeId) {
+      where.employeeId = filters.employeeId;
+    }
+    if (filters.departmentId) {
+      where.employee.departmentId = filters.departmentId;
+    }
     if (filters.status) where.status = filters.status;
     if (filters.startDate || filters.endDate) {
       where.date = {};

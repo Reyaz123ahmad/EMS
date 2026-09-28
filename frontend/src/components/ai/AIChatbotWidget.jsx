@@ -1,15 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAIChat } from '../../hooks/useAI';
+import useAuthStore from '../../store/auth.store';
 import { MessageSquare, Send, X, Bot, User, Sparkles, Loader2, Minimize2 } from 'lucide-react';
 
-export const AIChatbotWidget = () => {
+const AIChatbotWidgetInner = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
       sender: 'ai',
-      text: 'Hello! I am your EMS AI Assistant powered by Google Gemini. How can I help you with attendance, leaves, payroll, or workforce policies today?'
+      text: 'Hello! I am your EMS AI Assistant powered by Google Gemini. How can I help you with workforce analytics, policies, or operations today?'
     }
   ]);
 
@@ -156,6 +157,18 @@ export const AIChatbotWidget = () => {
       )}
     </div>
   );
+};
+
+export const AIChatbotWidget = () => {
+  const { user } = useAuthStore();
+  const primaryRole = user?.role || user?.roles?.[0] || 'EMPLOYEE';
+  const isAllowed = ['SUPER_ADMIN', 'COMPANY_ADMIN'].includes(primaryRole);
+
+  if (!isAllowed) {
+    return null;
+  }
+
+  return <AIChatbotWidgetInner />;
 };
 
 export default AIChatbotWidget;

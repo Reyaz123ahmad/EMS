@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -7,14 +9,14 @@ import { useLeaveTypes, useLeaveBalances, useApplyLeave } from '../../hooks/useL
 import { useAuthStore } from '../../store/authStore';
 
 export default function ApplyLeavePage() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const companyId = user?.companyId;
   const employeeId = user?.employeeId || user?.id;
 
   const { data: typesData } = useLeaveTypes(companyId);
   const { data: balancesData } = useLeaveBalances({
-    companyId,
-    employeeId,
     year: new Date().getFullYear(),
   });
   const applyLeave = useApplyLeave();
@@ -31,8 +33,12 @@ export default function ApplyLeavePage() {
 
   const rawTypes = typesData?.data?.data || typesData?.data?.types || typesData?.data || typesData?.types || typesData || [];
   const leaveTypes = Array.isArray(rawTypes) ? rawTypes : (rawTypes?.types || rawTypes?.leaveTypes || []);
-  const rawBalances = balancesData?.data?.data || balancesData?.data || [];
-  const balances = Array.isArray(rawBalances) ? rawBalances : [];
+  const rawBalances = balancesData?.data?.balances || balancesData?.data?.data || balancesData?.balances || balancesData?.data || balancesData || [];
+  const balances = Array.isArray(rawBalances)
+    ? rawBalances
+    : Array.isArray(rawBalances?.balances)
+    ? rawBalances.balances
+    : [];
 
   const calculateDays = () => {
     if (!formData.startDate || !formData.endDate) return 0;
@@ -57,17 +63,30 @@ export default function ApplyLeavePage() {
 
     try {
       await applyLeave.mutateAsync({
-        employeeId,
-        companyId,
         ...formData,
       });
-      setSuccessMsg('Leave request submitted successfully! Your manager will review it.');
+
+      // Explicitly invalidate all leave caches
+      queryClient.invalidateQueries({ queryKey: ['my-leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-balances'] });
+      queryClient.invalidateQueries({ queryKey: ['my-leave-balances'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'balances'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'history'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'calendar'] });
+
+      setSuccessMsg('Leave request submitted successfully! Redirecting to My Leave...');
       setFormData({
         leaveTypeId: '',
         startDate: '',
         endDate: '',
         reason: '',
       });
+
+      setTimeout(() => {
+        navigate('/leave/my');
+      }, 1000);
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Failed to submit leave request');
     }
@@ -80,7 +99,19 @@ export default function ApplyLeavePage() {
         <p className="text-sm text-slate-400">Submit a formal time-off or vacation request</p>
       </div>
 
-      {balances.length > 0 && <LeaveBalanceCard balances={balances} />}
+      {balances.length > 0 ? (
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-slate-300">Your Current Balances</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {balances.map((balance) => (
+              <LeaveBalanceCard
+                key={balance.id || balance.leaveTypeId}
+                balance={balance}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <Card className="p-6">
         {successMsg && (

@@ -10,6 +10,7 @@ import {
   attendanceStatsSchema
 } from './attendance.validator.js';
 import { reviewFraudSignalSchema } from '../attendance-security/attendance-security.validator.js';
+import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
 
 export const attendanceController = {
   /**
@@ -22,8 +23,8 @@ export const attendanceController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
-      const employeeId = req.user?.employee?.id || req.body.employeeId || req.user?.id;
-      const companyId = req.user?.companyId || req.body.companyId;
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      const companyId = req.user?.companyId;
 
       if (!employeeId || !companyId) {
         return res.status(400).json({
@@ -70,8 +71,8 @@ export const attendanceController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
-      const employeeId = req.user?.employee?.id || req.body.employeeId || req.user?.id;
-      const companyId = req.user?.companyId || req.body.companyId;
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      const companyId = req.user?.companyId;
 
       const result = await attendanceService.checkOut({
         ...value,
@@ -108,8 +109,8 @@ export const attendanceController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
-      const employeeId = req.user?.employee?.id || req.body.employeeId || req.user?.id;
-      const companyId = req.user?.companyId || req.body.companyId;
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      const companyId = req.user?.companyId;
 
       const result = await attendanceService.startBreak({
         ...value,
@@ -136,8 +137,8 @@ export const attendanceController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
-      const employeeId = req.user?.employee?.id || req.body.employeeId || req.user?.id;
-      const companyId = req.user?.companyId || req.body.companyId;
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      const companyId = req.user?.companyId;
 
       const result = await attendanceService.endBreak({
         ...value,
@@ -159,8 +160,8 @@ export const attendanceController = {
    */
   async getTodayStatus(req, res, next) {
     try {
-      const employeeId = req.user?.employee?.id || req.query.employeeId || req.user?.id;
-      const companyId = req.user?.companyId || req.query.companyId;
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      const companyId = req.user?.companyId;
 
       const result = await attendanceService.getTodayStatus(employeeId, companyId);
       res.status(200).json({ status: 'ok', data: result });
@@ -174,8 +175,8 @@ export const attendanceController = {
    */
   async getCheckoutStatus(req, res, next) {
     try {
-      const employeeId = req.user?.employee?.id || req.query.employeeId || req.user?.id;
-      const companyId = req.user?.companyId || req.query.companyId;
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      const companyId = req.user?.companyId;
 
       const result = await attendanceService.canCheckout(employeeId, companyId);
       res.status(200).json({ status: 'ok', data: result });
@@ -189,8 +190,8 @@ export const attendanceController = {
    */
   async getBreakStatus(req, res, next) {
     try {
-      const employeeId = req.user?.employee?.id || req.query.employeeId || req.user?.id;
-      const companyId = req.user?.companyId || req.query.companyId;
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      const companyId = req.user?.companyId;
 
       const result = await attendanceService.checkBreakLimit(employeeId, companyId);
       res.status(200).json({ status: 'ok', data: result });
@@ -209,8 +210,24 @@ export const attendanceController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user?.companyId;
       const { page, limit, ...filters } = value;
+
+      // Anti-leakage role scoping
+      if (role === 'EMPLOYEE') {
+        const empId = await getAuthEmployeeId(req);
+        filters.employeeId = empId || '__NO_ACCESS__';
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        const teamIds = await getManagerTeamIds(emp?.id);
+        filters.employeeIds = teamIds.length > 0 ? teamIds : ['__NO_ACCESS__'];
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) {
+          filters.departmentId = emp.departmentId;
+        }
+      }
 
       const result = await attendanceService.listAttendanceLogs(companyId, filters, { page, limit });
       res.status(200).json({ status: 'ok', data: result });
@@ -229,8 +246,24 @@ export const attendanceController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user?.companyId;
       const { month, year, ...filters } = value;
+
+      // Anti-leakage role scoping
+      if (role === 'EMPLOYEE') {
+        const empId = await getAuthEmployeeId(req);
+        filters.employeeId = empId || '__NO_ACCESS__';
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        const teamIds = await getManagerTeamIds(emp?.id);
+        filters.employeeIds = teamIds.length > 0 ? teamIds : ['__NO_ACCESS__'];
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) {
+          filters.departmentId = emp.departmentId;
+        }
+      }
 
       const result = await attendanceService.getMonthlySummary(companyId, month, year, filters);
       res.status(200).json({ status: 'ok', data: result });
@@ -308,7 +341,7 @@ export const attendanceController = {
         return res.status(400).json({ status: 'error', message: error.details[0].message });
       }
 
-      const employeeId = req.user?.employee?.id || req.user?.id;
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
       const companyId = req.user?.companyId || req.body.companyId;
 
       const result = await attendanceService.cardScan({
@@ -345,8 +378,18 @@ export const attendanceController = {
    */
   async getCalendar(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user?.companyId;
-      const { month = new Date().getMonth() + 1, year = new Date().getFullYear(), employeeId, departmentId, branchId } = req.query;
+      const { month = new Date().getMonth() + 1, year = new Date().getFullYear() } = req.query;
+      let { employeeId, departmentId, branchId } = req.query;
+
+      if (role === 'EMPLOYEE') {
+        employeeId = await getAuthEmployeeId(req);
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        departmentId = emp?.departmentId;
+      }
+
       const calendar = await attendanceService.getAttendanceCalendar(companyId, month, year, { employeeId, departmentId, branchId });
       res.status(200).json({ status: 'ok', data: calendar });
     } catch (err) {
@@ -359,7 +402,19 @@ export const attendanceController = {
    */
   async getEmployeeSummary(req, res, next) {
     try {
-      const employeeId = req.query.employeeId || req.user?.employee?.id || req.user?.id;
+      const role = req.user?.role || 'EMPLOYEE';
+      let employeeId = req.query.employeeId;
+
+      if (role === 'EMPLOYEE' || !employeeId) {
+        employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        const teamIds = await getManagerTeamIds(emp?.id);
+        if (!teamIds.includes(employeeId)) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Employee not in your team' });
+        }
+      }
+
       const { month = new Date().getMonth() + 1, year = new Date().getFullYear() } = req.query;
       const summary = await attendanceService.getEmployeeAttendanceSummary(employeeId, month, year);
       res.status(200).json({ status: 'ok', data: summary });
@@ -449,4 +504,3 @@ export const attendanceController = {
 };
 
 export default attendanceController;
-

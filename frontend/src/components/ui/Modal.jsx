@@ -19,27 +19,27 @@ export function Modal({ isOpen, onClose, title, description, children, className
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity animate-in fade-in"
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity animate-in fade-in"
         onClick={onClose}
       />
 
-      {/* Modal Dialog */}
+      {/* Modal Dialog (12px radius, clean borders) */}
       <div
         className={cn(
-          'relative z-10 w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl transition-all duration-200 animate-in zoom-in-95',
+          'relative z-10 w-full max-w-lg rounded-xl border border-[#e5e7eb] dark:border-[#262626] bg-white dark:bg-[#171717] p-5 transition-all duration-150 animate-in zoom-in-95',
           className
         )}
       >
-        <div className="flex items-start justify-between pb-3">
+        <div className="flex items-start justify-between pb-3 border-b border-[#e5e7eb] dark:border-[#262626]">
           <div>
-            {title && <h3 className="text-lg font-semibold text-slate-100">{title}</h3>}
-            {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
+            {title && <h3 className="text-base font-semibold text-[#111827] dark:text-[#fafafa]">{title}</h3>}
+            {description && <p className="text-xs text-[#6b7280] dark:text-[#a3a3a3] mt-0.5">{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+            className="rounded-md p-1 text-[#6b7280] hover:bg-[#f3f4f6] dark:hover:bg-[#262626] hover:text-[#111827] dark:hover:text-[#fafafa] transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 

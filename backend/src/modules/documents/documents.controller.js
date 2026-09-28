@@ -1,22 +1,58 @@
 import documentsService from './documents.service.js';
 import aadhaarService from './aadhaar.service.js';
 import { prisma } from '../../config/prisma.js';
+import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
 
 async function resolveEmployeeId(req) {
+  const role = req.user?.role || 'EMPLOYEE';
+  if (role === 'EMPLOYEE' || role === 'MANAGER' || role === 'HR_MANAGER') {
+    return await getAuthEmployeeId(req);
+  }
   if (req.body.employeeId) return req.body.employeeId;
-  if (req.user?.employeeId) return req.user.employeeId;
-  const emp = await prisma.employee.findFirst({
-    where: { userId: req.user.id }
-  });
-  return emp ? emp.id : null;
+  return await getAuthEmployeeId(req);
 }
 
 export const documentsController = {
+  async getMyDocuments(req, res, next) {
+    try {
+      const employeeId = await getAuthEmployeeId(req);
+      if (!employeeId) {
+        return res.status(404).json({ status: 'error', success: false, message: 'Employee profile not found' });
+      }
+
+      const result = await documentsService.getMyDocuments({
+        employeeId,
+        filters: req.query,
+        pagination: {
+          page: parseInt(req.query.page, 10) || 1,
+          limit: parseInt(req.query.limit, 10) || 20
+        }
+      });
+
+      res.status(200).json({ status: 'ok', success: true, message: 'My documents retrieved', data: result, documents: result.documents, ...result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async listByCompany(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user.companyId;
-      const documents = await documentsService.listDocumentsByCompany(companyId, req.query);
-      res.status(200).json({ status: 'ok', data: { documents } });
+      const filters = { ...req.query };
+
+      if (role === 'EMPLOYEE') {
+        filters.employeeId = await getAuthEmployeeId(req);
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        filters.employeeIds = await getManagerTeamIds(emp?.id);
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) filters.departmentId = emp.departmentId;
+      }
+
+      const documents = await documentsService.listDocumentsByCompany(companyId, filters);
+      res.status(200).json({ status: 'ok', success: true, data: { documents }, documents });
     } catch (err) {
       next(err);
     }
@@ -24,7 +60,22 @@ export const documentsController = {
 
   async listByEmployee(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const { employeeId } = req.params;
+
+      if (role === 'EMPLOYEE') {
+        const authEmpId = await getAuthEmployeeId(req);
+        if (employeeId !== authEmpId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: You can only view your own documents' });
+        }
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        const teamIds = await getManagerTeamIds(emp?.id);
+        if (!teamIds.includes(employeeId)) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Employee is outside your team' });
+        }
+      }
+
       const documents = await documentsService.listDocumentsByEmployee(employeeId);
       res.status(200).json({ status: 'ok', data: { documents } });
     } catch (err) {
@@ -34,9 +85,29 @@ export const documentsController = {
 
   async get(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const { id } = req.params;
       const document = await documentsService.getDocumentById(id);
       if (!document) return res.status(404).json({ status: 'error', message: 'Document not found' });
+
+      if (role === 'EMPLOYEE') {
+        const authEmpId = await getAuthEmployeeId(req);
+        if (document.employeeId !== authEmpId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: You can only view your own documents' });
+        }
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        const teamIds = await getManagerTeamIds(emp?.id);
+        if (!teamIds.includes(document.employeeId)) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Document belongs outside your team' });
+        }
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (document.employee?.departmentId && emp?.departmentId && document.employee.departmentId !== emp.departmentId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Document belongs to a different department' });
+        }
+      }
+
       res.status(200).json({ status: 'ok', data: { document } });
     } catch (err) {
       next(err);
@@ -114,8 +185,17 @@ export const documentsController = {
   async delete(req, res, next) {
     try {
       const { id } = req.params;
+      const role = req.user?.role || 'EMPLOYEE';
+      if (role === 'EMPLOYEE') {
+        const authEmpId = await getAuthEmployeeId(req);
+        const doc = await documentsService.getDocumentById(id);
+        if (!doc) return res.status(404).json({ status: 'error', message: 'Document not found' });
+        if (doc.employeeId !== authEmpId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: You can only delete your own documents' });
+        }
+      }
       await documentsService.deleteDocument(id);
-      res.status(200).json({ status: 'ok', message: 'Document deleted successfully' });
+      res.status(200).json({ status: 'ok', success: true, message: 'Document deleted successfully' });
     } catch (err) {
       next(err);
     }

@@ -34,8 +34,8 @@ export class AIModuleService {
     return await GlobalAIService.generateBusinessRecommendations(companyId);
   }
 
-  static async chat({ userId, companyId, message, context }) {
-    return await GlobalAIService.chat({ userId, companyId, message, context });
+  static async chat({ userId, companyId, message, context, role }) {
+    return await GlobalAIService.chat({ userId, companyId, message, context, role });
   }
 
   static async getUsageStats(companyId) {

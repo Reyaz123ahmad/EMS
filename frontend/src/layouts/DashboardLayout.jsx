@@ -13,8 +13,8 @@ export function DashboardLayout() {
   useSocket();
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased font-sans">
-      {/* Sidebar (Desktop + Mobile drawer) */}
+    <div className="flex h-screen w-full overflow-hidden bg-[#fafafa] dark:bg-[#0a0a0a] text-[#111827] dark:text-[#fafafa] antialiased font-sans">
+      {/* Sidebar (Desktop 240px + Mobile drawer) */}
       <Sidebar
         collapsed={collapsed}
         setCollapsed={setCollapsed}
@@ -24,14 +24,14 @@ export function DashboardLayout() {
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-        {/* Top Header */}
+        {/* Top Header (56px) */}
         <Header setMobileOpen={setMobileOpen} />
 
         {/* Subscription Expiry / Warning Banner */}
         <SubscriptionBanner />
 
-        {/* Dynamic Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        {/* Dynamic Page Content with consistent 20px (p-5) padding */}
+        <main className="flex-1 overflow-y-auto p-5">
           <div className="mx-auto max-w-7xl">
             <Outlet />
           </div>

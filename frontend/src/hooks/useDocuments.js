@@ -8,6 +8,13 @@ export function useDocuments(params = {}) {
   });
 }
 
+export function useMyDocuments(params = {}) {
+  return useQuery({
+    queryKey: ['my-documents', params],
+    queryFn: () => documentService.getMyDocuments(params)
+  });
+}
+
 export function useDocument(id) {
   return useQuery({
     queryKey: ['document', id],

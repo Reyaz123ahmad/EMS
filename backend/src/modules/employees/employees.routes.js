@@ -1,15 +1,27 @@
 import { Router } from 'express';
+import multer from 'multer';
 import employeesController from './employees.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 import { requireRole } from '../../middlewares/role.middleware.js';
 import { requireActiveSubscription, checkSubscriptionLimit } from '../../middlewares/subscription.middleware.js';
 import { otpRateLimit } from '../../middlewares/rateLimiter.middleware.js';
+import { cacheResponse } from '../../middlewares/cache.middleware.js';
 
 const router = Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
 
 // Apply auth & subscription check to all employee routes
 router.use(authenticate);
 router.use(requireActiveSubscription);
+
+// Self-service profile & photo routes for ALL authenticated roles
+router.get('/me/photo', employeesController.getMyPhoto);
+router.post('/me/photo', upload.any(), employeesController.uploadMyPhoto);
+router.delete('/me/photo', employeesController.deleteMyPhoto);
+router.put('/me/profile', employeesController.updateMyProfile);
 
 // Step 1: Send OTP for employee creation (HR / Admin with limit check)
 router.post(
@@ -52,17 +64,19 @@ router.get(
 router.get(
   '/stats',
   requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN'),
+  cacheResponse('cache:employees_stats', 60),
   employeesController.getStats
 );
 
 router.get(
   '/analytics',
   requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN'),
+  cacheResponse('cache:employees_analytics', 60),
   employeesController.getAnalytics
 );
 
 // List employees
-router.get('/', employeesController.listEmployees);
+router.get('/', cacheResponse('cache:employees_list', 60), employeesController.listEmployees);
 
 // Single employee detail
 router.get('/:id', employeesController.getEmployee);

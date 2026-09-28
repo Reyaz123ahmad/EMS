@@ -1,0 +1,70 @@
+[
+  {
+    "role": "EMPLOYEE",
+    "page": "Dashboard",
+    "url": "/dashboard/employee",
+    "loadTime": 1117,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "Attendance",
+    "url": "/attendance",
+    "loadTime": 1168,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "Apply Leave",
+    "url": "/leave/apply",
+    "loadTime": 1188,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "Payroll Slips",
+    "url": "/payroll/slips",
+    "loadTime": 1013,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "Tasks",
+    "url": "/tasks",
+    "loadTime": 967,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "Documents",
+    "url": "/documents",
+    "loadTime": 987,
+    "status": "PASS",
+    "apiCalls": [
+      {
+        "url": "/documents?search=&status=&type=&page=1&limit=10",
+        "status": 403,
+        "time": 731
+      }
+    ]
+  },
+  {
+    "role": "EMPLOYEE",
+    "page": "Notifications",
+    "url": "/notifications",
+    "loadTime": 922,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "EMPLOYEE",
+    "action": "Click: Check In button",
+    "loadTime": 613,
+    "status": "PASS"
+  }
+]

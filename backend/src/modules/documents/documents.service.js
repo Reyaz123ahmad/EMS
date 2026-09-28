@@ -1,13 +1,70 @@
 import { prisma } from '../../config/prisma.js';
 
 export const documentsService = {
+  async getMyDocuments({ employeeId, filters = {}, pagination = { page: 1, limit: 20 } }) {
+    const where = { employeeId };
+
+    if (filters.status) where.status = filters.status;
+    if (filters.documentTypeId) where.documentTypeId = filters.documentTypeId;
+    if (filters.type) {
+      where.documentType = {
+        name: { equals: filters.type, mode: 'insensitive' }
+      };
+    }
+    if (filters.startDate || filters.endDate) {
+      where.createdAt = {};
+      if (filters.startDate) where.createdAt.gte = new Date(filters.startDate);
+      if (filters.endDate) where.createdAt.lte = new Date(filters.endDate);
+    }
+    if (filters.search) {
+      where.OR = [
+        { fileName: { contains: filters.search, mode: 'insensitive' } },
+        { documentType: { name: { contains: filters.search, mode: 'insensitive' } } }
+      ];
+    }
+
+    const page = parseInt(pagination.page, 10) || 1;
+    const limit = parseInt(pagination.limit, 10) || 20;
+
+    const [documents, total] = await Promise.all([
+      prisma.employeeDocument.findMany({
+        where,
+        include: {
+          documentType: { select: { id: true, name: true } },
+          employee: {
+            select: { id: true, firstName: true, lastName: true, employeeCode: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.employeeDocument.count({ where })
+    ]);
+
+    return {
+      documents,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1
+    };
+  },
+
   async listDocumentsByCompany(companyId, filters = {}) {
     const where = {
       employee: { companyId }
     };
     if (filters.status) where.status = filters.status;
     if (filters.documentTypeId) where.documentTypeId = filters.documentTypeId;
-    if (filters.employeeId) where.employeeId = filters.employeeId;
+    if (filters.employeeIds && Array.isArray(filters.employeeIds)) {
+      where.employeeId = { in: filters.employeeIds };
+    } else if (filters.employeeId) {
+      where.employeeId = filters.employeeId;
+    }
+    if (filters.departmentId) {
+      where.employee.departmentId = filters.departmentId;
+    }
 
     return prisma.employeeDocument.findMany({
       where,

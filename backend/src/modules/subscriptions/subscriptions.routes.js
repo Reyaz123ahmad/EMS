@@ -10,24 +10,26 @@ import {
   planSchema,
 } from './subscriptions.validator.js';
 
+import { cacheResponse } from '../../middlewares/cache.middleware.js';
+
 const router = Router();
 
 // Public plan listing
-router.get('/', subscriptionsController.getPlans);
-router.get('/plans', subscriptionsController.getPlans);
+router.get('/', cacheResponse('cache:plans', 300), subscriptionsController.getPlans);
+router.get('/plans', cacheResponse('cache:plans', 300), subscriptionsController.getPlans);
 router.post('/plans', validate(planSchema), subscriptionsController.createPlan);
 router.put('/plans/:id', validate(planSchema), subscriptionsController.updatePlan);
 
 // Protected subscription routes
 router.use(authenticate);
-router.get('/platform-status', subscriptionsController.getPlatformStatus);
+router.get('/platform-status', cacheResponse('cache:sub_platform_status', 120), subscriptionsController.getPlatformStatus);
 router.get('/current', subscriptionsController.getCurrentSubscription);
 router.post('/orders', validate(createOrderSchema), subscriptionsController.createOrder);
 router.post('/verify', validate(verifyPaymentSchema), subscriptionsController.verifyPayment);
 router.post('/renew', validate(renewSubscriptionSchema), subscriptionsController.renewSubscription);
 router.post('/cancel', validate(cancelSubscriptionSchema), subscriptionsController.cancelSubscription);
 router.get('/history', subscriptionsController.getSubscriptionHistory);
-router.get('/stats', subscriptionsController.getSubscriptionStats);
+router.get('/stats', cacheResponse('cache:sub_stats', 120), subscriptionsController.getSubscriptionStats);
 router.get('/check-expiry', subscriptionsController.checkExpiry);
 
 // Proration calculations

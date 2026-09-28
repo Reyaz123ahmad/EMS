@@ -6,6 +6,7 @@ import {
   bulkUpdateStructureSchema,
   payrollRunSchema
 } from './payroll.validator.js';
+import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
 
 export const payrollController = {
   async listComponents(req, res, next) {
@@ -128,6 +129,11 @@ export const payrollController = {
 
   async listRuns(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
+      if (role !== 'SUPER_ADMIN' && role !== 'COMPANY_ADMIN' && role !== 'HR_ADMIN') {
+        return res.status(403).json({ status: 'error', message: 'Access denied: Insufficient permissions to view payroll runs' });
+      }
+
       const companyId = req.user.companyId;
       const runs = await payrollService.listPayrollRuns(companyId, req.query);
       res.status(200).json({ status: 'ok', data: { runs } });
@@ -138,6 +144,11 @@ export const payrollController = {
 
   async getRunDetail(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
+      if (role !== 'SUPER_ADMIN' && role !== 'COMPANY_ADMIN' && role !== 'HR_ADMIN') {
+        return res.status(403).json({ status: 'error', message: 'Access denied: Insufficient permissions to view payroll run details' });
+      }
+
       const run = await payrollService.getPayrollRunDetail(req.params.id);
       res.status(200).json({ status: 'ok', data: { run } });
     } catch (err) {
@@ -145,11 +156,45 @@ export const payrollController = {
     }
   },
 
+  async getMySlips(req, res, next) {
+    try {
+      const employeeId = await getAuthEmployeeId(req);
+      const companyId = req.user.companyId;
+
+      if (!employeeId) {
+        return res.status(404).json({ status: 'error', success: false, message: 'Employee profile not found' });
+      }
+
+      const slips = await payrollService.getMySlips({
+        employeeId,
+        companyId,
+        filters: req.query
+      });
+
+      res.status(200).json({ status: 'ok', success: true, message: 'My payslips retrieved', data: { slips }, slips });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async listSlips(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user.companyId;
-      const slips = await payrollService.listSalarySlips(companyId, req.query);
-      res.status(200).json({ status: 'ok', data: { slips } });
+      const filters = { ...req.query };
+
+      if (role === 'EMPLOYEE') {
+        filters.employeeId = await getAuthEmployeeId(req);
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        filters.employeeIds = await getManagerTeamIds(emp?.id);
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) filters.departmentId = emp.departmentId;
+      }
+
+      const slips = await payrollService.listSalarySlips(companyId, filters);
+      res.status(200).json({ status: 'ok', success: true, message: 'Salary slips retrieved', data: { slips }, slips });
     } catch (err) {
       next(err);
     }
@@ -186,7 +231,8 @@ export const payrollController = {
   async downloadSlip(req, res, next) {
     try {
       const { id } = req.params;
-      const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || req.user?.role === 'SUPER_ADMIN';
+      const role = req.user?.role || 'EMPLOYEE';
+      const isSuperAdmin = req.user?.roles?.includes('SUPER_ADMIN') || role === 'SUPER_ADMIN';
       const companyId = isSuperAdmin ? null : (req.user?.companyId || req.user?.company?.id);
 
       const where = { id };
@@ -198,14 +244,40 @@ export const payrollController = {
       let slip = await prismaClient.salarySlip.findFirst({
         where,
         include: {
-          employee: {
+          payrollItem: {
             include: {
-              department: true,
-              designation: true,
+              employee: {
+                include: {
+                  department: true,
+                  designation: true,
+                }
+              }
             }
           }
         }
       }).catch(() => null);
+
+      if (slip) {
+        const slipEmpId = slip.payrollItem?.employeeId;
+        // Ownership check
+        if (role === 'EMPLOYEE') {
+          const authEmpId = await getAuthEmployeeId(req);
+          if (slipEmpId && slipEmpId !== authEmpId) {
+            return res.status(403).json({ status: 'error', message: 'Access denied: You cannot access another employee’s salary slip' });
+          }
+        } else if (role === 'MANAGER') {
+          const emp = await getAuthEmployee(req);
+          const teamIds = await getManagerTeamIds(emp?.id);
+          if (slipEmpId && !teamIds.includes(slipEmpId)) {
+            return res.status(403).json({ status: 'error', message: 'Access denied: Salary slip belongs outside your team' });
+          }
+        } else if (role === 'HR_MANAGER') {
+          const emp = await getAuthEmployee(req);
+          if (slip.payrollItem?.employee?.departmentId && emp?.departmentId && slip.payrollItem.employee.departmentId !== emp.departmentId) {
+            return res.status(403).json({ status: 'error', message: 'Access denied: Salary slip belongs to a different department' });
+          }
+        }
+      }
 
       if (!slip) {
         slip = {

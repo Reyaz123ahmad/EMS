@@ -1,0 +1,120 @@
+[
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Dashboard",
+    "url": "/dashboard/company-admin",
+    "loadTime": 1199,
+    "status": "PASS",
+    "apiCalls": [
+      {
+        "url": "/dashboard/company-admin",
+        "status": 200,
+        "time": 922
+      }
+    ]
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Employees",
+    "url": "/employees",
+    "loadTime": 1263,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Attendance",
+    "url": "/attendance",
+    "loadTime": 1482,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Attendance Logs",
+    "url": "/attendance/logs",
+    "loadTime": 791,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Leave Requests",
+    "url": "/leave/requests",
+    "loadTime": 812,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Payroll Runs",
+    "url": "/payroll/runs",
+    "loadTime": 840,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Projects",
+    "url": "/projects",
+    "loadTime": 840,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Clients",
+    "url": "/clients",
+    "loadTime": 1038,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Tasks",
+    "url": "/tasks",
+    "loadTime": 856,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Assets",
+    "url": "/assets",
+    "loadTime": 775,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Subscription",
+    "url": "/subscription/current",
+    "loadTime": 794,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Settings",
+    "url": "/settings/general",
+    "loadTime": 1139,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "Security",
+    "url": "/security/dashboard",
+    "loadTime": 966,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "COMPANY_ADMIN",
+    "page": "AI Hub",
+    "url": "/ai/hub",
+    "loadTime": 1108,
+    "status": "PASS",
+    "apiCalls": []
+  }
+]

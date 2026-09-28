@@ -16,6 +16,7 @@ const router = Router();
 router.use(authenticate);
 
 // Special routes (before :id)
+router.get('/my', assetsController.getMyAssets);
 router.get('/stats', assetsController.getAssetStats);
 router.get('/export', assetsController.exportAssets);
 router.get('/categories', assetsController.getAssetCategories);

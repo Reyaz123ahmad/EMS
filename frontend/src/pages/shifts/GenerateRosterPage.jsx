@@ -108,32 +108,6 @@ export default function GenerateRosterPage() {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  if (shiftsLoading || employeesLoading) {
-    return <div className="p-8 text-center text-slate-400">Loading roster parameters...</div>;
-  }
-
-  // Show empty state if no shifts
-  if (shifts.length === 0) {
-    return (
-      <div className="space-y-6 max-w-2xl mx-auto">
-        <div>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/shifts')} className="mb-2">
-            ← Back to Shifts
-          </Button>
-          <h1 className="text-2xl font-bold text-white">Generate Roster</h1>
-        </div>
-        <Card className="p-8 text-center space-y-4">
-          <p className="text-slate-300 font-medium">
-            No shifts available. Please create at least one work shift first.
-          </p>
-          <Button variant="primary" onClick={() => navigate('/shifts/create')}>
-            + Create Shift Schedule
-          </Button>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
@@ -141,7 +115,9 @@ export default function GenerateRosterPage() {
           ← Back to Rosters
         </Button>
         <h1 className="text-2xl font-bold text-white">Automated Roster Generator</h1>
-        <p className="text-sm text-slate-400">Generate rotational shift schedules for all active employees</p>
+        <p className="text-slate-400 text-sm mt-1">
+          Automatically generate structured month-long shifts for active workforce teams.
+        </p>
       </div>
 
       <Card className="p-6">

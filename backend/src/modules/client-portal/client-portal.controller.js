@@ -1,9 +1,10 @@
 import * as clientPortalService from './client-portal.service.js';
+import { getAuthClientId } from '../../security/data-scope.js';
 
 export async function getDashboard(req, res, next) {
   try {
     const companyId = req.user?.companyId || req.user?.company?.id;
-    const clientId = req.user?.clientId || req.query.clientId;
+    const clientId = await getAuthClientId(req);
     const data = await clientPortalService.getClientDashboard({ clientId, companyId });
     res.status(200).json({ success: true, data });
   } catch (err) {
@@ -14,7 +15,7 @@ export async function getDashboard(req, res, next) {
 export async function getProjects(req, res, next) {
   try {
     const companyId = req.user?.companyId || req.user?.company?.id;
-    const clientId = req.user?.clientId || req.query.clientId;
+    const clientId = await getAuthClientId(req);
     const { status } = req.query;
     const data = await clientPortalService.getClientProjects({ clientId, companyId, filters: { status } });
     res.status(200).json({ success: true, data });
@@ -26,7 +27,7 @@ export async function getProjects(req, res, next) {
 export async function getProjectDetail(req, res, next) {
   try {
     const companyId = req.user?.companyId || req.user?.company?.id;
-    const clientId = req.user?.clientId;
+    const clientId = await getAuthClientId(req);
     const { id } = req.params;
     const data = await clientPortalService.getClientProjectDetail({ clientId, projectId: id, companyId });
     res.status(200).json({ success: true, data });
@@ -37,7 +38,7 @@ export async function getProjectDetail(req, res, next) {
 
 export async function createRequirement(req, res, next) {
   try {
-    const clientId = req.user?.clientId;
+    const clientId = await getAuthClientId(req);
     const { projectId, title, description, priority } = req.body;
     const data = await clientPortalService.createRequirement({
       clientId,
@@ -52,7 +53,7 @@ export async function createRequirement(req, res, next) {
 
 export async function addComment(req, res, next) {
   try {
-    const clientId = req.user?.clientId;
+    const clientId = await getAuthClientId(req);
     const authorName = `${req.user?.firstName || 'Client'} ${req.user?.lastName || 'User'}`.trim();
     const { projectId, content } = req.body;
     const data = await clientPortalService.addComment({
@@ -70,7 +71,7 @@ export async function addComment(req, res, next) {
 export async function getInvoices(req, res, next) {
   try {
     const companyId = req.user?.companyId || req.user?.company?.id;
-    const clientId = req.user?.clientId;
+    const clientId = await getAuthClientId(req);
     const data = await clientPortalService.getClientInvoices({ clientId, companyId });
     res.status(200).json({ success: true, data });
   } catch (err) {
@@ -81,7 +82,7 @@ export async function getInvoices(req, res, next) {
 export async function getPayments(req, res, next) {
   try {
     const companyId = req.user?.companyId || req.user?.company?.id;
-    const clientId = req.user?.clientId;
+    const clientId = await getAuthClientId(req);
     const data = await clientPortalService.getClientPaymentHistory({ clientId, companyId });
     res.status(200).json({ success: true, data });
   } catch (err) {

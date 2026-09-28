@@ -5,6 +5,7 @@ import {
   applyOvertimeSchema,
   bulkApproveOvertimeSchema
 } from './overtime.validator.js';
+import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
 
 export const overtimeController = {
   async listRules(req, res, next) {
@@ -66,15 +67,28 @@ export const overtimeController = {
 
   async listRecords(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user.companyId;
+      const filters = {
+        employeeId: req.query.employeeId,
+        status: req.query.status,
+        startDate: req.query.startDate,
+        endDate: req.query.endDate
+      };
+
+      if (role === 'EMPLOYEE') {
+        filters.employeeId = await getAuthEmployeeId(req);
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        filters.employeeIds = await getManagerTeamIds(emp?.id);
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) filters.departmentId = emp.departmentId;
+      }
+
       const result = await overtimeService.listOvertimeRecords({
         companyId,
-        filters: {
-          employeeId: req.query.employeeId,
-          status: req.query.status,
-          startDate: req.query.startDate,
-          endDate: req.query.endDate
-        },
+        filters,
         pagination: {
           page: parseInt(req.query.page, 10) || 1,
           limit: parseInt(req.query.limit, 10) || 20
@@ -144,8 +158,21 @@ export const overtimeController = {
 
   async listRequests(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user.companyId;
-      const requests = await overtimeService.listRequests(companyId, req.query);
+      const filters = { ...req.query };
+
+      if (role === 'EMPLOYEE') {
+        filters.employeeId = await getAuthEmployeeId(req);
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        filters.employeeIds = await getManagerTeamIds(emp?.id);
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) filters.departmentId = emp.departmentId;
+      }
+
+      const requests = await overtimeService.listRequests(companyId, filters);
       res.status(200).json({ status: 'ok', success: true, data: { requests }, requests });
     } catch (err) {
       next(err);

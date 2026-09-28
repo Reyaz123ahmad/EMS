@@ -6,9 +6,14 @@ import { Button } from '../../components/ui/Button.jsx';
 import { Card } from '../../components/ui/Card.jsx';
 import { Input } from '../../components/ui/Input.jsx';
 import { Modal } from '../../components/ui/Modal.jsx';
+import useAuthStore from '../../store/auth.store.js';
 
 export function DocumentListPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const userRoles = user?.roles || (user?.role ? [user.role] : ['EMPLOYEE']);
+  const isEmployee = userRoles.includes('EMPLOYEE') && !userRoles.some((r) => ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER'].includes(r));
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -30,8 +35,13 @@ export function DocumentListPage() {
   const rejectMutation = useRejectDocument();
   const deleteMutation = useDeleteDocument();
 
-  const documents = data?.data?.documents || [];
-  const pagination = data?.data?.pagination || { page: 1, limit: 10, total: 0, totalPages: 1 };
+  const documents = data?.data?.documents || data?.documents || (Array.isArray(data?.data) ? data.data : []) || [];
+  const pagination = data?.data?.pagination || data?.pagination || {
+    page: data?.data?.page || page,
+    limit: data?.data?.limit || 10,
+    total: data?.data?.total || documents.length,
+    totalPages: data?.data?.totalPages || 1
+  };
 
   const handleVerify = async (docId) => {
     try {
@@ -83,18 +93,22 @@ export function DocumentListPage() {
         </div>
       )
     },
-    {
-      header: 'Employee',
-      key: 'emp',
-      render: (r) => (
-        <div className="text-xs text-slate-300">
-          <div className="font-medium text-slate-200">
-            {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : 'Company Wide'}
-          </div>
-          <div className="text-slate-400 font-mono">{r.employee?.employeeCode || '—'}</div>
-        </div>
-      )
-    },
+    ...(!isEmployee
+      ? [
+          {
+            header: 'Employee',
+            key: 'emp',
+            render: (r) => (
+              <div className="text-xs text-slate-300">
+                <div className="font-medium text-slate-200">
+                  {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : 'Company Wide'}
+                </div>
+                <div className="text-slate-400 font-mono">{r.employee?.employeeCode || '—'}</div>
+              </div>
+            )
+          },
+        ]
+      : []),
     {
       header: 'Status',
       key: 'status',
@@ -135,7 +149,7 @@ export function DocumentListPage() {
           >
             View
           </Button>
-          {r.status === 'PENDING' && (
+          {!isEmployee && r.status === 'PENDING' && (
             <>
               <Button
                 variant="outline"
@@ -160,7 +174,7 @@ export function DocumentListPage() {
             variant="ghost"
             size="sm"
             onClick={() => setDocToDelete(r)}
-            className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+            className="text-red-400/80 hover:text-red-300 hover:bg-red-500/10"
           >
             Delete
           </Button>
@@ -174,10 +188,12 @@ export function DocumentListPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            Document Management
+            {isEmployee ? 'My Documents' : 'Document Management'}
           </h1>
           <p className="text-sm text-slate-400 mt-1">
-            Review compliance certificates, employee identity proofs, contracts, and HR documents.
+            {isEmployee
+              ? 'View and manage your identity proofs, certificates, and uploaded files.'
+              : 'Review compliance certificates, employee identity proofs, contracts, and HR documents.'}
           </p>
         </div>
 
@@ -195,7 +211,7 @@ export function DocumentListPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input
             type="text"
-            placeholder="Search document title or employee..."
+            placeholder={isEmployee ? 'Search document title...' : 'Search document title or employee...'}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);

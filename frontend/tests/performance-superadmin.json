@@ -1,0 +1,135 @@
+[
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Dashboard",
+    "url": "/dashboard/super-admin",
+    "loadTime": 1144,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Companies",
+    "url": "/companies",
+    "loadTime": 1284,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Plans",
+    "url": "/plans",
+    "loadTime": 1226,
+    "status": "PASS",
+    "apiCalls": [
+      {
+        "url": "/subscriptions/current",
+        "status": 200,
+        "time": 995
+      }
+    ]
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Subscriptions",
+    "url": "/subscription/plans",
+    "loadTime": 989,
+    "status": "PASS",
+    "apiCalls": [
+      {
+        "url": "/subscriptions/current",
+        "status": 200,
+        "time": 766
+      }
+    ]
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Payments",
+    "url": "/payments",
+    "loadTime": 971,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Invoices",
+    "url": "/invoices",
+    "loadTime": 1037,
+    "status": "PASS",
+    "apiCalls": [
+      {
+        "url": "/invoices?page=1&limit=15",
+        "status": 200,
+        "time": 822
+      }
+    ]
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Refunds",
+    "url": "/admin/refunds",
+    "loadTime": 1009,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Coupons",
+    "url": "/coupons",
+    "loadTime": 1220,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Revenue Analytics",
+    "url": "/payment-analytics/revenue",
+    "loadTime": 1040,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Queue Monitor",
+    "url": "/admin/queues",
+    "loadTime": 1006,
+    "status": "PASS",
+    "apiCalls": [
+      {
+        "url": "/admin/queues/health",
+        "status": 200,
+        "time": 827
+      },
+      {
+        "url": "/admin/queues/stats",
+        "status": 200,
+        "time": 845
+      }
+    ]
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "AI Hub",
+    "url": "/ai/hub",
+    "loadTime": 916,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Users",
+    "url": "/users",
+    "loadTime": 1006,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "SUPER_ADMIN",
+    "page": "Roles",
+    "url": "/roles",
+    "loadTime": 1122,
+    "status": "PASS",
+    "apiCalls": []
+  }
+]

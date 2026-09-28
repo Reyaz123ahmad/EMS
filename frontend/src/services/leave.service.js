@@ -40,17 +40,43 @@ export const leaveService = {
 
   async getBalances(params = {}) {
     const response = await api.get('/leave/balances', { params });
-    return response.data;
+    const data = response.data?.data || response.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.balances)) return data.balances;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+  },
+
+  async getMyBalances(params = {}) {
+    const response = await api.get('/leave/balances', { params });
+    const data = response.data?.data || response.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.balances)) return data.balances;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
   },
 
   async getEmployeeBalances(employeeId, params = {}) {
     const response = await api.get(`/leave/balances/${employeeId}`, { params });
-    return response.data;
+    const data = response.data?.data || response.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.balances)) return data.balances;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
   },
 
   async applyLeave(data) {
     const response = await api.post('/leave/apply', data);
     return response.data;
+  },
+
+  async getMyRequests(params = {}) {
+    const response = await api.get('/leave/requests/my', { params });
+    const data = response.data?.data || response.data;
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.requests)) return data.requests;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
   },
 
   async getLeaveRequests(params = {}) {

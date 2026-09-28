@@ -212,15 +212,40 @@ export const authService = {
       user.userRoles?.[0]?.role?.name ||
       (user.email === env.SUPER_ADMIN_EMAIL ? 'SUPER_ADMIN' : 'EMPLOYEE');
 
+    let employee = user.employee;
+    if (!employee && user.companyId && primaryRole !== 'SUPER_ADMIN' && primaryRole !== 'CLIENT') {
+      const empCode = 'EMP-' + Math.floor(1000 + Math.random() * 9000);
+      employee = await prisma.employee.create({
+        data: {
+          companyId: user.companyId,
+          userId: user.id,
+          employeeCode: empCode,
+          firstName: user.email.split('@')[0],
+          lastName: 'User',
+          email: user.email,
+          joiningDate: new Date(),
+          status: 'ACTIVE'
+        },
+        include: { department: true, designation: true, branch: true }
+      }).catch(async () => {
+        return await prisma.employee.findFirst({ where: { userId: user.id } });
+      });
+    }
+
+    const photoUrl = employee?.photoUrl || null;
+    const name = employee ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim() : user.email.split('@')[0];
+
     return {
       id: user.id,
       email: user.email,
-      phone: user.phone,
+      name,
+      phone: user.phone || employee?.phone || null,
+      photoUrl,
       companyId: user.companyId,
       company: user.company,
       role: primaryRole,
       roles: user.userRoles?.map((ur) => ur.role?.name) || [primaryRole],
-      employee: user.employee,
+      employee: employee ? { ...employee, photoUrl } : null,
       twoFactorEnabled: user.twoFactorEnabled,
       createdAt: user.createdAt
     };

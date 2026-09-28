@@ -1,6 +1,19 @@
 import { prisma } from '../../config/prisma.js';
 
 export const assetsService = {
+  async getMyAssets(employeeId) {
+    return prisma.assetAssignment.findMany({
+      where: {
+        employeeId,
+        returnedAt: null,
+      },
+      include: {
+        asset: true,
+      },
+      orderBy: { assignedAt: 'desc' },
+    });
+  },
+
   async getAssets(companyId, filters = {}) {
     const { category, condition, isActive, search, employeeId } = filters;
     const where = {};

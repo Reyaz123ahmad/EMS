@@ -308,15 +308,54 @@ export const payrollService = {
   },
 
   /**
+   * Get My Salary Slips (Self-Service)
+   */
+  async getMySlips({ employeeId, companyId, filters = {} }) {
+    const where = {
+      payrollItem: {
+        employeeId
+      }
+    };
+
+    if (filters.month || filters.year) {
+      where.payrollItem.payrollRun = {};
+      if (filters.month) where.payrollItem.payrollRun.month = parseInt(filters.month, 10);
+      if (filters.year) where.payrollItem.payrollRun.year = parseInt(filters.year, 10);
+    }
+
+    return prisma.salarySlip.findMany({
+      where,
+      include: {
+        payrollItem: {
+          include: {
+            employee: {
+              select: { id: true, firstName: true, lastName: true, employeeCode: true, email: true }
+            },
+            payrollRun: true
+          }
+        }
+      },
+      orderBy: { generatedAt: 'desc' }
+    });
+  },
+
+  /**
    * List Salary Slips
    */
   async listSalarySlips(companyId, filters = {}) {
     const where = {
       payrollItem: {
-        payrollRun: { companyId }
+        payrollRun: companyId ? { companyId } : undefined
       }
     };
-    if (filters.employeeId) where.payrollItem.employeeId = filters.employeeId;
+    if (filters.employeeIds && Array.isArray(filters.employeeIds)) {
+      where.payrollItem.employeeId = { in: filters.employeeIds };
+    } else if (filters.employeeId) {
+      where.payrollItem.employeeId = filters.employeeId;
+    }
+    if (filters.departmentId) {
+      where.payrollItem.employee = { departmentId: filters.departmentId };
+    }
     if (filters.month) where.payrollItem.payrollRun.month = parseInt(filters.month, 10);
     if (filters.year) where.payrollItem.payrollRun.year = parseInt(filters.year, 10);
 

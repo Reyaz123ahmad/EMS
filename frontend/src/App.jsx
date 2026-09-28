@@ -91,6 +91,7 @@ import ApplyLeavePage from './pages/leave/ApplyLeavePage.jsx';
 import LeaveRequestsPage from './pages/leave/LeaveRequestsPage.jsx';
 import LeaveCalendarPage from './pages/leave/LeaveCalendarPage.jsx';
 import LeaveHistoryPage from './pages/leave/LeaveHistoryPage.jsx';
+import MyLeavePage from './pages/leave/MyLeavePage.jsx';
 
 // Payroll Module Pages
 import SalaryStructurePage from './pages/payroll/SalaryStructurePage.jsx';
@@ -208,10 +209,30 @@ import ClientRequirementsPage from './pages/client-portal/ClientRequirementsPage
 import ClientCommentsPage from './pages/client-portal/ClientCommentsPage.jsx';
 import ClientInvoicesPage from './pages/client-portal/ClientInvoicesPage.jsx';
 import ClientPaymentsPage from './pages/client-portal/ClientPaymentsPage.jsx';
+import { useQuery } from '@tanstack/react-query';
+import useAuthStore from './store/auth.store.js';
+import authService from './services/auth.service.js';
 
 import ProtectedRoute from './components/shared/ProtectedRoute.jsx';
 
 export default function App() {
+  const { isAuthenticated, updateUser } = useAuthStore();
+
+  const { data: meData } = useQuery({
+    queryKey: ['me'],
+    queryFn: () => authService.getMe(),
+    enabled: Boolean(isAuthenticated),
+    staleTime: 5 * 60 * 1000
+  });
+
+  React.useEffect(() => {
+    if (meData?.user) {
+      updateUser(meData.user);
+    } else if (meData?.id) {
+      updateUser(meData);
+    }
+  }, [meData, updateUser]);
+
   return (
     <>
     <Routes>
@@ -311,6 +332,9 @@ export default function App() {
 
         {/* Document Management Routes */}
         <Route path="/documents" element={<DocumentListPage />} />
+        <Route path="/documents/my" element={<DocumentListPage />} />
+        <Route path="/employee-documents" element={<DocumentListPage />} />
+        <Route path="/employee-documents/my" element={<DocumentListPage />} />
         <Route path="/documents/upload" element={<DocumentUploadPage />} />
         <Route path="/documents/aadhaar/upload" element={<AadhaarUploadPage />} />
         <Route path="/documents/:id" element={<DocumentDetailPage />} />
@@ -322,7 +346,9 @@ export default function App() {
         {/* Attendance Module Routes */}
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/attendance/logs" element={<AttendanceLogsPage />} />
+        <Route path="/attendance/my-logs" element={<AttendanceLogsPage />} />
         <Route path="/attendance/monthly-summary" element={<MonthlySummaryPage />} />
+        <Route path="/attendance/my-summary" element={<MonthlySummaryPage />} />
         <Route path="/attendance/calendar" element={<AttendanceCalendarPage />} />
         <Route path="/attendance/exceptions" element={<AttendanceExceptionsPage />} />
         <Route path="/attendance/manual" element={<ManualAttendancePage />} />
@@ -331,10 +357,12 @@ export default function App() {
         {/* Leave Management Routes */}
         <Route path="/leave/types" element={<LeaveTypesPage />} />
         <Route path="/leave/balance" element={<LeaveBalancePage />} />
+        <Route path="/leave/balances" element={<LeaveBalancePage />} />
         <Route path="/leave/apply" element={<ApplyLeavePage />} />
         <Route path="/leave/requests" element={<LeaveRequestsPage />} />
         <Route path="/leave/calendar" element={<LeaveCalendarPage />} />
         <Route path="/leave/history" element={<LeaveHistoryPage />} />
+        <Route path="/leave/my" element={<MyLeavePage />} />
 
         {/* Payroll Routes */}
         <Route path="/payroll/salary-structure" element={<SalaryStructurePage />} />
@@ -348,6 +376,7 @@ export default function App() {
         {/* Overtime Routes */}
         <Route path="/overtime/rules" element={<OvertimeRulesPage />} />
         <Route path="/overtime/records" element={<OvertimeRecordsPage />} />
+        <Route path="/overtime/my" element={<OvertimeRecordsPage />} />
         <Route path="/overtime/apply" element={<ApplyOvertimePage />} />
         <Route path="/overtime/requests" element={<OvertimeRequestsPage />} />
         <Route path="/overtime/stats" element={<OvertimeStatsPage />} />
@@ -449,8 +478,15 @@ export default function App() {
         <Route path="/client-portal/comments" element={<ClientCommentsPage />} />
         <Route path="/client-portal/invoices" element={<ClientInvoicesPage />} />
         <Route path="/client-portal/payments" element={<ClientPaymentsPage />} />
-        {/* AI Hub Route */}
-        <Route path="/ai/hub" element={<AIHubPage />} />
+        {/* AI Hub Route - Only SUPER_ADMIN and COMPANY_ADMIN */}
+        <Route
+          path="/ai/hub"
+          element={
+            <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'COMPANY_ADMIN']}>
+              <AIHubPage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* Catch-all fallback */}

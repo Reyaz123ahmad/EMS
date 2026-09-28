@@ -1,23 +1,53 @@
 import React from 'react';
-import { Calendar, CheckCircle2, Clock } from 'lucide-react';
 import Badge from '../ui/Badge.jsx';
 
-export default function LeaveBalanceCard({ balance }) {
-  const type = balance.leaveType || {};
-  const total = Number(balance.totalDays || 0);
-  const used = Number(balance.usedDays || 0);
-  const remaining = Number(balance.remainingDays || 0);
+export default function LeaveBalanceCard({ balance, balances }) {
+  // If balances array is passed, render cards grid
+  if (Array.isArray(balances)) {
+    if (balances.length === 0) {
+      return (
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+          <p className="text-sm text-slate-500">No leave balance data available</p>
+        </div>
+      );
+    }
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {balances.map((b) => (
+          <LeaveBalanceCard key={b.id || b.leaveTypeId} balance={b} />
+        ))}
+      </div>
+    );
+  }
+
+  // Guard: if balance is missing
+  if (!balance) {
+    return (
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+        <p className="text-sm text-slate-500">No balance data</p>
+      </div>
+    );
+  }
+
+  // Guard: if leaveType is missing
+  const leaveType = balance.leaveType || {};
+  const name = leaveType.name || balance.name || 'Leave';
+  const code = leaveType.code || balance.code || 'LEAVE';
+  const isPaid = leaveType.isPaid !== undefined ? leaveType.isPaid : (balance.isPaid !== undefined ? balance.isPaid : true);
+  const total = Number(balance.totalDays !== undefined ? balance.totalDays : 0);
+  const used = Number(balance.usedDays !== undefined ? balance.usedDays : 0);
+  const remaining = Number(balance.remainingDays !== undefined ? balance.remainingDays : (total - used));
   const percentUsed = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="font-bold text-white text-base">{type.name}</h4>
-          <span className="text-xs text-slate-500 font-mono">{type.code || 'LEAVE'}</span>
+          <h4 className="font-bold text-white text-base">{name}</h4>
+          <span className="text-xs text-slate-500 font-mono">{code}</span>
         </div>
-        <Badge variant={type.isPaid ? 'success' : 'secondary'}>
-          {type.isPaid ? 'Paid Leave' : 'Unpaid'}
+        <Badge variant={isPaid ? 'success' : 'secondary'}>
+          {isPaid ? 'Paid Leave' : 'Unpaid'}
         </Badge>
       </div>
 

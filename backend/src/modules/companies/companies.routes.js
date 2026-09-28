@@ -3,6 +3,7 @@ import companiesController from './companies.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 import { requireRole } from '../../middlewares/role.middleware.js';
 import { otpRateLimit } from '../../middlewares/rateLimiter.middleware.js';
+import { cacheResponse } from '../../middlewares/cache.middleware.js';
 
 const router = Router();
 
@@ -12,14 +13,14 @@ router.post('/verify-otp', otpRateLimit, companiesController.verifyCompanyOTP);
 router.post('/create', companiesController.createCompanyWithAdmin);
 
 // Settings Schema
-router.get('/settings/schema', companiesController.getSettingsSchema);
+router.get('/settings/schema', cacheResponse('cache:settings_schema', 3600), companiesController.getSettingsSchema);
 
 // Protected Admin Routes
-router.get('/', authenticate, requireRole('SUPER_ADMIN'), companiesController.listCompanies);
+router.get('/', authenticate, requireRole('SUPER_ADMIN'), cacheResponse('cache:companies_list', 120), companiesController.listCompanies);
 
 // Global Stats & Analytics (must be defined before /:id wildcard)
-router.get('/stats', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), companiesController.getStats);
-router.get('/analytics', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), companiesController.getAnalytics);
+router.get('/stats', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), cacheResponse('cache:companies_stats', 120), companiesController.getStats);
+router.get('/analytics', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), cacheResponse('cache:companies_analytics', 120), companiesController.getAnalytics);
 
 // Granular Category Settings
 router.get('/:id/settings/attendance', authenticate, (req, res, next) => { req.params.type = 'attendance'; companiesController.getSettingByType(req, res, next); });

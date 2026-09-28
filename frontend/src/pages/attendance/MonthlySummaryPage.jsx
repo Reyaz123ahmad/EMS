@@ -14,17 +14,28 @@ import {
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
 import { useMonthlySummary } from '../../hooks/useAttendance';
+import { useEmployees } from '../../hooks/useEmployee';
 import { StatCard } from '../../components/shared/StatCard';
 import { AttendancePieChart } from '../../components/charts/AttendancePieChart';
 import { AttendanceTrendChart } from '../../components/charts/AttendanceTrendChart';
+import useAuthStore from '../../store/auth.store';
 
 export const MonthlySummaryPage = () => {
+  const { user } = useAuthStore();
+  const role = user?.role || 'EMPLOYEE';
+  const isEmployee = role === 'EMPLOYEE';
+
   const [selectedMonth, setSelectedMonth] = useState(dayjs().month() + 1);
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
+  const [selectedEmployee, setSelectedEmployee] = useState('');
+
+  const { data: employeesRes } = useEmployees({ limit: 100 }, { enabled: !isEmployee });
+  const employees = employeesRes?.data?.employees || [];
 
   const { data: summaryResponse, isLoading, refetch } = useMonthlySummary({
     month: selectedMonth,
     year: selectedYear,
+    employeeId: isEmployee ? undefined : (selectedEmployee || undefined),
   });
 
   const summary = summaryResponse?.data || {
@@ -80,17 +91,34 @@ export const MonthlySummaryPage = () => {
         <div>
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-indigo-400">
             <Calendar className="h-4 w-4" />
-            <span>Monthly Rollup & Payroll Aggregation</span>
+            <span>{role === 'EMPLOYEE' ? 'Self-Service Rollup' : 'Monthly Rollup & Payroll Aggregation'}</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">
-            Monthly Attendance Summary
+            {role === 'EMPLOYEE' ? 'My Monthly Attendance Summary' : 'Monthly Attendance Summary'}
           </h1>
           <p className="mt-1 text-xs text-slate-400">
-            Aggregated shift times, overtime hours, and attendance percentages
+            {role === 'EMPLOYEE' 
+              ? 'Aggregated personal shift times, overtime hours, and attendance breakdown'
+              : 'Aggregated shift times, overtime hours, and attendance percentages'}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
+          {!isEmployee && (
+            <select
+              value={selectedEmployee}
+              onChange={(e) => setSelectedEmployee(e.target.value)}
+              className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+            >
+              <option value="">All Employees</option>
+              {employees.map((emp) => (
+                <option key={emp.id} value={emp.id}>
+                  {emp.firstName} {emp.lastName} ({emp.employeeCode})
+                </option>
+              ))}
+            </select>
+          )}
+
           {/* Month Selector */}
           <div className="flex items-center rounded-xl border border-slate-700 bg-slate-900 p-1">
             <button

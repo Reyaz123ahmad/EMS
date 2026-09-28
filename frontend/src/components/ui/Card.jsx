@@ -5,7 +5,7 @@ export function Card({ className, children, ...props }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl backdrop-blur-md transition-all',
+        'rounded-lg border border-[#e5e7eb] dark:border-[#262626] bg-white dark:bg-[#171717] p-4 transition-colors',
         className
       )}
       {...props}
@@ -17,7 +17,7 @@ export function Card({ className, children, ...props }) {
 
 export function CardHeader({ className, children, ...props }) {
   return (
-    <div className={cn('mb-4 space-y-1', className)} {...props}>
+    <div className={cn('px-4 py-3 -mx-4 -mt-4 mb-3 border-b border-[#e5e7eb] dark:border-[#262626] flex items-center justify-between', className)} {...props}>
       {children}
     </div>
   );
@@ -26,7 +26,7 @@ export function CardHeader({ className, children, ...props }) {
 export function CardTitle({ className, children, ...props }) {
   return (
     <h3
-      className={cn('text-lg font-semibold tracking-tight text-slate-100', className)}
+      className={cn('text-sm font-semibold tracking-tight text-[#111827] dark:text-[#fafafa]', className)}
       {...props}
     >
       {children}
@@ -36,7 +36,7 @@ export function CardTitle({ className, children, ...props }) {
 
 export function CardDescription({ className, children, ...props }) {
   return (
-    <p className={cn('text-sm text-slate-400', className)} {...props}>
+    <p className={cn('text-xs text-[#6b7280] dark:text-[#a3a3a3] mt-0.5', className)} {...props}>
       {children}
     </p>
   );
@@ -44,7 +44,7 @@ export function CardDescription({ className, children, ...props }) {
 
 export function CardBody({ className, children, ...props }) {
   return (
-    <div className={cn('space-y-4', className)} {...props}>
+    <div className={cn('space-y-3', className)} {...props}>
       {children}
     </div>
   );
@@ -52,7 +52,7 @@ export function CardBody({ className, children, ...props }) {
 
 export function CardFooter({ className, children, ...props }) {
   return (
-    <div className={cn('mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-800/80', className)} {...props}>
+    <div className={cn('px-4 py-3 -mx-4 -mb-4 mt-3 flex items-center justify-end gap-2 border-t border-[#e5e7eb] dark:border-[#262626]', className)} {...props}>
       {children}
     </div>
   );

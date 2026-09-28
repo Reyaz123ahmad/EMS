@@ -43,6 +43,6 @@ describe('Payroll UI Modules', () => {
 
   it('renders Salary Slips Portal Page', () => {
     renderWithProviders(<SalarySlipsPage />);
-    expect(screen.getByText(/Employee Salary Slips/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/(My Payslips|Salary Slips)/i);
   });
 });

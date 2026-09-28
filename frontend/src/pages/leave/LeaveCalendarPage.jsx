@@ -7,6 +7,8 @@ import { useAuthStore } from '../../store/authStore';
 export default function LeaveCalendarPage() {
   const { user } = useAuthStore();
   const companyId = user?.companyId;
+  const userRoles = user?.roles || (user?.role ? [user.role] : ['EMPLOYEE']);
+  const isEmployee = userRoles.includes('EMPLOYEE') && !userRoles.some((r) => ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER'].includes(r));
 
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -26,6 +28,7 @@ export default function LeaveCalendarPage() {
   const leaves = calendarData?.data?.data || calendarData?.data || [];
 
   const handleSelectLeave = (leave) => {
+    if (isEmployee) return;
     setSelectedLeave(leave);
     setIsModalOpen(true);
   };
@@ -53,14 +56,16 @@ export default function LeaveCalendarPage() {
         onSelectLeave={handleSelectLeave}
       />
 
-      <LeaveApprovalModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        request={selectedLeave}
-        onApprove={handleApprove}
-        onReject={handleReject}
-        isSubmitting={approveLeave.isPending || rejectLeave.isPending}
-      />
+      {!isEmployee && (
+        <LeaveApprovalModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          request={selectedLeave}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          isSubmitting={approveLeave.isPending || rejectLeave.isPending}
+        />
+      )}
     </div>
   );
 }

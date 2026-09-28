@@ -6,6 +6,7 @@ import {
   bulkAllocateLeavesSchema,
   carryForwardSchema
 } from './leave.validator.js';
+import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
 
 export const leaveController = {
   async listTypes(req, res, next) {
@@ -140,8 +141,21 @@ export const leaveController = {
 
   async getBalances(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user.companyId;
-      const balances = await leaveService.getLeaveBalances(companyId, req.query);
+      const filters = { ...req.query };
+
+      if (role === 'EMPLOYEE') {
+        filters.employeeId = await getAuthEmployeeId(req);
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        filters.employeeIds = await getManagerTeamIds(emp?.id);
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) filters.departmentId = emp.departmentId;
+      }
+
+      const balances = await leaveService.getLeaveBalances(companyId, filters);
       res.status(200).json({ status: 'ok', data: { balances } });
     } catch (err) {
       next(err);
@@ -150,7 +164,19 @@ export const leaveController = {
 
   async getEmployeeBalances(req, res, next) {
     try {
-      const employeeId = req.params.employeeId || req.user.employee?.id || req.user.id;
+      const role = req.user?.role || 'EMPLOYEE';
+      let employeeId = req.params.employeeId;
+
+      if (role === 'EMPLOYEE' || !employeeId) {
+        employeeId = await getAuthEmployeeId(req) || req.user.id;
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        const teamIds = await getManagerTeamIds(emp?.id);
+        if (!teamIds.includes(employeeId)) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Employee not in your team' });
+        }
+      }
+
       const balances = await leaveService.getEmployeeLeaveBalances(employeeId, req.query.year);
       res.status(200).json({ status: 'ok', data: { balances } });
     } catch (err) {
@@ -163,7 +189,12 @@ export const leaveController = {
       const { error, value } = applyLeaveSchema.validate(req.body);
       if (error) return res.status(400).json({ status: 'error', message: error.details[0].message });
 
-      const employeeId = req.body.employeeId || req.user.employee?.id || req.user.id;
+      const role = req.user?.role || 'EMPLOYEE';
+      let employeeId = value.employeeId;
+
+      if (role === 'EMPLOYEE' || role === 'MANAGER' || role === 'HR_MANAGER' || !employeeId) {
+        employeeId = await getAuthEmployeeId(req) || req.user.id;
+      }
       const companyId = req.user.companyId;
 
       const result = await leaveService.applyLeave({
@@ -186,10 +217,51 @@ export const leaveController = {
     }
   },
 
-  async listRequests(req, res, next) {
+  async getMyRequests(req, res, next) {
     try {
       const companyId = req.user.companyId;
-      const requests = await leaveService.listLeaveRequests(companyId, req.query);
+      const empId = await getAuthEmployeeId(req) || req.user.id;
+      const result = await leaveService.getMyRequests({
+        employeeId: empId,
+        companyId,
+        filters: req.query,
+        pagination: {
+          page: parseInt(req.query.page, 10) || 1,
+          limit: parseInt(req.query.limit, 10) || 20
+        }
+      });
+      res.status(200).json({
+        status: 'ok',
+        success: true,
+        message: 'My leave requests retrieved',
+        data: result.requests,
+        requests: result.requests,
+        total: result.total,
+        page: result.page,
+        totalPages: result.totalPages
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async listRequests(req, res, next) {
+    try {
+      const role = req.user?.role || 'EMPLOYEE';
+      const companyId = req.user.companyId;
+      const filters = { ...req.query };
+
+      if (role === 'EMPLOYEE') {
+        filters.employeeId = await getAuthEmployeeId(req);
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        filters.employeeIds = await getManagerTeamIds(emp?.id);
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (emp?.departmentId) filters.departmentId = emp.departmentId;
+      }
+
+      const requests = await leaveService.listLeaveRequests(companyId, filters);
       res.status(200).json({ status: 'ok', data: { requests } });
     } catch (err) {
       next(err);
@@ -233,9 +305,14 @@ export const leaveController = {
 
   async getCalendar(req, res, next) {
     try {
+      const role = req.user?.role || 'EMPLOYEE';
       const companyId = req.user.companyId;
       const { month = new Date().getMonth() + 1, year = new Date().getFullYear() } = req.query;
-      const calendar = await leaveService.getLeaveCalendar(companyId, month, year);
+      let employeeId = req.query.employeeId;
+      if (role === 'EMPLOYEE') {
+        employeeId = await getAuthEmployeeId(req) || req.user.id;
+      }
+      const calendar = await leaveService.getLeaveCalendar(companyId, month, year, { employeeId });
       res.status(200).json({ status: 'ok', data: calendar });
     } catch (err) {
       next(err);
@@ -292,16 +369,7 @@ export const leaveController = {
 
   async getLeaveHistory(req, res, next) {
     try {
-      const employee = await prisma.employee.findFirst({
-        where: {
-          OR: [
-            { userId: req.user.id || req.user.userId },
-            { id: req.user.employeeId || '' }
-          ]
-        }
-      });
-
-      const employeeId = employee ? employee.id : (req.user.employeeId || req.user.id);
+      const employeeId = await getAuthEmployeeId(req) || req.user.employeeId || req.user.id;
 
       const result = await leaveService.getLeaveHistory({
         employeeId: employeeId,
@@ -313,7 +381,18 @@ export const leaveController = {
         }
       });
 
-      res.status(200).json({ status: 'ok', success: true, message: 'Leave history retrieved', data: result });
+      res.status(200).json({
+        status: 'ok',
+        success: true,
+        message: 'Leave history retrieved',
+        data: result.leaves,
+        leaves: result.leaves,
+        history: result.leaves,
+        requests: result.leaves,
+        total: result.total,
+        page: result.page,
+        totalPages: result.totalPages
+      });
     } catch (err) {
       next(err);
     }
@@ -321,9 +400,20 @@ export const leaveController = {
 
   async getEmployeeHistory(req, res, next) {
     try {
-      const employeeId = req.params.employeeId || req.user.employee?.id || req.user.id;
+      const role = req.user?.role || 'EMPLOYEE';
+      let employeeId = req.params.employeeId;
+      if (role === 'EMPLOYEE' || !employeeId) {
+        employeeId = await getAuthEmployeeId(req) || req.user.employeeId || req.user.id;
+      }
       const history = await leaveService.getEmployeeLeaveHistory(employeeId, req.query);
-      res.status(200).json({ status: 'ok', data: { history } });
+      res.status(200).json({
+        status: 'ok',
+        success: true,
+        data: history,
+        history,
+        leaves: history,
+        requests: history
+      });
     } catch (err) {
       next(err);
     }

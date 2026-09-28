@@ -8,6 +8,13 @@ export function useAssets(params = {}) {
   });
 }
 
+export function useMyAssets() {
+  return useQuery({
+    queryKey: ['assets', 'my'],
+    queryFn: () => assetsService.getMyAssets(),
+  });
+}
+
 export function useAsset(id) {
   return useQuery({
     queryKey: ['asset', id],
@@ -132,6 +139,7 @@ export function useCreateAssetCategory() {
 
 export default {
   useAssets,
+  useMyAssets,
   useAsset,
   useCreateAsset,
   useUpdateAsset,

@@ -61,9 +61,37 @@ export const payrollService = {
     return response.data;
   },
 
+  async getMySlips(params = {}) {
+    const response = await api.get('/payroll/slips/my', { params });
+    const data = response.data?.data || response.data;
+    
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.slips)) return data.slips;
+    if (Array.isArray(response.data?.slips)) return response.data.slips;
+    
+    return [];
+  },
+
+  async getAllSlips(params = {}) {
+    const response = await api.get('/payroll/slips', { params });
+    const data = response.data?.data || response.data;
+    
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.slips)) return data.slips;
+    if (Array.isArray(response.data?.slips)) return response.data.slips;
+    
+    return [];
+  },
+
   async getSalarySlips(params = {}) {
     const response = await api.get('/payroll/slips', { params });
-    return response.data;
+    const data = response.data?.data || response.data;
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.slips)) return data.slips;
+    if (Array.isArray(response.data?.slips)) return response.data.slips;
+
+    return [];
   },
 
   async getStats(params = {}) {

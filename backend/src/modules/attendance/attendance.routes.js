@@ -66,13 +66,13 @@ router.get(
 // Management Logs, Reports & Dashboards
 router.get(
   '/logs',
-  requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
+  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
   attendanceController.listLogs
 );
 
 router.get(
   '/monthly-summary',
-  requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
+  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
   attendanceController.getMonthlySummary
 );
 

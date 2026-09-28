@@ -1,0 +1,26 @@
+[
+  {
+    "role": "CLIENT",
+    "page": "Dashboard",
+    "url": "/dashboard/client",
+    "loadTime": 1015,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "CLIENT",
+    "page": "Projects",
+    "url": "/client-portal/projects",
+    "loadTime": 1090,
+    "status": "PASS",
+    "apiCalls": []
+  },
+  {
+    "role": "CLIENT",
+    "page": "Invoices",
+    "url": "/client-portal/invoices",
+    "loadTime": 849,
+    "status": "PASS",
+    "apiCalls": []
+  }
+]

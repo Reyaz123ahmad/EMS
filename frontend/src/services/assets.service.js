@@ -1,6 +1,11 @@
 import api from './api.js';
 
 export const assetsService = {
+  async getMyAssets() {
+    const response = await api.get('/assets/my');
+    return response.data?.data || [];
+  },
+
   async getAssets(params = {}) {
     const response = await api.get('/assets', { params });
     return response.data?.data || [];
