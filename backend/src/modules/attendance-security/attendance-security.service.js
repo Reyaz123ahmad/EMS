@@ -301,31 +301,100 @@ export const faceMatchService = {
       }
 
       if (!Array.isArray(registeredEmbedding) || registeredEmbedding.length === 0) {
-        return { passed: false, score: 0, reason: 'Corrupt or unreadable enrolled face template' };
+        return { passed: false, score: 0, distance: 999, reason: 'Corrupt or unreadable enrolled face template' };
       }
 
-      // 2. Generate live probe embedding from photo with face-api.js
-      const liveEmbedding = await faceService.generateEmbedding(photoBase64);
+      // 2. Anti-Replay Check (24h SHA-256 window)
+      const replayCheck = await faceService.checkAndRecordImageReplay(photoBase64, employee.id);
+      if (replayCheck.isReplay) {
+        await attendanceSecurityRepository.createFraudSignal({
+          companyId: employee.companyId,
+          employeeId: employee.id,
+          signalType: FRAUD_TYPES.PROXY_PUNCH || 'PROXY_PUNCH',
+          severity: SEVERITY.CRITICAL || 'CRITICAL',
+          description: 'Replay attack detected: identical photo hash submitted within 24h window.',
+          metadata: { imageHash: replayCheck.hash, type: 'REPLAY_ATTACK' }
+        }).catch(() => {});
+
+        return {
+          passed: false,
+          score: 0,
+          distance: 999,
+          reason: 'REPLAY_DETECTED: Duplicate image submitted. Live camera capture required.',
+          isReplay: true
+        };
+      }
+
+      // 3. Generate live probe embedding with multi-face detection
+      let liveEmbedding;
+      try {
+        liveEmbedding = await faceService.generateEmbedding(photoBase64);
+      } catch (err) {
+        if (err.code === 'MULTIPLE_FACES_DETECTED') {
+          return { passed: false, score: 0, distance: 999, reason: err.message, code: 'MULTIPLE_FACES_DETECTED' };
+        }
+        return { passed: false, score: 0, distance: 999, reason: err.message };
+      }
+
       if (!liveEmbedding || liveEmbedding.length === 0) {
-        return { passed: false, score: 0, reason: 'No face detected in live camera frame' };
+        return { passed: false, score: 0, distance: 999, reason: 'No face detected in live camera frame' };
       }
 
-      // 3. Compute real Cosine Similarity & strict comparison
-      const threshold = SECURITY_THRESHOLDS.FACE_SIMILARITY_MIN || 0.75;
-      const comparison = faceService.compareFaces(registeredEmbedding, liveEmbedding, threshold);
+      // 4. Compute STRICT Euclidean Distance comparison (< 0.50)
+      const maxDistance = SECURITY_THRESHOLDS.FACE_MAX_DISTANCE || 0.50;
+      const comparison = faceService.compareFaces(registeredEmbedding, liveEmbedding, maxDistance);
 
-      console.log(`[FACE_MATCH] Employee: ${employee.id} | Score: ${comparison.similarity} | Required: ${threshold} | Result: ${comparison.passed ? 'MATCH' : 'MISMATCH'}`);
+      console.log(`[FACE_MATCH] Employee: ${employee.id} | Distance: ${comparison.distance} | MaxAllowed: ${maxDistance} | Result: ${comparison.passed ? 'MATCH' : 'MISMATCH'}`);
+
+      // 5. Log failure / fraud signal if mismatch
+      if (!comparison.passed) {
+        await attendanceSecurityRepository.createFraudSignal({
+          companyId: employee.companyId,
+          employeeId: employee.id,
+          signalType: FRAUD_TYPES.FACE_MISMATCH || 'FACE_MISMATCH',
+          severity: SEVERITY.HIGH || 'HIGH',
+          description: `Face verification failed: Distance ${comparison.distance} exceeds strict threshold ${maxDistance}`,
+          metadata: {
+            distance: comparison.distance,
+            similarity: comparison.similarity,
+            threshold: maxDistance,
+            matchConfidence: comparison.matchConfidence,
+            imageHash: replayCheck.hash
+          }
+        }).catch(() => {});
+      }
+
+      // 6. Audit security event
+      await prisma.securityEvent.create({
+        data: {
+          userId: employee.userId || null,
+          companyId: employee.companyId,
+          eventType: comparison.passed ? 'FACE_MATCH_SUCCESS' : 'FACE_MATCH_FAILED',
+          severity: comparison.passed ? 'LOW' : 'HIGH',
+          description: comparison.passed ? 'Face verified successfully' : 'Face mismatch detected',
+          metadata: {
+            employeeId: employee.id,
+            distance: comparison.distance,
+            similarity: comparison.similarity,
+            threshold: maxDistance,
+            result: comparison.passed ? 'MATCH' : 'NO_MATCH',
+            imageHash: replayCheck.hash,
+            timestamp: new Date().toISOString()
+          }
+        }
+      }).catch(() => {});
 
       return {
         passed: comparison.passed,
         score: comparison.similarity,
-        threshold,
+        distance: comparison.distance,
+        threshold: maxDistance,
         matchConfidence: comparison.matchConfidence,
-        reason: comparison.passed ? null : `Face mismatch (${comparison.matchConfidence} similarity is below ${Math.round(threshold * 100)}% threshold)`
+        reason: comparison.passed ? null : `Face mismatch (${comparison.matchConfidence} similarity | distance ${comparison.distance} exceeds ${maxDistance})`
       };
     } catch (err) {
       console.error('[FACE_MATCH_ERROR]', err);
-      return { passed: false, score: 0, reason: err.message };
+      return { passed: false, score: 0, distance: 999, reason: err.message };
     }
   }
 };

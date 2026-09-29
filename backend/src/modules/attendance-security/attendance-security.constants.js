@@ -33,7 +33,8 @@ export const GEO_CONSTANTS = {
 };
 
 export const SECURITY_THRESHOLDS = {
-  FACE_SIMILARITY_MIN: 0.75,
+  FACE_MAX_DISTANCE: 0.50, // Strict Euclidean distance limit (< 0.50)
+  FACE_SIMILARITY_MIN: 0.875, // Corresponding cosine similarity limit (87.5%)
   LIVENESS_SCORE_MIN: 0.75,
   CHALLENGE_EXPIRY_SECONDS: 120 // 2 minutes to complete challenge
 };

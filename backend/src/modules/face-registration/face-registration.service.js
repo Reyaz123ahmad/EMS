@@ -3,6 +3,7 @@ import { faceRegistrationRepository } from './face-registration.repository.js';
 import {
   EMBEDDING_DIMENSIONS,
   FACE_MATCH_THRESHOLD,
+  FACE_MATCH_MAX_DISTANCE,
   LIVENESS_THRESHOLD,
   FACE_REGISTRATION_ACTIONS
 } from './face-registration.constants.js';
@@ -284,6 +285,12 @@ export const faceRegistrationService = {
       throw new AppError('Stored facial biometric record is corrupt or invalid format', 500);
     }
 
+    // Anti-replay verification
+    const replayCheck = await faceService.checkAndRecordImageReplay(photo, employeeId, 86400);
+    if (!replayCheck.passed) {
+      throw new AppError('Replay attack detected. The submitted photo was already used previously.', 400);
+    }
+
     // Generate embedding for probe photo
     const probeVector = await faceService.generateEmbedding(photo);
     if (!probeVector || probeVector.length === 0) {
@@ -291,10 +298,11 @@ export const faceRegistrationService = {
     }
 
     // Compute STRICT Face Comparison
-    const comparison = faceService.compareFaces(storedVector, probeVector, FACE_MATCH_THRESHOLD);
+    const comparison = faceService.compareFaces(storedVector, probeVector, FACE_MATCH_MAX_DISTANCE);
 
     return {
       matched: comparison.passed,
+      distance: comparison.distance,
       score: comparison.similarity,
       threshold: comparison.threshold,
       matchPercentage: comparison.matchConfidence,

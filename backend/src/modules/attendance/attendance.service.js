@@ -1663,7 +1663,16 @@ export const attendanceService = {
       throw error;
     }
 
-    // 2. Generate embedding from LIVE photo
+    // 2. Anti-replay verification (reject duplicate photos within 24 hours)
+    const replayCheck = await faceService.checkAndRecordImageReplay(photoBase64, employeeId, 86400);
+    if (!replayCheck.passed) {
+      const error = new Error('Replay attack detected. The submitted photo was already used previously.');
+      error.statusCode = 400;
+      error.code = 'REPLAY_DETECTED';
+      throw error;
+    }
+
+    // 3. Generate embedding from LIVE photo (multi-face rejection enforced)
     const liveEmbedding = await faceService.generateEmbedding(photoBase64);
 
     console.log('Live embedding generated:', !!liveEmbedding);
@@ -1675,7 +1684,7 @@ export const attendanceService = {
       throw error;
     }
 
-    // 3. Decrypt stored embedding
+    // 4. Decrypt stored embedding
     let storedEmbedding = null;
     if (typeof employee.faceEmbedding === 'string') {
       storedEmbedding = decryptData(employee.faceEmbedding, true);
@@ -1692,21 +1701,22 @@ export const attendanceService = {
     console.log('Stored embedding length:', storedEmbedding.length);
     console.log('Live embedding length:', liveEmbedding.length);
 
-    // 4. Compare with STRICT threshold
-    const result = faceService.compareFaces(storedEmbedding, liveEmbedding, 0.75);
+    // 5. Compare with STRICT threshold (distance < 0.50)
+    const result = faceService.compareFaces(storedEmbedding, liveEmbedding, 0.50);
 
+    console.log('Distance:', result.distance);
     console.log('Similarity:', result.similarity);
     console.log('Threshold:', result.threshold);
     console.log('Passed:', result.passed);
 
     if (!result.passed) {
       const error = new Error(
-        `Face mismatch (${Math.round(result.similarity * 100)}% match). ` +
-        `Required: ${Math.round(result.threshold * 100)}%`
+        `Face mismatch (Distance: ${result.distance.toFixed(3)}, Max allowed: ${result.threshold}). Verification failed.`
       );
       error.statusCode = 403;
       error.code = 'FACE_MISMATCH';
       error.score = result.similarity;
+      error.distance = result.distance;
       throw error;
     }
 

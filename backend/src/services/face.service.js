@@ -2,7 +2,9 @@ import * as faceapi from 'face-api.js';
 import canvas from 'canvas';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import redis from '../config/redis.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +17,9 @@ const MODEL_PATH = path.join(__dirname, '../../models/face');
 
 let modelsLoaded = false;
 let customEmbeddingProvider = null;
+
+export const STRICT_MAX_DISTANCE = 0.50; // Strict Euclidean distance limit (< 0.50)
+export const STRICT_MIN_SIMILARITY = 0.875; // Corresponding minimum cosine similarity
 
 export function setEmbeddingProvider(fn) {
   customEmbeddingProvider = fn;
@@ -54,8 +59,46 @@ async function getCanvasImage(base64Photo) {
   return await loadImage(buffer);
 }
 
+// In-memory anti-replay cache fallback
+const inMemoryReplayStore = new Map();
+
 /**
- * Detect face and generate 128-dim descriptor embedding
+ * Anti-Replay: Verify and record photo hash within 24h window
+ * @param {string} photoBase64
+ * @param {string} employeeId
+ * @param {number} windowSeconds
+ */
+export async function checkAndRecordImageReplay(photoBase64, employeeId = 'anonymous', windowSeconds = 86400) {
+  if (!photoBase64) return { passed: true, isReplay: false, hash: null };
+  const cleanBase64 = photoBase64.replace(/^data:image\/\w+;base64,/, '').trim();
+  const imageHash = crypto.createHash('sha256').update(cleanBase64).digest('hex');
+  const key = `face:replay:${imageHash}`;
+
+  if (redis) {
+    try {
+      const existing = await redis.get(key);
+      if (existing) {
+        return { passed: false, isReplay: true, reason: 'REPLAY_DETECTED', hash: imageHash, originalUser: existing };
+      }
+      await redis.set(key, employeeId, 'EX', windowSeconds);
+      return { passed: true, isReplay: false, hash: imageHash };
+    } catch {
+      // Fall through to memory store on redis connection issues
+    }
+  }
+
+  const now = Date.now();
+  const existing = inMemoryReplayStore.get(imageHash);
+  if (existing && (now - existing.timestamp) < windowSeconds * 1000) {
+    return { passed: false, isReplay: true, reason: 'REPLAY_DETECTED', hash: imageHash, originalUser: existing.employeeId };
+  }
+
+  inMemoryReplayStore.set(imageHash, { employeeId, timestamp: now });
+  return { passed: true, isReplay: false, hash: imageHash };
+}
+
+/**
+ * Detect face and generate 128-dim descriptor embedding with multi-face rejection
  */
 export async function generateEmbedding(base64Photo) {
   if (customEmbeddingProvider) {
@@ -68,24 +111,43 @@ export async function generateEmbedding(base64Photo) {
     const img = await getCanvasImage(base64Photo);
     if (!img) return null;
 
-    const detection = await faceapi
-      .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
+    // Detect all faces in frame to ensure single-face constraint
+    const detections = await faceapi
+      .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
       .withFaceLandmarks()
-      .withFaceDescriptor();
+      .withFaceDescriptors();
 
-    if (!detection) {
-      // Fallback: Check standard 224 input size
-      const fallbackDetection = await faceapi
-        .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.2 }))
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-
-      if (!fallbackDetection) return null;
-      return Array.from(fallbackDetection.descriptor);
+    if (detections.length > 1) {
+      const err = new Error('MULTIPLE_FACES_DETECTED: Multiple faces found in the frame. Please ensure only you are visible in the camera.');
+      err.code = 'MULTIPLE_FACES_DETECTED';
+      throw err;
     }
 
-    return Array.from(detection.descriptor);
+    if (detections.length === 1) {
+      return Array.from(detections[0].descriptor);
+    }
+
+    // Fallback: Check standard 224 input size
+    const fallbackDetections = await faceapi
+      .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.2 }))
+      .withFaceLandmarks()
+      .withFaceDescriptors();
+
+    if (fallbackDetections.length > 1) {
+      const err = new Error('MULTIPLE_FACES_DETECTED: Multiple faces found in the frame. Please ensure only you are visible in the camera.');
+      err.code = 'MULTIPLE_FACES_DETECTED';
+      throw err;
+    }
+
+    if (fallbackDetections.length === 1) {
+      return Array.from(fallbackDetections[0].descriptor);
+    }
+
+    return null;
   } catch (err) {
+    if (err.code === 'MULTIPLE_FACES_DETECTED') {
+      throw err;
+    }
     console.error('[FACE_SERVICE] Error generating embedding:', err);
     return null;
   }
@@ -102,12 +164,19 @@ export async function detectFaceWithLandmarks(base64Photo) {
     const img = await getCanvasImage(base64Photo);
     if (!img) return null;
 
-    const detection = await faceapi
-      .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
+    const detections = await faceapi
+      .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
       .withFaceLandmarks()
-      .withFaceDescriptor();
+      .withFaceDescriptors();
 
-    if (!detection) return null;
+    if (detections.length > 1) {
+      const err = new Error('MULTIPLE_FACES_DETECTED: Multiple faces found in the frame.');
+      err.code = 'MULTIPLE_FACES_DETECTED';
+      throw err;
+    }
+
+    if (detections.length === 0) return null;
+    const detection = detections[0];
 
     return {
       embedding: Array.from(detection.descriptor),
@@ -116,6 +185,9 @@ export async function detectFaceWithLandmarks(base64Photo) {
       score: detection.detection.score
     };
   } catch (err) {
+    if (err.code === 'MULTIPLE_FACES_DETECTED') {
+      throw err;
+    }
     console.error('[FACE_SERVICE] Error detecting face landmarks:', err);
     return null;
   }
@@ -161,19 +233,52 @@ export function euclideanDistance(a, b) {
 }
 
 /**
- * Compare two faces with strict threshold
+ * Compare two faces with STRICT Euclidean distance threshold (< 0.50)
+ * Standard face-api.js distance < 0.60 is loose; for high-security attendance, STRICT distance < 0.50 is enforced.
  */
-export function compareFaces(embedding1, embedding2, threshold = 0.75) {
-  const similarity = cosineSimilarity(embedding1, embedding2);
-  const distance = euclideanDistance(embedding1, embedding2);
-  const passed = similarity >= threshold;
+export function compareFaces(embedding1, embedding2, maxDistance = STRICT_MAX_DISTANCE) {
+  if (!embedding1 || !embedding2) {
+    return {
+      passed: false,
+      distance: 999,
+      similarity: 0,
+      threshold: maxDistance,
+      matchConfidence: '0%',
+      reason: 'MISSING_EMBEDDING'
+    };
+  }
+
+  const vecA = Array.isArray(embedding1) ? embedding1 : Array.from(embedding1);
+  const vecB = Array.isArray(embedding2) ? embedding2 : Array.from(embedding2);
+
+  if (vecA.length !== vecB.length || vecA.length === 0) {
+    return {
+      passed: false,
+      distance: 999,
+      similarity: 0,
+      threshold: maxDistance,
+      matchConfidence: '0%',
+      reason: 'EMBEDDING_LENGTH_MISMATCH'
+    };
+  }
+
+  const distance = euclideanDistance(vecA, vecB);
+  const similarity = cosineSimilarity(vecA, vecB);
+
+  // STRICT RULE: Must satisfy Euclidean distance < maxDistance (0.50)
+  const effectiveThreshold = typeof maxDistance === 'number' && maxDistance <= 0.6 ? maxDistance : STRICT_MAX_DISTANCE;
+  const passed = distance < effectiveThreshold;
+
+  // Compute confidence percentage
+  const confidencePct = Math.max(0, Math.min(100, Math.round((1 - (distance / 1.0)) * 100)));
 
   return {
-    similarity,
-    distance,
     passed,
-    threshold,
-    matchConfidence: `${Math.round(similarity * 100)}%`
+    distance: Math.round(distance * 10000) / 10000,
+    similarity: Math.round(similarity * 10000) / 10000,
+    threshold: effectiveThreshold,
+    matchConfidence: `${confidencePct}%`,
+    reason: passed ? null : `Face distance ${distance.toFixed(3)} exceeds strict threshold ${effectiveThreshold.toFixed(2)}`
   };
 }
 
