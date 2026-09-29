@@ -1,0 +1,3898 @@
+[
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "POST",
+    "subPath": "/attest",
+    "fullPath": "/advanced-security/attest",
+    "apiPath": "/api/v1/advanced-security/attest"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "POST",
+    "subPath": "/validate-ip",
+    "fullPath": "/advanced-security/validate-ip",
+    "apiPath": "/api/v1/advanced-security/validate-ip"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "POST",
+    "subPath": "/detect-vpn",
+    "fullPath": "/advanced-security/detect-vpn",
+    "apiPath": "/api/v1/advanced-security/detect-vpn"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "GET",
+    "subPath": "/security-score",
+    "fullPath": "/advanced-security/security-score",
+    "apiPath": "/api/v1/advanced-security/security-score"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "GET",
+    "subPath": "/dashboard",
+    "fullPath": "/advanced-security/dashboard",
+    "apiPath": "/api/v1/advanced-security/dashboard"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "GET",
+    "subPath": "/fraud-signals",
+    "fullPath": "/advanced-security/fraud-signals",
+    "apiPath": "/api/v1/advanced-security/fraud-signals"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "PUT",
+    "subPath": "/security-settings",
+    "fullPath": "/advanced-security/security-settings",
+    "apiPath": "/api/v1/advanced-security/security-settings"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "POST",
+    "subPath": "/fraud-signals/:id/review",
+    "fullPath": "/advanced-security/fraud-signals/:id/review",
+    "apiPath": "/api/v1/advanced-security/fraud-signals/:id/review"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "GET",
+    "subPath": "/events",
+    "fullPath": "/advanced-security/events",
+    "apiPath": "/api/v1/advanced-security/events"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "GET",
+    "subPath": "/audit-logs",
+    "fullPath": "/advanced-security/audit-logs",
+    "apiPath": "/api/v1/advanced-security/audit-logs"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "GET",
+    "subPath": "/audit-logs/export",
+    "fullPath": "/advanced-security/audit-logs/export",
+    "apiPath": "/api/v1/advanced-security/audit-logs/export"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "POST",
+    "subPath": "/block-employee",
+    "fullPath": "/advanced-security/block-employee",
+    "apiPath": "/api/v1/advanced-security/block-employee"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "POST",
+    "subPath": "/unblock-employee",
+    "fullPath": "/advanced-security/unblock-employee",
+    "apiPath": "/api/v1/advanced-security/unblock-employee"
+  },
+  {
+    "module": "advanced-security",
+    "file": "advanced-security.routes.js",
+    "method": "GET",
+    "subPath": "/blocked-employees",
+    "fullPath": "/advanced-security/blocked-employees",
+    "apiPath": "/api/v1/advanced-security/blocked-employees"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "POST",
+    "subPath": "/chat",
+    "fullPath": "/ai/chat",
+    "apiPath": "/api/v1/ai/chat"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/usage-stats",
+    "fullPath": "/ai/usage-stats",
+    "apiPath": "/api/v1/ai/usage-stats"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/insights",
+    "fullPath": "/ai/insights",
+    "apiPath": "/api/v1/ai/insights"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/employees/:employeeId/performance",
+    "fullPath": "/ai/employees/:employeeId/performance",
+    "apiPath": "/api/v1/ai/employees/:employeeId/performance"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/employees/:employeeId/improvement-plan",
+    "fullPath": "/ai/employees/:employeeId/improvement-plan",
+    "apiPath": "/api/v1/ai/employees/:employeeId/improvement-plan"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/employees/:employeeId/attrition",
+    "fullPath": "/ai/employees/:employeeId/attrition",
+    "apiPath": "/api/v1/ai/employees/:employeeId/attrition"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/attendance/prediction",
+    "fullPath": "/ai/attendance/prediction",
+    "apiPath": "/api/v1/ai/attendance/prediction"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/analytics/company",
+    "fullPath": "/ai/analytics/company",
+    "apiPath": "/api/v1/ai/analytics/company"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/analytics/platform",
+    "fullPath": "/ai/analytics/platform",
+    "apiPath": "/api/v1/ai/analytics/platform"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/anomalies",
+    "fullPath": "/ai/anomalies",
+    "apiPath": "/api/v1/ai/anomalies"
+  },
+  {
+    "module": "ai",
+    "file": "ai.routes.js",
+    "method": "GET",
+    "subPath": "/recommendations",
+    "fullPath": "/ai/recommendations",
+    "apiPath": "/api/v1/ai/recommendations"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/approvals",
+    "apiPath": "/api/v1/approvals"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "GET",
+    "subPath": "/workflows",
+    "fullPath": "/approvals/workflows",
+    "apiPath": "/api/v1/approvals/workflows"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "POST",
+    "subPath": "/workflows",
+    "fullPath": "/approvals/workflows",
+    "apiPath": "/api/v1/approvals/workflows"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "GET",
+    "subPath": "/workflows/type/:entityType",
+    "fullPath": "/approvals/workflows/type/:entityType",
+    "apiPath": "/api/v1/approvals/workflows/type/:entityType"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "GET",
+    "subPath": "/workflows/:id",
+    "fullPath": "/approvals/workflows/:id",
+    "apiPath": "/api/v1/approvals/workflows/:id"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "PUT",
+    "subPath": "/workflows/:id",
+    "fullPath": "/approvals/workflows/:id",
+    "apiPath": "/api/v1/approvals/workflows/:id"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "DELETE",
+    "subPath": "/workflows/:id",
+    "fullPath": "/approvals/workflows/:id",
+    "apiPath": "/api/v1/approvals/workflows/:id"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "GET",
+    "subPath": "/requests",
+    "fullPath": "/approvals/requests",
+    "apiPath": "/api/v1/approvals/requests"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "POST",
+    "subPath": "/requests",
+    "fullPath": "/approvals/requests",
+    "apiPath": "/api/v1/approvals/requests"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "POST",
+    "subPath": "/requests/:id/action",
+    "fullPath": "/approvals/requests/:id/action",
+    "apiPath": "/api/v1/approvals/requests/:id/action"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "POST",
+    "subPath": "/requests/:id/approve",
+    "fullPath": "/approvals/requests/:id/approve",
+    "apiPath": "/api/v1/approvals/requests/:id/approve"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "POST",
+    "subPath": "/requests/:id/reject",
+    "fullPath": "/approvals/requests/:id/reject",
+    "apiPath": "/api/v1/approvals/requests/:id/reject"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "GET",
+    "subPath": "/pending",
+    "fullPath": "/approvals/pending",
+    "apiPath": "/api/v1/approvals/pending"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "GET",
+    "subPath": "/history",
+    "fullPath": "/approvals/history",
+    "apiPath": "/api/v1/approvals/history"
+  },
+  {
+    "module": "approvals",
+    "file": "approvals.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/approvals/stats",
+    "apiPath": "/api/v1/approvals/stats"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "GET",
+    "subPath": "/my",
+    "fullPath": "/assets/my",
+    "apiPath": "/api/v1/assets/my"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/assets/stats",
+    "apiPath": "/api/v1/assets/stats"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "GET",
+    "subPath": "/export",
+    "fullPath": "/assets/export",
+    "apiPath": "/api/v1/assets/export"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "GET",
+    "subPath": "/categories",
+    "fullPath": "/assets/categories",
+    "apiPath": "/api/v1/assets/categories"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "POST",
+    "subPath": "/categories",
+    "fullPath": "/assets/categories",
+    "apiPath": "/api/v1/assets/categories"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-import",
+    "fullPath": "/assets/bulk-import",
+    "apiPath": "/api/v1/assets/bulk-import"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "GET",
+    "subPath": "/employee/:employeeId",
+    "fullPath": "/assets/employee/:employeeId",
+    "apiPath": "/api/v1/assets/employee/:employeeId"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/assets",
+    "apiPath": "/api/v1/assets"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/assets",
+    "apiPath": "/api/v1/assets"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/assets/:id",
+    "apiPath": "/api/v1/assets/:id"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/assets/:id",
+    "apiPath": "/api/v1/assets/:id"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/assets/:id",
+    "apiPath": "/api/v1/assets/:id"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "POST",
+    "subPath": "/:id/assign",
+    "fullPath": "/assets/:id/assign",
+    "apiPath": "/api/v1/assets/:id/assign"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "POST",
+    "subPath": "/assign",
+    "fullPath": "/assets/assign",
+    "apiPath": "/api/v1/assets/assign"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "POST",
+    "subPath": "/:id/return",
+    "fullPath": "/assets/:id/return",
+    "apiPath": "/api/v1/assets/:id/return"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "POST",
+    "subPath": "/return",
+    "fullPath": "/assets/return",
+    "apiPath": "/api/v1/assets/return"
+  },
+  {
+    "module": "assets",
+    "file": "assets.routes.js",
+    "method": "GET",
+    "subPath": "/:id/history",
+    "fullPath": "/assets/:id/history",
+    "apiPath": "/api/v1/assets/:id/history"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/check-in",
+    "fullPath": "/attendance/check-in",
+    "apiPath": "/api/v1/attendance/check-in"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/check-out",
+    "fullPath": "/attendance/check-out",
+    "apiPath": "/api/v1/attendance/check-out"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/break-start",
+    "fullPath": "/attendance/break-start",
+    "apiPath": "/api/v1/attendance/break-start"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/break-end",
+    "fullPath": "/attendance/break-end",
+    "apiPath": "/api/v1/attendance/break-end"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/card-scan",
+    "fullPath": "/attendance/card-scan",
+    "apiPath": "/api/v1/attendance/card-scan"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/today",
+    "fullPath": "/attendance/today",
+    "apiPath": "/api/v1/attendance/today"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/checkout-status",
+    "fullPath": "/attendance/checkout-status",
+    "apiPath": "/api/v1/attendance/checkout-status"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/break-status",
+    "fullPath": "/attendance/break-status",
+    "apiPath": "/api/v1/attendance/break-status"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/logs",
+    "fullPath": "/attendance/logs",
+    "apiPath": "/api/v1/attendance/logs"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/monthly-summary",
+    "fullPath": "/attendance/monthly-summary",
+    "apiPath": "/api/v1/attendance/monthly-summary"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/exceptions",
+    "fullPath": "/attendance/exceptions",
+    "apiPath": "/api/v1/attendance/exceptions"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/attendance/stats",
+    "apiPath": "/api/v1/attendance/stats"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/overtime-tracker",
+    "fullPath": "/attendance/overtime-tracker",
+    "apiPath": "/api/v1/attendance/overtime-tracker"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/shift-roster",
+    "fullPath": "/attendance/shift-roster",
+    "apiPath": "/api/v1/attendance/shift-roster"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/fraud-signals",
+    "fullPath": "/attendance/fraud-signals",
+    "apiPath": "/api/v1/attendance/fraud-signals"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/qr-scanner",
+    "fullPath": "/attendance/qr-scanner",
+    "apiPath": "/api/v1/attendance/qr-scanner"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/live-location",
+    "fullPath": "/attendance/live-location",
+    "apiPath": "/api/v1/attendance/live-location"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/calendar",
+    "fullPath": "/attendance/calendar",
+    "apiPath": "/api/v1/attendance/calendar"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/employee-summary",
+    "fullPath": "/attendance/employee-summary",
+    "apiPath": "/api/v1/attendance/employee-summary"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "GET",
+    "subPath": "/summary",
+    "fullPath": "/attendance/summary",
+    "apiPath": "/api/v1/attendance/summary"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/manual",
+    "fullPath": "/attendance/manual",
+    "apiPath": "/api/v1/attendance/manual"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-mark",
+    "fullPath": "/attendance/bulk-mark",
+    "apiPath": "/api/v1/attendance/bulk-mark"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "PUT",
+    "subPath": "/policy",
+    "fullPath": "/attendance/policy",
+    "apiPath": "/api/v1/attendance/policy"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/mark-absentees",
+    "fullPath": "/attendance/mark-absentees",
+    "apiPath": "/api/v1/attendance/mark-absentees"
+  },
+  {
+    "module": "attendance",
+    "file": "attendance.routes.js",
+    "method": "POST",
+    "subPath": "/fraud-signals/:id/review",
+    "fullPath": "/attendance/fraud-signals/:id/review",
+    "apiPath": "/api/v1/attendance/fraud-signals/:id/review"
+  },
+  {
+    "module": "attendance-security",
+    "file": "attendance-security.routes.js",
+    "method": "POST",
+    "subPath": "/liveness/detect",
+    "fullPath": "/advanced-security/liveness/detect",
+    "apiPath": "/api/v1/advanced-security/liveness/detect"
+  },
+  {
+    "module": "attendance-security",
+    "file": "attendance-security.routes.js",
+    "method": "POST",
+    "subPath": "/liveness/challenge",
+    "fullPath": "/advanced-security/liveness/challenge",
+    "apiPath": "/api/v1/advanced-security/liveness/challenge"
+  },
+  {
+    "module": "attendance-security",
+    "file": "attendance-security.routes.js",
+    "method": "POST",
+    "subPath": "/liveness/verify",
+    "fullPath": "/advanced-security/liveness/verify",
+    "apiPath": "/api/v1/advanced-security/liveness/verify"
+  },
+  {
+    "module": "attendance-security",
+    "file": "attendance-security.routes.js",
+    "method": "GET",
+    "subPath": "/fraud-signals",
+    "fullPath": "/advanced-security/fraud-signals",
+    "apiPath": "/api/v1/advanced-security/fraud-signals"
+  },
+  {
+    "module": "attendance-security",
+    "file": "attendance-security.routes.js",
+    "method": "POST",
+    "subPath": "/fraud-signals/:id/review",
+    "fullPath": "/advanced-security/fraud-signals/:id/review",
+    "apiPath": "/api/v1/advanced-security/fraud-signals/:id/review"
+  },
+  {
+    "module": "attendance-security",
+    "file": "attendance-security.routes.js",
+    "method": "GET",
+    "subPath": "/fraud-stats",
+    "fullPath": "/advanced-security/fraud-stats",
+    "apiPath": "/api/v1/advanced-security/fraud-stats"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "POST",
+    "subPath": "/login",
+    "fullPath": "/auth/login",
+    "apiPath": "/api/v1/auth/login"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "POST",
+    "subPath": "/refresh",
+    "fullPath": "/auth/refresh",
+    "apiPath": "/api/v1/auth/refresh"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "POST",
+    "subPath": "/forgot-password",
+    "fullPath": "/auth/forgot-password",
+    "apiPath": "/api/v1/auth/forgot-password"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "POST",
+    "subPath": "/reset-password",
+    "fullPath": "/auth/reset-password",
+    "apiPath": "/api/v1/auth/reset-password"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "POST",
+    "subPath": "/verify-otp",
+    "fullPath": "/auth/verify-otp",
+    "apiPath": "/api/v1/auth/verify-otp"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "POST",
+    "subPath": "/send-otp",
+    "fullPath": "/auth/send-otp",
+    "apiPath": "/api/v1/auth/send-otp"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "POST",
+    "subPath": "/logout",
+    "fullPath": "/auth/logout",
+    "apiPath": "/api/v1/auth/logout"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "GET",
+    "subPath": "/me",
+    "fullPath": "/auth/me",
+    "apiPath": "/api/v1/auth/me"
+  },
+  {
+    "module": "auth",
+    "file": "auth.routes.js",
+    "method": "PUT",
+    "subPath": "/change-password",
+    "fullPath": "/auth/change-password",
+    "apiPath": "/api/v1/auth/change-password"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "POST",
+    "subPath": "/verify-qr",
+    "fullPath": "/biometric-cards/verify-qr",
+    "apiPath": "/api/v1/biometric-cards/verify-qr"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/biometric-cards",
+    "apiPath": "/api/v1/biometric-cards"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "GET",
+    "subPath": "/my",
+    "fullPath": "/biometric-cards/my",
+    "apiPath": "/api/v1/biometric-cards/my"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "POST",
+    "subPath": "/generate",
+    "fullPath": "/biometric-cards/generate",
+    "apiPath": "/api/v1/biometric-cards/generate"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "POST",
+    "subPath": "/assign",
+    "fullPath": "/biometric-cards/assign",
+    "apiPath": "/api/v1/biometric-cards/assign"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/biometric-cards/:id",
+    "apiPath": "/api/v1/biometric-cards/:id"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "POST",
+    "subPath": "/:id/deactivate",
+    "fullPath": "/biometric-cards/:id/deactivate",
+    "apiPath": "/api/v1/biometric-cards/:id/deactivate"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "POST",
+    "subPath": "/:id/regenerate",
+    "fullPath": "/biometric-cards/:id/regenerate",
+    "apiPath": "/api/v1/biometric-cards/:id/regenerate"
+  },
+  {
+    "module": "biometric-cards",
+    "file": "biometric-cards.routes.js",
+    "method": "GET",
+    "subPath": "/:id/download",
+    "fullPath": "/biometric-cards/:id/download",
+    "apiPath": "/api/v1/biometric-cards/:id/download"
+  },
+  {
+    "module": "biometric-devices",
+    "file": "biometric-devices.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/biometric-devices",
+    "apiPath": "/api/v1/biometric-devices"
+  },
+  {
+    "module": "biometric-devices",
+    "file": "biometric-devices.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/biometric-devices",
+    "apiPath": "/api/v1/biometric-devices"
+  },
+  {
+    "module": "biometric-devices",
+    "file": "biometric-devices.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/biometric-devices/:id",
+    "apiPath": "/api/v1/biometric-devices/:id"
+  },
+  {
+    "module": "biometric-devices",
+    "file": "biometric-devices.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/biometric-devices/:id",
+    "apiPath": "/api/v1/biometric-devices/:id"
+  },
+  {
+    "module": "biometric-devices",
+    "file": "biometric-devices.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/biometric-devices/:id",
+    "apiPath": "/api/v1/biometric-devices/:id"
+  },
+  {
+    "module": "biometric-devices",
+    "file": "biometric-devices.routes.js",
+    "method": "POST",
+    "subPath": "/:id/regenerate-key",
+    "fullPath": "/biometric-devices/:id/regenerate-key",
+    "apiPath": "/api/v1/biometric-devices/:id/regenerate-key"
+  },
+  {
+    "module": "biometric-devices",
+    "file": "biometric-devices.routes.js",
+    "method": "GET",
+    "subPath": "/:id/status",
+    "fullPath": "/biometric-devices/:id/status",
+    "apiPath": "/api/v1/biometric-devices/:id/status"
+  },
+  {
+    "module": "branches",
+    "file": "branches.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/branches/stats",
+    "apiPath": "/api/v1/branches/stats"
+  },
+  {
+    "module": "branches",
+    "file": "branches.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-import",
+    "fullPath": "/branches/bulk-import",
+    "apiPath": "/api/v1/branches/bulk-import"
+  },
+  {
+    "module": "branches",
+    "file": "branches.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/branches",
+    "apiPath": "/api/v1/branches"
+  },
+  {
+    "module": "branches",
+    "file": "branches.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/branches/:id",
+    "apiPath": "/api/v1/branches/:id"
+  },
+  {
+    "module": "branches",
+    "file": "branches.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/branches",
+    "apiPath": "/api/v1/branches"
+  },
+  {
+    "module": "branches",
+    "file": "branches.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/branches/:id",
+    "apiPath": "/api/v1/branches/:id"
+  },
+  {
+    "module": "branches",
+    "file": "branches.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/branches/:id",
+    "apiPath": "/api/v1/branches/:id"
+  },
+  {
+    "module": "client-portal",
+    "file": "client-portal.routes.js",
+    "method": "GET",
+    "subPath": "/dashboard",
+    "fullPath": "/client-portal/dashboard",
+    "apiPath": "/api/v1/client-portal/dashboard"
+  },
+  {
+    "module": "client-portal",
+    "file": "client-portal.routes.js",
+    "method": "GET",
+    "subPath": "/projects",
+    "fullPath": "/client-portal/projects",
+    "apiPath": "/api/v1/client-portal/projects"
+  },
+  {
+    "module": "client-portal",
+    "file": "client-portal.routes.js",
+    "method": "GET",
+    "subPath": "/projects/:id",
+    "fullPath": "/client-portal/projects/:id",
+    "apiPath": "/api/v1/client-portal/projects/:id"
+  },
+  {
+    "module": "client-portal",
+    "file": "client-portal.routes.js",
+    "method": "POST",
+    "subPath": "/requirements",
+    "fullPath": "/client-portal/requirements",
+    "apiPath": "/api/v1/client-portal/requirements"
+  },
+  {
+    "module": "client-portal",
+    "file": "client-portal.routes.js",
+    "method": "POST",
+    "subPath": "/comments",
+    "fullPath": "/client-portal/comments",
+    "apiPath": "/api/v1/client-portal/comments"
+  },
+  {
+    "module": "client-portal",
+    "file": "client-portal.routes.js",
+    "method": "GET",
+    "subPath": "/invoices",
+    "fullPath": "/client-portal/invoices",
+    "apiPath": "/api/v1/client-portal/invoices"
+  },
+  {
+    "module": "client-portal",
+    "file": "client-portal.routes.js",
+    "method": "GET",
+    "subPath": "/payments",
+    "fullPath": "/client-portal/payments",
+    "apiPath": "/api/v1/client-portal/payments"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "POST",
+    "subPath": "/send-otp",
+    "fullPath": "/companies/send-otp",
+    "apiPath": "/api/v1/companies/send-otp"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "POST",
+    "subPath": "/verify-otp",
+    "fullPath": "/companies/verify-otp",
+    "apiPath": "/api/v1/companies/verify-otp"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "POST",
+    "subPath": "/create",
+    "fullPath": "/companies/create",
+    "apiPath": "/api/v1/companies/create"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/settings/schema",
+    "fullPath": "/companies/settings/schema",
+    "apiPath": "/api/v1/companies/settings/schema"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/companies",
+    "apiPath": "/api/v1/companies"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/companies/stats",
+    "apiPath": "/api/v1/companies/stats"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/analytics",
+    "fullPath": "/companies/analytics",
+    "apiPath": "/api/v1/companies/analytics"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/payroll-config",
+    "fullPath": "/companies/payroll-config",
+    "apiPath": "/api/v1/companies/payroll-config"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/payroll-config",
+    "fullPath": "/companies/payroll-config",
+    "apiPath": "/api/v1/companies/payroll-config"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/payroll-config",
+    "fullPath": "/companies/:id/payroll-config",
+    "apiPath": "/api/v1/companies/:id/payroll-config"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/payroll-config",
+    "fullPath": "/companies/:id/payroll-config",
+    "apiPath": "/api/v1/companies/:id/payroll-config"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/settings/attendance",
+    "fullPath": "/companies/:id/settings/attendance",
+    "apiPath": "/api/v1/companies/:id/settings/attendance"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/settings/attendance",
+    "fullPath": "/companies/:id/settings/attendance",
+    "apiPath": "/api/v1/companies/:id/settings/attendance"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/settings/security",
+    "fullPath": "/companies/:id/settings/security",
+    "apiPath": "/api/v1/companies/:id/settings/security"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/settings/security",
+    "fullPath": "/companies/:id/settings/security",
+    "apiPath": "/api/v1/companies/:id/settings/security"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/settings/leave",
+    "fullPath": "/companies/:id/settings/leave",
+    "apiPath": "/api/v1/companies/:id/settings/leave"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/settings/leave",
+    "fullPath": "/companies/:id/settings/leave",
+    "apiPath": "/api/v1/companies/:id/settings/leave"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/settings/payroll",
+    "fullPath": "/companies/:id/settings/payroll",
+    "apiPath": "/api/v1/companies/:id/settings/payroll"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/settings/payroll",
+    "fullPath": "/companies/:id/settings/payroll",
+    "apiPath": "/api/v1/companies/:id/settings/payroll"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/settings/notifications",
+    "fullPath": "/companies/:id/settings/notifications",
+    "apiPath": "/api/v1/companies/:id/settings/notifications"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/settings/notifications",
+    "fullPath": "/companies/:id/settings/notifications",
+    "apiPath": "/api/v1/companies/:id/settings/notifications"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/settings/general",
+    "fullPath": "/companies/:id/settings/general",
+    "apiPath": "/api/v1/companies/:id/settings/general"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/settings/general",
+    "fullPath": "/companies/:id/settings/general",
+    "apiPath": "/api/v1/companies/:id/settings/general"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "POST",
+    "subPath": "/:id/settings/reset",
+    "fullPath": "/companies/:id/settings/reset",
+    "apiPath": "/api/v1/companies/:id/settings/reset"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/settings",
+    "fullPath": "/companies/:id/settings",
+    "apiPath": "/api/v1/companies/:id/settings"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/settings",
+    "fullPath": "/companies/:id/settings",
+    "apiPath": "/api/v1/companies/:id/settings"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/dashboard",
+    "fullPath": "/companies/:id/dashboard",
+    "apiPath": "/api/v1/companies/:id/dashboard"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/stats",
+    "fullPath": "/companies/:id/stats",
+    "apiPath": "/api/v1/companies/:id/stats"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id/analytics",
+    "fullPath": "/companies/:id/analytics",
+    "apiPath": "/api/v1/companies/:id/analytics"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "POST",
+    "subPath": "/:id/activate",
+    "fullPath": "/companies/:id/activate",
+    "apiPath": "/api/v1/companies/:id/activate"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "POST",
+    "subPath": "/:id/deactivate",
+    "fullPath": "/companies/:id/deactivate",
+    "apiPath": "/api/v1/companies/:id/deactivate"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "POST",
+    "subPath": "/:id/suspend",
+    "fullPath": "/companies/:id/suspend",
+    "apiPath": "/api/v1/companies/:id/suspend"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/companies/:id",
+    "apiPath": "/api/v1/companies/:id"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/companies/:id",
+    "apiPath": "/api/v1/companies/:id"
+  },
+  {
+    "module": "companies",
+    "file": "companies.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/companies/:id",
+    "apiPath": "/api/v1/companies/:id"
+  },
+  {
+    "module": "coupons",
+    "file": "coupons.routes.js",
+    "method": "POST",
+    "subPath": "/validate",
+    "fullPath": "/coupons/validate",
+    "apiPath": "/api/v1/coupons/validate"
+  },
+  {
+    "module": "coupons",
+    "file": "coupons.routes.js",
+    "method": "POST",
+    "subPath": "/apply",
+    "fullPath": "/coupons/apply",
+    "apiPath": "/api/v1/coupons/apply"
+  },
+  {
+    "module": "coupons",
+    "file": "coupons.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/coupons",
+    "apiPath": "/api/v1/coupons"
+  },
+  {
+    "module": "coupons",
+    "file": "coupons.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/coupons",
+    "apiPath": "/api/v1/coupons"
+  },
+  {
+    "module": "coupons",
+    "file": "coupons.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/coupons/stats",
+    "apiPath": "/api/v1/coupons/stats"
+  },
+  {
+    "module": "coupons",
+    "file": "coupons.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/coupons/:id",
+    "apiPath": "/api/v1/coupons/:id"
+  },
+  {
+    "module": "coupons",
+    "file": "coupons.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/coupons/:id",
+    "apiPath": "/api/v1/coupons/:id"
+  },
+  {
+    "module": "departments",
+    "file": "departments.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/departments/stats",
+    "apiPath": "/api/v1/departments/stats"
+  },
+  {
+    "module": "departments",
+    "file": "departments.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-import",
+    "fullPath": "/departments/bulk-import",
+    "apiPath": "/api/v1/departments/bulk-import"
+  },
+  {
+    "module": "departments",
+    "file": "departments.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/departments",
+    "apiPath": "/api/v1/departments"
+  },
+  {
+    "module": "departments",
+    "file": "departments.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/departments/:id",
+    "apiPath": "/api/v1/departments/:id"
+  },
+  {
+    "module": "departments",
+    "file": "departments.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/departments",
+    "apiPath": "/api/v1/departments"
+  },
+  {
+    "module": "departments",
+    "file": "departments.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/departments/:id",
+    "apiPath": "/api/v1/departments/:id"
+  },
+  {
+    "module": "departments",
+    "file": "departments.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/departments/:id",
+    "apiPath": "/api/v1/departments/:id"
+  },
+  {
+    "module": "designations",
+    "file": "designations.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/designations/stats",
+    "apiPath": "/api/v1/designations/stats"
+  },
+  {
+    "module": "designations",
+    "file": "designations.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-import",
+    "fullPath": "/designations/bulk-import",
+    "apiPath": "/api/v1/designations/bulk-import"
+  },
+  {
+    "module": "designations",
+    "file": "designations.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/designations",
+    "apiPath": "/api/v1/designations"
+  },
+  {
+    "module": "designations",
+    "file": "designations.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/designations/:id",
+    "apiPath": "/api/v1/designations/:id"
+  },
+  {
+    "module": "designations",
+    "file": "designations.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/designations",
+    "apiPath": "/api/v1/designations"
+  },
+  {
+    "module": "designations",
+    "file": "designations.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/designations/:id",
+    "apiPath": "/api/v1/designations/:id"
+  },
+  {
+    "module": "designations",
+    "file": "designations.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/designations/:id",
+    "apiPath": "/api/v1/designations/:id"
+  },
+  {
+    "module": "device-punches",
+    "file": "device-punches.routes.js",
+    "method": "POST",
+    "subPath": "/push",
+    "fullPath": "/device-punches/push",
+    "apiPath": "/api/v1/device-punches/push"
+  },
+  {
+    "module": "device-punches",
+    "file": "device-punches.routes.js",
+    "method": "GET",
+    "subPath": "/punches",
+    "fullPath": "/device-punches/punches",
+    "apiPath": "/api/v1/device-punches/punches"
+  },
+  {
+    "module": "device-punches",
+    "file": "device-punches.routes.js",
+    "method": "POST",
+    "subPath": "/punches/:id/reprocess",
+    "fullPath": "/device-punches/punches/:id/reprocess",
+    "apiPath": "/api/v1/device-punches/punches/:id/reprocess"
+  },
+  {
+    "module": "device-punches",
+    "file": "device-punches.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/device-punches/stats",
+    "apiPath": "/api/v1/device-punches/stats"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "GET",
+    "subPath": "/aadhaar/mode",
+    "fullPath": "/documents/aadhaar/mode",
+    "apiPath": "/api/v1/documents/aadhaar/mode"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "POST",
+    "subPath": "/aadhaar/send-otp",
+    "fullPath": "/documents/aadhaar/send-otp",
+    "apiPath": "/api/v1/documents/aadhaar/send-otp"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "POST",
+    "subPath": "/aadhaar/verify-otp",
+    "fullPath": "/documents/aadhaar/verify-otp",
+    "apiPath": "/api/v1/documents/aadhaar/verify-otp"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "POST",
+    "subPath": "/aadhaar/upload",
+    "fullPath": "/documents/aadhaar/upload",
+    "apiPath": "/api/v1/documents/aadhaar/upload"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "GET",
+    "subPath": "/my",
+    "fullPath": "/documents/my",
+    "apiPath": "/api/v1/documents/my"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "POST",
+    "subPath": "/upload",
+    "fullPath": "/documents/upload",
+    "apiPath": "/api/v1/documents/upload"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/documents/stats",
+    "apiPath": "/api/v1/documents/stats"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "GET",
+    "subPath": "/types",
+    "fullPath": "/documents/types",
+    "apiPath": "/api/v1/documents/types"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "POST",
+    "subPath": "/types",
+    "fullPath": "/documents/types",
+    "apiPath": "/api/v1/documents/types"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "GET",
+    "subPath": "/employee/:employeeId",
+    "fullPath": "/documents/employee/:employeeId",
+    "apiPath": "/api/v1/documents/employee/:employeeId"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/documents",
+    "apiPath": "/api/v1/documents"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "GET",
+    "subPath": "/:id/download",
+    "fullPath": "/documents/:id/download",
+    "apiPath": "/api/v1/documents/:id/download"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/documents/:id",
+    "apiPath": "/api/v1/documents/:id"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "POST",
+    "subPath": "/:id/verify",
+    "fullPath": "/documents/:id/verify",
+    "apiPath": "/api/v1/documents/:id/verify"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/verify",
+    "fullPath": "/documents/:id/verify",
+    "apiPath": "/api/v1/documents/:id/verify"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "POST",
+    "subPath": "/:id/reject",
+    "fullPath": "/documents/:id/reject",
+    "apiPath": "/api/v1/documents/:id/reject"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/reject",
+    "fullPath": "/documents/:id/reject",
+    "apiPath": "/api/v1/documents/:id/reject"
+  },
+  {
+    "module": "documents",
+    "file": "documents.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/documents/:id",
+    "apiPath": "/api/v1/documents/:id"
+  },
+  {
+    "module": "emergency-attendance",
+    "file": "emergency-attendance.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/emergency-attendance/stats",
+    "apiPath": "/api/v1/emergency-attendance/stats"
+  },
+  {
+    "module": "emergency-attendance",
+    "file": "emergency-attendance.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-approve",
+    "fullPath": "/emergency-attendance/bulk-approve",
+    "apiPath": "/api/v1/emergency-attendance/bulk-approve"
+  },
+  {
+    "module": "emergency-attendance",
+    "file": "emergency-attendance.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/emergency-attendance",
+    "apiPath": "/api/v1/emergency-attendance"
+  },
+  {
+    "module": "emergency-attendance",
+    "file": "emergency-attendance.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/emergency-attendance",
+    "apiPath": "/api/v1/emergency-attendance"
+  },
+  {
+    "module": "emergency-attendance",
+    "file": "emergency-attendance.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/emergency-attendance/:id",
+    "apiPath": "/api/v1/emergency-attendance/:id"
+  },
+  {
+    "module": "emergency-attendance",
+    "file": "emergency-attendance.routes.js",
+    "method": "POST",
+    "subPath": "/:id/approve",
+    "fullPath": "/emergency-attendance/:id/approve",
+    "apiPath": "/api/v1/emergency-attendance/:id/approve"
+  },
+  {
+    "module": "emergency-attendance",
+    "file": "emergency-attendance.routes.js",
+    "method": "POST",
+    "subPath": "/:id/reject",
+    "fullPath": "/emergency-attendance/:id/reject",
+    "apiPath": "/api/v1/emergency-attendance/:id/reject"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/me/photo",
+    "fullPath": "/employees/me/photo",
+    "apiPath": "/api/v1/employees/me/photo"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "POST",
+    "subPath": "/me/photo",
+    "fullPath": "/employees/me/photo",
+    "apiPath": "/api/v1/employees/me/photo"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "DELETE",
+    "subPath": "/me/photo",
+    "fullPath": "/employees/me/photo",
+    "apiPath": "/api/v1/employees/me/photo"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "PUT",
+    "subPath": "/me/profile",
+    "fullPath": "/employees/me/profile",
+    "apiPath": "/api/v1/employees/me/profile"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "POST",
+    "subPath": "/send-otp",
+    "fullPath": "/employees/send-otp",
+    "apiPath": "/api/v1/employees/send-otp"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "POST",
+    "subPath": "/verify-otp",
+    "fullPath": "/employees/verify-otp",
+    "apiPath": "/api/v1/employees/verify-otp"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "POST",
+    "subPath": "/create",
+    "fullPath": "/employees/create",
+    "apiPath": "/api/v1/employees/create"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/managers",
+    "fullPath": "/employees/managers",
+    "apiPath": "/api/v1/employees/managers"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-import",
+    "fullPath": "/employees/bulk-import",
+    "apiPath": "/api/v1/employees/bulk-import"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/export",
+    "fullPath": "/employees/export",
+    "apiPath": "/api/v1/employees/export"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/employees/stats",
+    "apiPath": "/api/v1/employees/stats"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/analytics",
+    "fullPath": "/employees/analytics",
+    "apiPath": "/api/v1/employees/analytics"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/employees",
+    "apiPath": "/api/v1/employees"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/employees/:id",
+    "apiPath": "/api/v1/employees/:id"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/:id/effective-shift",
+    "fullPath": "/employees/:id/effective-shift",
+    "apiPath": "/api/v1/employees/:id/effective-shift"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/employees/:id",
+    "apiPath": "/api/v1/employees/:id"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "PATCH",
+    "subPath": "/:id/role",
+    "fullPath": "/employees/:id/role",
+    "apiPath": "/api/v1/employees/:id/role"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/employees/:id",
+    "apiPath": "/api/v1/employees/:id"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "GET",
+    "subPath": "/:id/dashboard",
+    "fullPath": "/employees/:id/dashboard",
+    "apiPath": "/api/v1/employees/:id/dashboard"
+  },
+  {
+    "module": "employees",
+    "file": "employees.routes.js",
+    "method": "POST",
+    "subPath": "/:id/face",
+    "fullPath": "/employees/:id/face",
+    "apiPath": "/api/v1/employees/:id/face"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "POST",
+    "subPath": "/register",
+    "fullPath": "/face-registration/register",
+    "apiPath": "/api/v1/face-registration/register"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "GET",
+    "subPath": "/my-status",
+    "fullPath": "/face-registration/my-status",
+    "apiPath": "/api/v1/face-registration/my-status"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "GET",
+    "subPath": "/pending",
+    "fullPath": "/face-registration/pending",
+    "apiPath": "/api/v1/face-registration/pending"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "POST",
+    "subPath": "/:id/approve",
+    "fullPath": "/face-registration/:id/approve",
+    "apiPath": "/api/v1/face-registration/:id/approve"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "POST",
+    "subPath": "/:id/reject",
+    "fullPath": "/face-registration/:id/reject",
+    "apiPath": "/api/v1/face-registration/:id/reject"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "PUT",
+    "subPath": "/update",
+    "fullPath": "/face-registration/update",
+    "apiPath": "/api/v1/face-registration/update"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "DELETE",
+    "subPath": "/delete",
+    "fullPath": "/face-registration/delete",
+    "apiPath": "/api/v1/face-registration/delete"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "POST",
+    "subPath": "/verify",
+    "fullPath": "/face-registration/verify",
+    "apiPath": "/api/v1/face-registration/verify"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "GET",
+    "subPath": "/status/:employeeId",
+    "fullPath": "/face-registration/status/:employeeId",
+    "apiPath": "/api/v1/face-registration/status/:employeeId"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "GET",
+    "subPath": "/with-face",
+    "fullPath": "/face-registration/with-face",
+    "apiPath": "/api/v1/face-registration/with-face"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "GET",
+    "subPath": "/without-face",
+    "fullPath": "/face-registration/without-face",
+    "apiPath": "/api/v1/face-registration/without-face"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-register",
+    "fullPath": "/face-registration/bulk-register",
+    "apiPath": "/api/v1/face-registration/bulk-register"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/face-registration/stats",
+    "apiPath": "/api/v1/face-registration/stats"
+  },
+  {
+    "module": "face-registration",
+    "file": "face-registration.routes.js",
+    "method": "GET",
+    "subPath": "/export",
+    "fullPath": "/face-registration/export",
+    "apiPath": "/api/v1/face-registration/export"
+  },
+  {
+    "module": "finger-attendance",
+    "file": "finger-attendance.routes.js",
+    "method": "POST",
+    "subPath": "/punch",
+    "fullPath": "/finger-attendance/punch",
+    "apiPath": "/api/v1/finger-attendance/punch"
+  },
+  {
+    "module": "finger-attendance",
+    "file": "finger-attendance.routes.js",
+    "method": "POST",
+    "subPath": "/enroll",
+    "fullPath": "/finger-attendance/enroll",
+    "apiPath": "/api/v1/finger-attendance/enroll"
+  },
+  {
+    "module": "finger-attendance",
+    "file": "finger-attendance.routes.js",
+    "method": "DELETE",
+    "subPath": "/enroll/:employeeId/:fingerIndex",
+    "fullPath": "/finger-attendance/enroll/:employeeId/:fingerIndex",
+    "apiPath": "/api/v1/finger-attendance/enroll/:employeeId/:fingerIndex"
+  },
+  {
+    "module": "finger-attendance",
+    "file": "finger-attendance.routes.js",
+    "method": "GET",
+    "subPath": "/enroll/:employeeId",
+    "fullPath": "/finger-attendance/enroll/:employeeId",
+    "apiPath": "/api/v1/finger-attendance/enroll/:employeeId"
+  },
+  {
+    "module": "finger-attendance",
+    "file": "finger-attendance.routes.js",
+    "method": "POST",
+    "subPath": "/punch/:id/process",
+    "fullPath": "/finger-attendance/punch/:id/process",
+    "apiPath": "/api/v1/finger-attendance/punch/:id/process"
+  },
+  {
+    "module": "finger-attendance",
+    "file": "finger-attendance.routes.js",
+    "method": "POST",
+    "subPath": "/sync/:deviceId",
+    "fullPath": "/finger-attendance/sync/:deviceId",
+    "apiPath": "/api/v1/finger-attendance/sync/:deviceId"
+  },
+  {
+    "module": "finger-attendance",
+    "file": "finger-attendance.routes.js",
+    "method": "GET",
+    "subPath": "/punches",
+    "fullPath": "/finger-attendance/punches",
+    "apiPath": "/api/v1/finger-attendance/punches"
+  },
+  {
+    "module": "finger-attendance",
+    "file": "finger-attendance.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/finger-attendance/stats",
+    "apiPath": "/api/v1/finger-attendance/stats"
+  },
+  {
+    "module": "health",
+    "file": "health.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/health",
+    "apiPath": "/api/v1/health"
+  },
+  {
+    "module": "health",
+    "file": "health.routes.js",
+    "method": "GET",
+    "subPath": "/db",
+    "fullPath": "/health/db",
+    "apiPath": "/api/v1/health/db"
+  },
+  {
+    "module": "health",
+    "file": "health.routes.js",
+    "method": "GET",
+    "subPath": "/redis",
+    "fullPath": "/health/redis",
+    "apiPath": "/api/v1/health/redis"
+  },
+  {
+    "module": "health",
+    "file": "health.routes.js",
+    "method": "GET",
+    "subPath": "/queues",
+    "fullPath": "/health/queues",
+    "apiPath": "/api/v1/health/queues"
+  },
+  {
+    "module": "health",
+    "file": "health.routes.js",
+    "method": "GET",
+    "subPath": "/storage",
+    "fullPath": "/health/storage",
+    "apiPath": "/api/v1/health/storage"
+  },
+  {
+    "module": "health",
+    "file": "health.routes.js",
+    "method": "GET",
+    "subPath": "/email",
+    "fullPath": "/health/email",
+    "apiPath": "/api/v1/health/email"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "GET",
+    "subPath": "/calendar",
+    "fullPath": "/holiday-calendar/calendar",
+    "apiPath": "/api/v1/holiday-calendar/calendar"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "GET",
+    "subPath": "/calendar-view",
+    "fullPath": "/holiday-calendar/calendar-view",
+    "apiPath": "/api/v1/holiday-calendar/calendar-view"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "GET",
+    "subPath": "/calendars",
+    "fullPath": "/holiday-calendar/calendars",
+    "apiPath": "/api/v1/holiday-calendar/calendars"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "POST",
+    "subPath": "/calendars",
+    "fullPath": "/holiday-calendar/calendars",
+    "apiPath": "/api/v1/holiday-calendar/calendars"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "PUT",
+    "subPath": "/calendars/:id",
+    "fullPath": "/holiday-calendar/calendars/:id",
+    "apiPath": "/api/v1/holiday-calendar/calendars/:id"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "DELETE",
+    "subPath": "/calendars/:id",
+    "fullPath": "/holiday-calendar/calendars/:id",
+    "apiPath": "/api/v1/holiday-calendar/calendars/:id"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/holiday-calendar",
+    "apiPath": "/api/v1/holiday-calendar"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/holiday-calendar",
+    "apiPath": "/api/v1/holiday-calendar"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "GET",
+    "subPath": "/holidays",
+    "fullPath": "/holiday-calendar/holidays",
+    "apiPath": "/api/v1/holiday-calendar/holidays"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "POST",
+    "subPath": "/holidays",
+    "fullPath": "/holiday-calendar/holidays",
+    "apiPath": "/api/v1/holiday-calendar/holidays"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "PUT",
+    "subPath": "/holidays/:id",
+    "fullPath": "/holiday-calendar/holidays/:id",
+    "apiPath": "/api/v1/holiday-calendar/holidays/:id"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "DELETE",
+    "subPath": "/holidays/:id",
+    "fullPath": "/holiday-calendar/holidays/:id",
+    "apiPath": "/api/v1/holiday-calendar/holidays/:id"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/holiday-calendar/:id",
+    "apiPath": "/api/v1/holiday-calendar/:id"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/holiday-calendar/:id",
+    "apiPath": "/api/v1/holiday-calendar/:id"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-import",
+    "fullPath": "/holiday-calendar/bulk-import",
+    "apiPath": "/api/v1/holiday-calendar/bulk-import"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "POST",
+    "subPath": "/holidays/bulk-import",
+    "fullPath": "/holiday-calendar/holidays/bulk-import",
+    "apiPath": "/api/v1/holiday-calendar/holidays/bulk-import"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "POST",
+    "subPath": "/assign",
+    "fullPath": "/holiday-calendar/assign",
+    "apiPath": "/api/v1/holiday-calendar/assign"
+  },
+  {
+    "module": "holidayCalendar",
+    "file": "holidayCalendar.routes.js",
+    "method": "POST",
+    "subPath": "/holidays/assign",
+    "fullPath": "/holiday-calendar/holidays/assign",
+    "apiPath": "/api/v1/holiday-calendar/holidays/assign"
+  },
+  {
+    "module": "invoices",
+    "file": "invoices.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/invoices",
+    "apiPath": "/api/v1/invoices"
+  },
+  {
+    "module": "invoices",
+    "file": "invoices.routes.js",
+    "method": "GET",
+    "subPath": "/:id/download",
+    "fullPath": "/invoices/:id/download",
+    "apiPath": "/api/v1/invoices/:id/download"
+  },
+  {
+    "module": "invoices",
+    "file": "invoices.routes.js",
+    "method": "GET",
+    "subPath": "/:id/pdf",
+    "fullPath": "/invoices/:id/pdf",
+    "apiPath": "/api/v1/invoices/:id/pdf"
+  },
+  {
+    "module": "invoices",
+    "file": "invoices.routes.js",
+    "method": "POST",
+    "subPath": "/:id/send-email",
+    "fullPath": "/invoices/:id/send-email",
+    "apiPath": "/api/v1/invoices/:id/send-email"
+  },
+  {
+    "module": "invoices",
+    "file": "invoices.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/invoices/:id",
+    "apiPath": "/api/v1/invoices/:id"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/types",
+    "fullPath": "/leave/types",
+    "apiPath": "/api/v1/leave/types"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/types",
+    "fullPath": "/leave/types",
+    "apiPath": "/api/v1/leave/types"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "PUT",
+    "subPath": "/types/:id",
+    "fullPath": "/leave/types/:id",
+    "apiPath": "/api/v1/leave/types/:id"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "DELETE",
+    "subPath": "/types/:id",
+    "fullPath": "/leave/types/:id",
+    "apiPath": "/api/v1/leave/types/:id"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/balances",
+    "fullPath": "/leave/balances",
+    "apiPath": "/api/v1/leave/balances"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/balances/:employeeId",
+    "fullPath": "/leave/balances/:employeeId",
+    "apiPath": "/api/v1/leave/balances/:employeeId"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-allocate",
+    "fullPath": "/leave/bulk-allocate",
+    "apiPath": "/api/v1/leave/bulk-allocate"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/balances/bulk-allocate",
+    "fullPath": "/leave/balances/bulk-allocate",
+    "apiPath": "/api/v1/leave/balances/bulk-allocate"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/carry-forward",
+    "fullPath": "/leave/carry-forward",
+    "apiPath": "/api/v1/leave/carry-forward"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/balance-report",
+    "fullPath": "/leave/balance-report",
+    "apiPath": "/api/v1/leave/balance-report"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/apply",
+    "fullPath": "/leave/apply",
+    "apiPath": "/api/v1/leave/apply"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/requests",
+    "fullPath": "/leave/requests",
+    "apiPath": "/api/v1/leave/requests"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/requests/my",
+    "fullPath": "/leave/requests/my",
+    "apiPath": "/api/v1/leave/requests/my"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/requests",
+    "fullPath": "/leave/requests",
+    "apiPath": "/api/v1/leave/requests"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/requests/:id/approve",
+    "fullPath": "/leave/requests/:id/approve",
+    "apiPath": "/api/v1/leave/requests/:id/approve"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "PUT",
+    "subPath": "/requests/:id/approve",
+    "fullPath": "/leave/requests/:id/approve",
+    "apiPath": "/api/v1/leave/requests/:id/approve"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/requests/:id/reject",
+    "fullPath": "/leave/requests/:id/reject",
+    "apiPath": "/api/v1/leave/requests/:id/reject"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "PUT",
+    "subPath": "/requests/:id/reject",
+    "fullPath": "/leave/requests/:id/reject",
+    "apiPath": "/api/v1/leave/requests/:id/reject"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "POST",
+    "subPath": "/requests/bulk-approve",
+    "fullPath": "/leave/requests/bulk-approve",
+    "apiPath": "/api/v1/leave/requests/bulk-approve"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "PUT",
+    "subPath": "/requests/bulk-approve",
+    "fullPath": "/leave/requests/bulk-approve",
+    "apiPath": "/api/v1/leave/requests/bulk-approve"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/calendar",
+    "fullPath": "/leave/calendar",
+    "apiPath": "/api/v1/leave/calendar"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/leave/stats",
+    "apiPath": "/api/v1/leave/stats"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/history",
+    "fullPath": "/leave/history",
+    "apiPath": "/api/v1/leave/history"
+  },
+  {
+    "module": "leave",
+    "file": "leave.routes.js",
+    "method": "GET",
+    "subPath": "/history/:employeeId",
+    "fullPath": "/leave/history/:employeeId",
+    "apiPath": "/api/v1/leave/history/:employeeId"
+  },
+  {
+    "module": "notifications",
+    "file": "notifications.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/notifications",
+    "apiPath": "/api/v1/notifications"
+  },
+  {
+    "module": "notifications",
+    "file": "notifications.routes.js",
+    "method": "GET",
+    "subPath": "/unread-count",
+    "fullPath": "/notifications/unread-count",
+    "apiPath": "/api/v1/notifications/unread-count"
+  },
+  {
+    "module": "notifications",
+    "file": "notifications.routes.js",
+    "method": "PUT",
+    "subPath": "/read-all",
+    "fullPath": "/notifications/read-all",
+    "apiPath": "/api/v1/notifications/read-all"
+  },
+  {
+    "module": "notifications",
+    "file": "notifications.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/read",
+    "fullPath": "/notifications/:id/read",
+    "apiPath": "/api/v1/notifications/:id/read"
+  },
+  {
+    "module": "notifications",
+    "file": "notifications.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/notifications/:id",
+    "apiPath": "/api/v1/notifications/:id"
+  },
+  {
+    "module": "notifications",
+    "file": "notifications.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/notifications",
+    "apiPath": "/api/v1/notifications"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "GET",
+    "subPath": "/rules",
+    "fullPath": "/overtime/rules",
+    "apiPath": "/api/v1/overtime/rules"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "POST",
+    "subPath": "/rules",
+    "fullPath": "/overtime/rules",
+    "apiPath": "/api/v1/overtime/rules"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "PUT",
+    "subPath": "/rules/:id",
+    "fullPath": "/overtime/rules/:id",
+    "apiPath": "/api/v1/overtime/rules/:id"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "DELETE",
+    "subPath": "/rules/:id",
+    "fullPath": "/overtime/rules/:id",
+    "apiPath": "/api/v1/overtime/rules/:id"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "POST",
+    "subPath": "/calculate",
+    "fullPath": "/overtime/calculate",
+    "apiPath": "/api/v1/overtime/calculate"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "GET",
+    "subPath": "/my",
+    "fullPath": "/overtime/my",
+    "apiPath": "/api/v1/overtime/my"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "GET",
+    "subPath": "/my-records",
+    "fullPath": "/overtime/my-records",
+    "apiPath": "/api/v1/overtime/my-records"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "GET",
+    "subPath": "/records",
+    "fullPath": "/overtime/records",
+    "apiPath": "/api/v1/overtime/records"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "GET",
+    "subPath": "/report",
+    "fullPath": "/overtime/report",
+    "apiPath": "/api/v1/overtime/report"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/overtime/stats",
+    "apiPath": "/api/v1/overtime/stats"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "POST",
+    "subPath": "/apply",
+    "fullPath": "/overtime/apply",
+    "apiPath": "/api/v1/overtime/apply"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "POST",
+    "subPath": "/requests",
+    "fullPath": "/overtime/requests",
+    "apiPath": "/api/v1/overtime/requests"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "GET",
+    "subPath": "/requests",
+    "fullPath": "/overtime/requests",
+    "apiPath": "/api/v1/overtime/requests"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "POST",
+    "subPath": "/requests/:id/approve",
+    "fullPath": "/overtime/requests/:id/approve",
+    "apiPath": "/api/v1/overtime/requests/:id/approve"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "PUT",
+    "subPath": "/requests/:id/approve",
+    "fullPath": "/overtime/requests/:id/approve",
+    "apiPath": "/api/v1/overtime/requests/:id/approve"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "POST",
+    "subPath": "/requests/:id/reject",
+    "fullPath": "/overtime/requests/:id/reject",
+    "apiPath": "/api/v1/overtime/requests/:id/reject"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "PUT",
+    "subPath": "/requests/:id/reject",
+    "fullPath": "/overtime/requests/:id/reject",
+    "apiPath": "/api/v1/overtime/requests/:id/reject"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "POST",
+    "subPath": "/requests/bulk-approve",
+    "fullPath": "/overtime/requests/bulk-approve",
+    "apiPath": "/api/v1/overtime/requests/bulk-approve"
+  },
+  {
+    "module": "overtime",
+    "file": "overtime.routes.js",
+    "method": "PUT",
+    "subPath": "/requests/bulk-approve",
+    "fullPath": "/overtime/requests/bulk-approve",
+    "apiPath": "/api/v1/overtime/requests/bulk-approve"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/revenue",
+    "fullPath": "/payment-analytics/revenue",
+    "apiPath": "/api/v1/payment-analytics/revenue"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/mrr",
+    "fullPath": "/payment-analytics/mrr",
+    "apiPath": "/api/v1/payment-analytics/mrr"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/arr",
+    "fullPath": "/payment-analytics/arr",
+    "apiPath": "/api/v1/payment-analytics/arr"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/churn",
+    "fullPath": "/payment-analytics/churn",
+    "apiPath": "/api/v1/payment-analytics/churn"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/success-rate",
+    "fullPath": "/payment-analytics/success-rate",
+    "apiPath": "/api/v1/payment-analytics/success-rate"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/refund-rate",
+    "fullPath": "/payment-analytics/refund-rate",
+    "apiPath": "/api/v1/payment-analytics/refund-rate"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/refunds",
+    "fullPath": "/payment-analytics/refunds",
+    "apiPath": "/api/v1/payment-analytics/refunds"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/payment-methods",
+    "fullPath": "/payment-analytics/payment-methods",
+    "apiPath": "/api/v1/payment-analytics/payment-methods"
+  },
+  {
+    "module": "payment-analytics",
+    "file": "payment-analytics.routes.js",
+    "method": "GET",
+    "subPath": "/revenue-by-plan",
+    "fullPath": "/payment-analytics/revenue-by-plan",
+    "apiPath": "/api/v1/payment-analytics/revenue-by-plan"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "GET",
+    "subPath": "/razorpay-config",
+    "fullPath": "/payments/razorpay-config",
+    "apiPath": "/api/v1/payments/razorpay-config"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "POST",
+    "subPath": "/create-order",
+    "fullPath": "/payments/create-order",
+    "apiPath": "/api/v1/payments/create-order"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "POST",
+    "subPath": "/orders",
+    "fullPath": "/payments/orders",
+    "apiPath": "/api/v1/payments/orders"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "POST",
+    "subPath": "/verify",
+    "fullPath": "/payments/verify",
+    "apiPath": "/api/v1/payments/verify"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "POST",
+    "subPath": "/webhook",
+    "fullPath": "/payments/webhook",
+    "apiPath": "/api/v1/payments/webhook"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "POST",
+    "subPath": "/failure",
+    "fullPath": "/payments/failure",
+    "apiPath": "/api/v1/payments/failure"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "POST",
+    "subPath": "/retry",
+    "fullPath": "/payments/retry",
+    "apiPath": "/api/v1/payments/retry"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "GET",
+    "subPath": "/history",
+    "fullPath": "/payments/history",
+    "apiPath": "/api/v1/payments/history"
+  },
+  {
+    "module": "payments",
+    "file": "payments.routes.js",
+    "method": "GET",
+    "subPath": "/:id/receipt",
+    "fullPath": "/payments/:id/receipt",
+    "apiPath": "/api/v1/payments/:id/receipt"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/components",
+    "fullPath": "/payroll/components",
+    "apiPath": "/api/v1/payroll/components"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/components",
+    "fullPath": "/payroll/components",
+    "apiPath": "/api/v1/payroll/components"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "PUT",
+    "subPath": "/components/:id",
+    "fullPath": "/payroll/components/:id",
+    "apiPath": "/api/v1/payroll/components/:id"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "DELETE",
+    "subPath": "/components/:id",
+    "fullPath": "/payroll/components/:id",
+    "apiPath": "/api/v1/payroll/components/:id"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/salary-structures/templates",
+    "fullPath": "/payroll/salary-structures/templates",
+    "apiPath": "/api/v1/payroll/salary-structures/templates"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/templates",
+    "fullPath": "/payroll/templates",
+    "apiPath": "/api/v1/payroll/templates"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/salary-structures",
+    "fullPath": "/payroll/salary-structures",
+    "apiPath": "/api/v1/payroll/salary-structures"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/structures",
+    "fullPath": "/payroll/structures",
+    "apiPath": "/api/v1/payroll/structures"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/salary-structures",
+    "fullPath": "/payroll/salary-structures",
+    "apiPath": "/api/v1/payroll/salary-structures"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/structures",
+    "fullPath": "/payroll/structures",
+    "apiPath": "/api/v1/payroll/structures"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/structure/:employeeId",
+    "fullPath": "/payroll/structure/:employeeId",
+    "apiPath": "/api/v1/payroll/structure/:employeeId"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/employee/:employeeId/structure",
+    "fullPath": "/payroll/employee/:employeeId/structure",
+    "apiPath": "/api/v1/payroll/employee/:employeeId/structure"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "PUT",
+    "subPath": "/structure/:employeeId",
+    "fullPath": "/payroll/structure/:employeeId",
+    "apiPath": "/api/v1/payroll/structure/:employeeId"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "PUT",
+    "subPath": "/employee/:employeeId/structure",
+    "fullPath": "/payroll/employee/:employeeId/structure",
+    "apiPath": "/api/v1/payroll/employee/:employeeId/structure"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/structure/bulk-update",
+    "fullPath": "/payroll/structure/bulk-update",
+    "apiPath": "/api/v1/payroll/structure/bulk-update"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/reimbursements",
+    "fullPath": "/payroll/reimbursements",
+    "apiPath": "/api/v1/payroll/reimbursements"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/loans-advances",
+    "fullPath": "/payroll/loans-advances",
+    "apiPath": "/api/v1/payroll/loans-advances"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/loans",
+    "fullPath": "/payroll/loans",
+    "apiPath": "/api/v1/payroll/loans"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/tax-slabs",
+    "fullPath": "/payroll/tax-slabs",
+    "apiPath": "/api/v1/payroll/tax-slabs"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/analytics",
+    "fullPath": "/payroll/analytics",
+    "apiPath": "/api/v1/payroll/analytics"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/preview",
+    "fullPath": "/payroll/preview",
+    "apiPath": "/api/v1/payroll/preview"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/process",
+    "fullPath": "/payroll/process",
+    "apiPath": "/api/v1/payroll/process"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/runs/:id/approve",
+    "fullPath": "/payroll/runs/:id/approve",
+    "apiPath": "/api/v1/payroll/runs/:id/approve"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "PUT",
+    "subPath": "/runs/:id/approve",
+    "fullPath": "/payroll/runs/:id/approve",
+    "apiPath": "/api/v1/payroll/runs/:id/approve"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/runs/:id/generate-slips",
+    "fullPath": "/payroll/runs/:id/generate-slips",
+    "apiPath": "/api/v1/payroll/runs/:id/generate-slips"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "POST",
+    "subPath": "/runs/:id/send-slips",
+    "fullPath": "/payroll/runs/:id/send-slips",
+    "apiPath": "/api/v1/payroll/runs/:id/send-slips"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/runs",
+    "fullPath": "/payroll/runs",
+    "apiPath": "/api/v1/payroll/runs"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/slips/my",
+    "fullPath": "/payroll/slips/my",
+    "apiPath": "/api/v1/payroll/slips/my"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/slips",
+    "fullPath": "/payroll/slips",
+    "apiPath": "/api/v1/payroll/slips"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/slips/:id/download",
+    "fullPath": "/payroll/slips/:id/download",
+    "apiPath": "/api/v1/payroll/slips/:id/download"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/slips/:id/pdf",
+    "fullPath": "/payroll/slips/:id/pdf",
+    "apiPath": "/api/v1/payroll/slips/:id/pdf"
+  },
+  {
+    "module": "payroll",
+    "file": "payroll.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/payroll/stats",
+    "apiPath": "/api/v1/payroll/stats"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "GET",
+    "subPath": "/my",
+    "fullPath": "/projects/my",
+    "apiPath": "/api/v1/projects/my"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "GET",
+    "subPath": "/my/:id",
+    "fullPath": "/projects/my/:id",
+    "apiPath": "/api/v1/projects/my/:id"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/projects",
+    "apiPath": "/api/v1/projects"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/projects",
+    "apiPath": "/api/v1/projects"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "PATCH",
+    "subPath": "/:id/manager",
+    "fullPath": "/projects/:id/manager",
+    "apiPath": "/api/v1/projects/:id/manager"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "GET",
+    "subPath": "/:id/tasks",
+    "fullPath": "/projects/:id/tasks",
+    "apiPath": "/api/v1/projects/:id/tasks"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "POST",
+    "subPath": "/:id/tasks",
+    "fullPath": "/projects/:id/tasks",
+    "apiPath": "/api/v1/projects/:id/tasks"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "GET",
+    "subPath": "/:id/members/progress",
+    "fullPath": "/projects/:id/members/progress",
+    "apiPath": "/api/v1/projects/:id/members/progress"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "GET",
+    "subPath": "/:id/members",
+    "fullPath": "/projects/:id/members",
+    "apiPath": "/api/v1/projects/:id/members"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "POST",
+    "subPath": "/:id/members",
+    "fullPath": "/projects/:id/members",
+    "apiPath": "/api/v1/projects/:id/members"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id/members/:memberId",
+    "fullPath": "/projects/:id/members/:memberId",
+    "apiPath": "/api/v1/projects/:id/members/:memberId"
+  },
+  {
+    "module": "projects",
+    "file": "projects.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/projects/:id",
+    "apiPath": "/api/v1/projects/:id"
+  },
+  {
+    "module": "queue-monitor",
+    "file": "queue-monitor.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/queue-monitor/stats",
+    "apiPath": "/api/v1/queue-monitor/stats"
+  },
+  {
+    "module": "queue-monitor",
+    "file": "queue-monitor.routes.js",
+    "method": "GET",
+    "subPath": "/health",
+    "fullPath": "/queue-monitor/health",
+    "apiPath": "/api/v1/queue-monitor/health"
+  },
+  {
+    "module": "queue-monitor",
+    "file": "queue-monitor.routes.js",
+    "method": "GET",
+    "subPath": "/:queue/jobs",
+    "fullPath": "/queue-monitor/:queue/jobs",
+    "apiPath": "/api/v1/queue-monitor/:queue/jobs"
+  },
+  {
+    "module": "queue-monitor",
+    "file": "queue-monitor.routes.js",
+    "method": "POST",
+    "subPath": "/:queue/:jobId/retry",
+    "fullPath": "/queue-monitor/:queue/:jobId/retry",
+    "apiPath": "/api/v1/queue-monitor/:queue/:jobId/retry"
+  },
+  {
+    "module": "queue-monitor",
+    "file": "queue-monitor.routes.js",
+    "method": "DELETE",
+    "subPath": "/:queue/:jobId",
+    "fullPath": "/queue-monitor/:queue/:jobId",
+    "apiPath": "/api/v1/queue-monitor/:queue/:jobId"
+  },
+  {
+    "module": "queue-monitor",
+    "file": "queue-monitor.routes.js",
+    "method": "POST",
+    "subPath": "/:queue/pause",
+    "fullPath": "/queue-monitor/:queue/pause",
+    "apiPath": "/api/v1/queue-monitor/:queue/pause"
+  },
+  {
+    "module": "queue-monitor",
+    "file": "queue-monitor.routes.js",
+    "method": "POST",
+    "subPath": "/:queue/resume",
+    "fullPath": "/queue-monitor/:queue/resume",
+    "apiPath": "/api/v1/queue-monitor/:queue/resume"
+  },
+  {
+    "module": "queue-monitor",
+    "file": "queue-monitor.routes.js",
+    "method": "POST",
+    "subPath": "/:queue/clean",
+    "fullPath": "/queue-monitor/:queue/clean",
+    "apiPath": "/api/v1/queue-monitor/:queue/clean"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "POST",
+    "subPath": "/request",
+    "fullPath": "/refunds/request",
+    "apiPath": "/api/v1/refunds/request"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/refunds",
+    "apiPath": "/api/v1/refunds"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "GET",
+    "subPath": "/all",
+    "fullPath": "/refunds/all",
+    "apiPath": "/api/v1/refunds/all"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/refunds/stats",
+    "apiPath": "/api/v1/refunds/stats"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "POST",
+    "subPath": "/system-issue",
+    "fullPath": "/refunds/system-issue",
+    "apiPath": "/api/v1/refunds/system-issue"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/refunds/:id",
+    "apiPath": "/api/v1/refunds/:id"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "POST",
+    "subPath": "/:id/approve",
+    "fullPath": "/refunds/:id/approve",
+    "apiPath": "/api/v1/refunds/:id/approve"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "POST",
+    "subPath": "/:id/reject",
+    "fullPath": "/refunds/:id/reject",
+    "apiPath": "/api/v1/refunds/:id/reject"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "POST",
+    "subPath": "/:id/process",
+    "fullPath": "/refunds/:id/process",
+    "apiPath": "/api/v1/refunds/:id/process"
+  },
+  {
+    "module": "refunds",
+    "file": "refunds.routes.js",
+    "method": "POST",
+    "subPath": "/:id/retry",
+    "fullPath": "/refunds/:id/retry",
+    "apiPath": "/api/v1/refunds/:id/retry"
+  },
+  {
+    "module": "reports",
+    "file": "reports.routes.js",
+    "method": "POST",
+    "subPath": "/generate",
+    "fullPath": "/reports/generate",
+    "apiPath": "/api/v1/reports/generate"
+  },
+  {
+    "module": "reports",
+    "file": "reports.routes.js",
+    "method": "POST",
+    "subPath": "/export",
+    "fullPath": "/reports/export",
+    "apiPath": "/api/v1/reports/export"
+  },
+  {
+    "module": "reports",
+    "file": "reports.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/reports/stats",
+    "apiPath": "/api/v1/reports/stats"
+  },
+  {
+    "module": "reports",
+    "file": "reports.routes.js",
+    "method": "GET",
+    "subPath": "/history",
+    "fullPath": "/reports/history",
+    "apiPath": "/api/v1/reports/history"
+  },
+  {
+    "module": "reports",
+    "file": "reports.routes.js",
+    "method": "GET",
+    "subPath": "/download",
+    "fullPath": "/reports/download",
+    "apiPath": "/api/v1/reports/download"
+  },
+  {
+    "module": "reports",
+    "file": "reports.routes.js",
+    "method": "GET",
+    "subPath": "/:id/download",
+    "fullPath": "/reports/:id/download",
+    "apiPath": "/api/v1/reports/:id/download"
+  },
+  {
+    "module": "rosters",
+    "file": "rosters.routes.js",
+    "method": "GET",
+    "subPath": "/calendar",
+    "fullPath": "/rosters/calendar",
+    "apiPath": "/api/v1/rosters/calendar"
+  },
+  {
+    "module": "rosters",
+    "file": "rosters.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/rosters",
+    "apiPath": "/api/v1/rosters"
+  },
+  {
+    "module": "rosters",
+    "file": "rosters.routes.js",
+    "method": "POST",
+    "subPath": "/generate",
+    "fullPath": "/rosters/generate",
+    "apiPath": "/api/v1/rosters/generate"
+  },
+  {
+    "module": "rosters",
+    "file": "rosters.routes.js",
+    "method": "POST",
+    "subPath": "/publish",
+    "fullPath": "/rosters/publish",
+    "apiPath": "/api/v1/rosters/publish"
+  },
+  {
+    "module": "rosters",
+    "file": "rosters.routes.js",
+    "method": "POST",
+    "subPath": "/bulk-assign",
+    "fullPath": "/rosters/bulk-assign",
+    "apiPath": "/api/v1/rosters/bulk-assign"
+  },
+  {
+    "module": "rosters",
+    "file": "rosters.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/rosters/:id",
+    "apiPath": "/api/v1/rosters/:id"
+  },
+  {
+    "module": "rosters",
+    "file": "rosters.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/rosters/:id",
+    "apiPath": "/api/v1/rosters/:id"
+  },
+  {
+    "module": "rosters",
+    "file": "rosters.routes.js",
+    "method": "POST",
+    "subPath": "/:id/publish",
+    "fullPath": "/rosters/:id/publish",
+    "apiPath": "/api/v1/rosters/:id/publish"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/shifts/stats",
+    "apiPath": "/api/v1/shifts/stats"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "GET",
+    "subPath": "/my-shift",
+    "fullPath": "/shifts/my-shift",
+    "apiPath": "/api/v1/shifts/my-shift"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "GET",
+    "subPath": "/effective-shift",
+    "fullPath": "/shifts/effective-shift",
+    "apiPath": "/api/v1/shifts/effective-shift"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "GET",
+    "subPath": "/effective-shift/:employeeId",
+    "fullPath": "/shifts/effective-shift/:employeeId",
+    "apiPath": "/api/v1/shifts/effective-shift/:employeeId"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/shifts",
+    "apiPath": "/api/v1/shifts"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/shifts/:id",
+    "apiPath": "/api/v1/shifts/:id"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/shifts",
+    "apiPath": "/api/v1/shifts"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "PUT",
+    "subPath": "/:id",
+    "fullPath": "/shifts/:id",
+    "apiPath": "/api/v1/shifts/:id"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "DELETE",
+    "subPath": "/:id",
+    "fullPath": "/shifts/:id",
+    "apiPath": "/api/v1/shifts/:id"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "POST",
+    "subPath": "/assign",
+    "fullPath": "/shifts/assign",
+    "apiPath": "/api/v1/shifts/assign"
+  },
+  {
+    "module": "shifts",
+    "file": "shifts.routes.js",
+    "method": "DELETE",
+    "subPath": "/assignments/:id",
+    "fullPath": "/shifts/assignments/:id",
+    "apiPath": "/api/v1/shifts/assignments/:id"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/subscriptions",
+    "apiPath": "/api/v1/subscriptions"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "GET",
+    "subPath": "/plans",
+    "fullPath": "/subscriptions/plans",
+    "apiPath": "/api/v1/subscriptions/plans"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/plans",
+    "fullPath": "/subscriptions/plans",
+    "apiPath": "/api/v1/subscriptions/plans"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "PUT",
+    "subPath": "/plans/:id",
+    "fullPath": "/subscriptions/plans/:id",
+    "apiPath": "/api/v1/subscriptions/plans/:id"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "GET",
+    "subPath": "/platform-status",
+    "fullPath": "/subscriptions/platform-status",
+    "apiPath": "/api/v1/subscriptions/platform-status"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "GET",
+    "subPath": "/current",
+    "fullPath": "/subscriptions/current",
+    "apiPath": "/api/v1/subscriptions/current"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/orders",
+    "fullPath": "/subscriptions/orders",
+    "apiPath": "/api/v1/subscriptions/orders"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/verify",
+    "fullPath": "/subscriptions/verify",
+    "apiPath": "/api/v1/subscriptions/verify"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/renew",
+    "fullPath": "/subscriptions/renew",
+    "apiPath": "/api/v1/subscriptions/renew"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/cancel",
+    "fullPath": "/subscriptions/cancel",
+    "apiPath": "/api/v1/subscriptions/cancel"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "GET",
+    "subPath": "/history",
+    "fullPath": "/subscriptions/history",
+    "apiPath": "/api/v1/subscriptions/history"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "GET",
+    "subPath": "/stats",
+    "fullPath": "/subscriptions/stats",
+    "apiPath": "/api/v1/subscriptions/stats"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "GET",
+    "subPath": "/check-expiry",
+    "fullPath": "/subscriptions/check-expiry",
+    "apiPath": "/api/v1/subscriptions/check-expiry"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/proration/calculate",
+    "fullPath": "/subscriptions/proration/calculate",
+    "apiPath": "/api/v1/subscriptions/proration/calculate"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/proration/apply",
+    "fullPath": "/subscriptions/proration/apply",
+    "apiPath": "/api/v1/subscriptions/proration/apply"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/trial/start",
+    "fullPath": "/subscriptions/trial/start",
+    "apiPath": "/api/v1/subscriptions/trial/start"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/trial/convert",
+    "fullPath": "/subscriptions/trial/convert",
+    "apiPath": "/api/v1/subscriptions/trial/convert"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/trial/extend",
+    "fullPath": "/subscriptions/trial/extend",
+    "apiPath": "/api/v1/subscriptions/trial/extend"
+  },
+  {
+    "module": "subscriptions",
+    "file": "subscriptions.routes.js",
+    "method": "POST",
+    "subPath": "/trial/cancel",
+    "fullPath": "/subscriptions/trial/cancel",
+    "apiPath": "/api/v1/subscriptions/trial/cancel"
+  },
+  {
+    "module": "tasks",
+    "file": "tasks.routes.js",
+    "method": "GET",
+    "subPath": "/",
+    "fullPath": "/tasks",
+    "apiPath": "/api/v1/tasks"
+  },
+  {
+    "module": "tasks",
+    "file": "tasks.routes.js",
+    "method": "POST",
+    "subPath": "/",
+    "fullPath": "/tasks",
+    "apiPath": "/api/v1/tasks"
+  },
+  {
+    "module": "tasks",
+    "file": "tasks.routes.js",
+    "method": "GET",
+    "subPath": "/:id",
+    "fullPath": "/tasks/:id",
+    "apiPath": "/api/v1/tasks/:id"
+  },
+  {
+    "module": "tasks",
+    "file": "tasks.routes.js",
+    "method": "PUT",
+    "subPath": "/:id/progress",
+    "fullPath": "/tasks/:id/progress",
+    "apiPath": "/api/v1/tasks/:id/progress"
+  },
+  {
+    "module": "tasks",
+    "file": "tasks.routes.js",
+    "method": "POST",
+    "subPath": "/:id/comments",
+    "fullPath": "/tasks/:id/comments",
+    "apiPath": "/api/v1/tasks/:id/comments"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/metrics",
+    "fullPath": "/metrics",
+    "apiPath": "/api/v1/metrics"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/dashboard/super-admin",
+    "fullPath": "/dashboard/super-admin",
+    "apiPath": "/api/v1/dashboard/super-admin"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/roles",
+    "fullPath": "/roles",
+    "apiPath": "/api/v1/roles"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/permissions",
+    "fullPath": "/permissions",
+    "apiPath": "/api/v1/permissions"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/users",
+    "fullPath": "/users",
+    "apiPath": "/api/v1/users"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/dashboard/company-admin",
+    "fullPath": "/dashboard/company-admin",
+    "apiPath": "/api/v1/dashboard/company-admin"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/dashboard/hr-admin",
+    "fullPath": "/dashboard/hr-admin",
+    "apiPath": "/api/v1/dashboard/hr-admin"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/dashboard/hr-manager",
+    "fullPath": "/dashboard/hr-manager",
+    "apiPath": "/api/v1/dashboard/hr-manager"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/dashboard/manager",
+    "fullPath": "/dashboard/manager",
+    "apiPath": "/api/v1/dashboard/manager"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/dashboard/employee",
+    "fullPath": "/dashboard/employee",
+    "apiPath": "/api/v1/dashboard/employee"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/dashboard/client",
+    "fullPath": "/dashboard/client",
+    "apiPath": "/api/v1/dashboard/client"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/hr-manager-dashboard/metrics",
+    "fullPath": "/hr-manager-dashboard/metrics",
+    "apiPath": "/api/v1/hr-manager-dashboard/metrics"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/manager-dashboard/team-summary",
+    "fullPath": "/manager-dashboard/team-summary",
+    "apiPath": "/api/v1/manager-dashboard/team-summary"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/employee-dashboard/summary",
+    "fullPath": "/employee-dashboard/summary",
+    "apiPath": "/api/v1/employee-dashboard/summary"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/employee-dashboard/attendance",
+    "fullPath": "/employee-dashboard/attendance",
+    "apiPath": "/api/v1/employee-dashboard/attendance"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/employee-dashboard/leave",
+    "fullPath": "/employee-dashboard/leave",
+    "apiPath": "/api/v1/employee-dashboard/leave"
+  },
+  {
+    "module": "dashboard",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/employee-dashboard/tasks",
+    "fullPath": "/employee-dashboard/tasks",
+    "apiPath": "/api/v1/employee-dashboard/tasks"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/clients",
+    "fullPath": "/clients",
+    "apiPath": "/api/v1/clients"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "POST",
+    "subPath": "/clients",
+    "fullPath": "/clients",
+    "apiPath": "/api/v1/clients"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/tasks",
+    "fullPath": "/tasks",
+    "apiPath": "/api/v1/tasks"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/performance/cycles",
+    "fullPath": "/performance/cycles",
+    "apiPath": "/api/v1/performance/cycles"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/performance/reviews",
+    "fullPath": "/performance/reviews",
+    "apiPath": "/api/v1/performance/reviews"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/certificates/templates",
+    "fullPath": "/certificates/templates",
+    "apiPath": "/api/v1/certificates/templates"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/certificates",
+    "fullPath": "/certificates",
+    "apiPath": "/api/v1/certificates"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/certificates/:id/download",
+    "fullPath": "/certificates/:id/download",
+    "apiPath": "/api/v1/certificates/:id/download"
+  },
+  {
+    "module": "core/platform",
+    "file": "routes/index.js",
+    "method": "GET",
+    "subPath": "/onboarding/status",
+    "fullPath": "/onboarding/status",
+    "apiPath": "/api/v1/onboarding/status"
+  }
+]
