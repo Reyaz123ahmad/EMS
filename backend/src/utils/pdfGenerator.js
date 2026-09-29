@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit';
+import { logger } from '../config/logger.js';
 
 /**
  * Generate a clean, professional Payment Receipt PDF stream
@@ -123,16 +124,39 @@ export function generateInvoicePDFStream(invoice, res) {
  * Generate Salary Slip PDF Stream
  */
 export function generateSalarySlipPDFStream(slip, res) {
+  const lineItems = slip?.payrollItem?.lineItems || slip?.lineItems || [];
+
+  // FIX 3 (CRITICAL): Refuse PDF generation if component breakdown is missing
+  if (!lineItems || lineItems.length === 0) {
+    const slipId = slip?.id || slip?.slipNumber || 'UNKNOWN';
+    logger.error({ slipId }, 'PDF gen refused: no component breakdown');
+    if (res && typeof res.status === 'function' && !res.headersSent) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'PDF gen refused: no component breakdown'
+      });
+    }
+    const err = new Error('PDF gen refused: no component breakdown');
+    err.statusCode = 500;
+    throw err;
+  }
+
   const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
-  const empName = `${slip.employee?.firstName || 'Employee'} ${slip.employee?.lastName || ''}`.trim();
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="salary-slip-${slip.employee?.employeeCode || slip.id.slice(0, 8)}.pdf"`);
+  const emp = slip.payrollItem?.employee || slip.employee || {};
+  const empName = `${emp.firstName || 'Employee'} ${emp.lastName || ''}`.trim();
+  const payrollItem = slip.payrollItem || {};
+  const month = payrollItem.payrollRun?.month || slip.month || 'Current';
+  const year = payrollItem.payrollRun?.year || slip.year || new Date().getFullYear();
 
-  doc.pipe(res);
+  if (res && typeof res.setHeader === 'function') {
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="salary-slip-${emp.employeeCode || slip.id?.slice(0, 8) || 'slip'}.pdf"`);
+    doc.pipe(res);
+  }
 
   doc.fontSize(18).fillColor('#1e293b').text('PAYSLIP / SALARY STATEMENT', { align: 'center' });
-  doc.fontSize(10).fillColor('#64748b').text(`Month: ${slip.month || 'Current'} / Year: ${slip.year || new Date().getFullYear()}`, { align: 'center' });
+  doc.fontSize(10).fillColor('#64748b').text(`Month: ${month} / Year: ${year}`, { align: 'center' });
   doc.moveDown();
 
   doc.moveTo(50, 95).lineTo(545, 95).strokeColor('#e2e8f0').stroke();
@@ -140,13 +164,17 @@ export function generateSalarySlipPDFStream(slip, res) {
   // Employee details
   doc.fontSize(10).fillColor('#1e293b');
   doc.text(`Employee Name: ${empName}`, 50, 110);
-  doc.text(`Employee Code: ${slip.employee?.employeeCode || 'MIND-EMP-0001'}`, 50, 125);
-  doc.text(`Designation: ${slip.employee?.designation?.name || slip.employee?.designation || 'Staff'}`, 50, 140);
-  doc.text(`Department: ${slip.employee?.department?.name || slip.employee?.department || 'Operations'}`, 50, 155);
+  doc.text(`Employee Code: ${emp.employeeCode || 'N/A'}`, 50, 125);
+  doc.text(`Designation: ${emp.designation?.name || emp.designation || 'Staff'}`, 50, 140);
+  doc.text(`Department: ${emp.department?.name || emp.department || 'General'}`, 50, 155);
 
-  doc.text(`Working Days: ${slip.payableDays || slip.workingDays || 30}`, 350, 110);
-  doc.text(`Present Days: ${slip.presentDays || 30}`, 350, 125);
-  doc.text(`Bank Account: ${slip.employee?.bankAccount || 'XXXX-XXXX-8921'}`, 350, 140);
+  const presentDays = payrollItem.presentDays !== undefined ? payrollItem.presentDays : (slip.presentDays || 0);
+  const absentDays = payrollItem.absentDays !== undefined ? payrollItem.absentDays : (slip.absentDays || 0);
+  const leaveDays = payrollItem.leaveDays !== undefined ? payrollItem.leaveDays : (slip.leaveDays || 0);
+
+  doc.text(`Present Days: ${presentDays}`, 350, 110);
+  doc.text(`Absent / LOP Days: ${absentDays}`, 350, 125);
+  doc.text(`Leave Days: ${leaveDays}`, 350, 140);
 
   const tableTop = 185;
   doc.rect(50, tableTop, 240, 22).fill('#f1f5f9');
@@ -154,34 +182,40 @@ export function generateSalarySlipPDFStream(slip, res) {
   doc.fontSize(10).fillColor('#334155').text('EARNINGS', 60, tableTop + 6);
   doc.text('DEDUCTIONS', 310, tableTop + 6);
 
+  const earnings = lineItems.filter((l) => l.type === 'EARNING');
+  const deductions = lineItems.filter((l) => l.type === 'DEDUCTION');
+  const maxRows = Math.max(earnings.length, deductions.length);
+
   let y = tableTop + 30;
-  const basic = Number(slip.basicSalary || slip.grossPay || 45000);
-  const hra = Number(slip.hra || 15000);
-  const allow = Number(slip.allowances || 8000);
-  const pf = Number(slip.providentFund || 1800);
-  const tax = Number(slip.taxDeduction || slip.tds || 2500);
-
   doc.fontSize(9).fillColor('#1e293b');
-  doc.text('Basic Salary', 60, y);
-  doc.text(`Rs. ${basic.toLocaleString('en-IN')}`, 220, y, { align: 'right', width: 60 });
-  doc.text('Provident Fund (PF)', 310, y);
-  doc.text(`Rs. ${pf.toLocaleString('en-IN')}`, 470, y, { align: 'right', width: 60 });
 
-  y += 18;
-  doc.text('House Rent Allowance (HRA)', 60, y);
-  doc.text(`Rs. ${hra.toLocaleString('en-IN')}`, 220, y, { align: 'right', width: 60 });
-  doc.text('Professional Tax / TDS', 310, y);
-  doc.text(`Rs. ${tax.toLocaleString('en-IN')}`, 470, y, { align: 'right', width: 60 });
+  let totalEarnings = 0;
+  let totalDeductions = 0;
 
-  y += 18;
-  doc.text('Special Allowances', 60, y);
-  doc.text(`Rs. ${allow.toLocaleString('en-IN')}`, 220, y, { align: 'right', width: 60 });
+  for (let i = 0; i < maxRows; i++) {
+    const earn = earnings[i];
+    const ded = deductions[i];
 
-  const totalEarnings = basic + hra + allow;
-  const totalDeductions = pf + tax;
-  const netSalary = Number(slip.netPay || (totalEarnings - totalDeductions));
+    if (earn) {
+      const amt = Number(earn.amount);
+      totalEarnings += amt;
+      doc.text(earn.componentName, 60, y, { width: 155, ellipsis: true });
+      doc.text(`Rs. ${amt.toLocaleString('en-IN')}`, 220, y, { align: 'right', width: 60 });
+    }
 
-  y += 30;
+    if (ded) {
+      const amt = Number(ded.amount);
+      totalDeductions += amt;
+      doc.text(ded.componentName, 310, y, { width: 155, ellipsis: true });
+      doc.text(`Rs. ${amt.toLocaleString('en-IN')}`, 470, y, { align: 'right', width: 60 });
+    }
+
+    y += 18;
+  }
+
+  const netSalary = Number(payrollItem.netSalary ?? (totalEarnings - totalDeductions));
+
+  y += 15;
   doc.rect(50, y, 495, 25).fill('#e0e7ff');
   doc.fontSize(11).fillColor('#3730a3').text('NET PAYABLE SALARY:', 60, y + 7);
   doc.fontSize(12).fillColor('#3730a3').text(`Rs. ${netSalary.toLocaleString('en-IN')}`, 400, y + 6, { align: 'right', width: 135 });
@@ -189,6 +223,7 @@ export function generateSalarySlipPDFStream(slip, res) {
   doc.fontSize(9).fillColor('#94a3b8').text('Confidential - Generated automatically by EMS Platform.', 50, 720, { align: 'center', width: 495 });
 
   doc.end();
+  return doc;
 }
 
 /**

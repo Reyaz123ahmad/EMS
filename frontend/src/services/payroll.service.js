@@ -116,16 +116,48 @@ export const payrollService = {
 
   async listReimbursements(params = {}) {
     const response = await api.get('/payroll/reimbursements', { params });
-    return response.data?.data || response.data;
+    const data = response.data?.data || response.data;
+    if (data && Array.isArray(data.reimbursements)) return data;
+    if (Array.isArray(data)) return { reimbursements: data, total: data.length };
+    return { reimbursements: [], total: 0 };
   },
 
   async listLoansAdvances(params = {}) {
     const response = await api.get('/payroll/loans-advances', { params });
-    return response.data?.data || response.data;
+    const data = response.data?.data || response.data;
+    if (data && Array.isArray(data.loans)) return data;
+    if (Array.isArray(data)) return { loans: data, total: data.length };
+    return { loans: [], total: 0 };
   },
 
   async listTaxSlabs(params = {}) {
     const response = await api.get('/payroll/tax-slabs', { params });
+    const data = response.data?.data || response.data;
+    return data || {};
+  },
+
+  async getPayrollConfig() {
+    const response = await api.get('/companies/payroll-config');
+    return response.data?.data || response.data;
+  },
+
+  async updatePayrollConfig(data) {
+    const response = await api.put('/companies/payroll-config', data);
+    return response.data?.data || response.data;
+  },
+
+  async listStructureTemplates() {
+    const response = await api.get('/payroll/salary-structures/templates');
+    return response.data?.data?.templates || response.data?.templates || response.data?.data || [];
+  },
+
+  async createStructureTemplate(data) {
+    const response = await api.post('/payroll/salary-structures', data);
+    return response.data?.data || response.data;
+  },
+
+  async assignEmployeeStructure(employeeId, data) {
+    const response = await api.put(`/payroll/employee/${employeeId}/structure`, data);
     return response.data?.data || response.data;
   },
 

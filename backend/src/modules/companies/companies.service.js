@@ -457,6 +457,95 @@ export const companiesService = {
   },
 
   /**
+   * Get dedicated statutory and rule configuration for company payroll
+   */
+  async getPayrollConfig(companyId) {
+    const company = await prisma.company.findUnique({
+      where: { id: companyId }
+    });
+    if (!company) throw new Error('Company not found');
+
+    const payrollSettings = (typeof company.payrollSettings === 'object' && company.payrollSettings !== null)
+      ? company.payrollSettings
+      : {};
+
+    return {
+      basicPercentOfCTC: Number(payrollSettings.basicPercentOfCTC ?? 40),
+      hraPercentOfCTC: Number(payrollSettings.hraPercentOfCTC ?? 20),
+      specialPercentOfCTC: Number(payrollSettings.specialPercentOfCTC ?? 40),
+      pfEnabled: company.pfEnabled ?? true,
+      pfEmployeePercent: Number(company.pfEmployeePercent ?? 12),
+      pfEmployerPercent: Number(company.pfEmployerPercent ?? 12),
+      pfCeiling: Number(company.pfCeiling ?? 15000),
+      esiEnabled: company.esiEnabled ?? true,
+      esiEmployeePercent: Number(company.esiEmployeePercent ?? 0.75),
+      esiEmployerPercent: Number(company.esiEmployerPercent ?? 3.25),
+      esiCeiling: Number(company.esiCeiling ?? 21000),
+      ptState: company.ptState || 'MAHARASHTRA',
+      tdsEnabled: company.tdsEnabled ?? true,
+      lopDivisor: Number(company.lopDivisor ?? 30),
+      lateMarksForHalfDay: Number(company.lateMarksForHalfDay ?? 3),
+      overtimeRate: Number(company.overtimeRate ?? 125),
+      roundOffRule: company.roundOffRule || 'NEAREST_RUPEE',
+      payrollCycleStartDay: Number(company.payrollCycleStartDay ?? 1),
+      payrollCycleEndDay: Number(company.payrollCycleEndDay ?? 0),
+      payrollRunDay: Number(company.payrollRunDay ?? 1),
+      payrollRunTime: company.payrollRunTime || '00:05',
+      payrollAutoRunEnabled: company.payrollAutoRunEnabled ?? false
+    };
+  },
+
+  /**
+   * Update dedicated statutory and rule configuration for company payroll
+   */
+  async updatePayrollConfig(companyId, payload) {
+    const existing = await prisma.company.findUnique({ where: { id: companyId } });
+    if (!existing) throw new Error('Company not found');
+
+    const existingSettings = (typeof existing.payrollSettings === 'object' && existing.payrollSettings !== null)
+      ? existing.payrollSettings
+      : {};
+
+    const updatedSettings = {
+      ...existingSettings,
+      basicPercentOfCTC: payload.basicPercentOfCTC !== undefined ? Number(payload.basicPercentOfCTC) : Number(existingSettings.basicPercentOfCTC ?? 40),
+      hraPercentOfCTC: payload.hraPercentOfCTC !== undefined ? Number(payload.hraPercentOfCTC) : Number(existingSettings.hraPercentOfCTC ?? 20),
+      specialPercentOfCTC: payload.specialPercentOfCTC !== undefined ? Number(payload.specialPercentOfCTC) : Number(existingSettings.specialPercentOfCTC ?? 40)
+    };
+
+    const updateData = {
+      payrollSettings: updatedSettings
+    };
+
+    if (payload.pfEnabled !== undefined) updateData.pfEnabled = Boolean(payload.pfEnabled);
+    if (payload.pfEmployeePercent !== undefined) updateData.pfEmployeePercent = Number(payload.pfEmployeePercent);
+    if (payload.pfEmployerPercent !== undefined) updateData.pfEmployerPercent = Number(payload.pfEmployerPercent);
+    if (payload.pfCeiling !== undefined) updateData.pfCeiling = Number(payload.pfCeiling);
+    if (payload.esiEnabled !== undefined) updateData.esiEnabled = Boolean(payload.esiEnabled);
+    if (payload.esiEmployeePercent !== undefined) updateData.esiEmployeePercent = Number(payload.esiEmployeePercent);
+    if (payload.esiEmployerPercent !== undefined) updateData.esiEmployerPercent = Number(payload.esiEmployerPercent);
+    if (payload.esiCeiling !== undefined) updateData.esiCeiling = Number(payload.esiCeiling);
+    if (payload.ptState !== undefined) updateData.ptState = payload.ptState;
+    if (payload.tdsEnabled !== undefined) updateData.tdsEnabled = Boolean(payload.tdsEnabled);
+    if (payload.lopDivisor !== undefined) updateData.lopDivisor = Number(payload.lopDivisor);
+    if (payload.lateMarksForHalfDay !== undefined) updateData.lateMarksForHalfDay = Number(payload.lateMarksForHalfDay);
+    if (payload.overtimeRate !== undefined) updateData.overtimeRate = Number(payload.overtimeRate);
+    if (payload.roundOffRule !== undefined) updateData.roundOffRule = payload.roundOffRule;
+    if (payload.payrollCycleStartDay !== undefined) updateData.payrollCycleStartDay = Number(payload.payrollCycleStartDay);
+    if (payload.payrollCycleEndDay !== undefined) updateData.payrollCycleEndDay = Number(payload.payrollCycleEndDay);
+    if (payload.payrollRunDay !== undefined) updateData.payrollRunDay = Number(payload.payrollRunDay);
+    if (payload.payrollRunTime !== undefined) updateData.payrollRunTime = payload.payrollRunTime;
+    if (payload.payrollAutoRunEnabled !== undefined) updateData.payrollAutoRunEnabled = Boolean(payload.payrollAutoRunEnabled);
+
+    await prisma.company.update({
+      where: { id: companyId },
+      data: updateData
+    });
+
+    return this.getPayrollConfig(companyId);
+  },
+
+  /**
    * Get company dashboard metrics
    */
   async getCompanyDashboard(companyId) {

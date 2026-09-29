@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import attendanceService from '../services/attendance.service.js';
+import { useAttendanceStore } from '../store/attendance.store.js';
 
 export function useTodayStatus(params = {}) {
   return useQuery({
@@ -57,7 +58,12 @@ export function useStartBreak() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data) => attendanceService.startBreak(data),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      if (res?.data) {
+        useAttendanceStore.getState().addBreak(res.data);
+      } else {
+        useAttendanceStore.setState({ isOnBreak: true });
+      }
       queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
       queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
       queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
@@ -69,7 +75,13 @@ export function useEndBreak() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data) => attendanceService.endBreak(data),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      // Immediately stop timer and set isOnBreak to false
+      if (res?.data) {
+        useAttendanceStore.getState().endBreak(res.data);
+      } else {
+        useAttendanceStore.setState({ isOnBreak: false, activeBreak: null });
+      }
       queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
       queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
       queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
@@ -80,7 +92,8 @@ export function useEndBreak() {
 export function useAttendanceLogs(params = {}) {
   return useQuery({
     queryKey: ['attendance', 'logs', params],
-    queryFn: () => attendanceService.getAttendanceLogs(params)
+    queryFn: () => attendanceService.getAttendanceLogs(params),
+    refetchInterval: 30000 // auto-refresh logs every 30s
   });
 }
 

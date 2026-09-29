@@ -1,11 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Coffee, Square, AlertTriangle, Clock } from 'lucide-react';
 
 export const BreakTimer = ({ activeBreak, onEndBreak, isEnding = false }) => {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const timerRef = useRef(null);
+
+  // Compute initial elapsed seconds strictly from server timestamp
+  const calculateElapsed = () => {
+    if (!activeBreak?.breakStartAt) return 0;
+    const startTimestamp = new Date(activeBreak.breakStartAt).getTime();
+    if (activeBreak.breakEndAt) {
+      const endTimestamp = new Date(activeBreak.breakEndAt).getTime();
+      return Math.max(0, Math.floor((endTimestamp - startTimestamp) / 1000));
+    }
+    return Math.max(0, Math.floor((Date.now() - startTimestamp) / 1000));
+  };
+
+  const [elapsedSeconds, setElapsedSeconds] = useState(calculateElapsed);
 
   useEffect(() => {
-    if (!activeBreak?.breakStartAt) return;
+    // If break has ended or no break active, clear interval immediately
+    if (!activeBreak?.breakStartAt || activeBreak?.breakEndAt) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setElapsedSeconds(calculateElapsed());
+      return;
+    }
 
     const startTimestamp = new Date(activeBreak.breakStartAt).getTime();
 
@@ -16,12 +37,43 @@ export const BreakTimer = ({ activeBreak, onEndBreak, isEnding = false }) => {
     };
 
     updateTimer();
-    const interval = setInterval(updateTimer, 1000);
 
-    return () => clearInterval(interval);
-  }, [activeBreak]);
+    // Clear any previous interval before setting a new one
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    timerRef.current = setInterval(updateTimer, 1000);
 
-  if (!activeBreak) return null;
+    // Sync timer on tab visibility change to eliminate background clock drift
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !activeBreak.breakEndAt) {
+        updateTimer();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [activeBreak?.breakStartAt, activeBreak?.breakEndAt]);
+
+  const handleEndClick = () => {
+    if (isEnding) return;
+    // Clear interval immediately on user click
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (onEndBreak) {
+      onEndBreak();
+    }
+  };
+
+  if (!activeBreak || activeBreak.breakEndAt) return null;
 
   const formatElapsedTime = (totalSeconds) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -78,7 +130,7 @@ export const BreakTimer = ({ activeBreak, onEndBreak, isEnding = false }) => {
 
         <button
           type="button"
-          onClick={onEndBreak}
+          onClick={handleEndClick}
           disabled={isEnding}
           className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer ${
             isLate

@@ -69,9 +69,9 @@ export const useAttendanceStore = create(
 
       endBreak: (breakItem) => {
         set((state) => {
-          const updatedBreaks = state.breaks.map((b) =>
-            b.id === breakItem.id ? breakItem : b
-          );
+          const updatedBreaks = breakItem?.id
+            ? state.breaks.map((b) => (b.id === breakItem.id ? breakItem : b))
+            : state.breaks.map((b) => (b.id === state.activeBreak?.id ? { ...b, breakEndAt: new Date().toISOString() } : b));
           return {
             isOnBreak: false,
             activeBreak: null,
@@ -83,6 +83,12 @@ export const useAttendanceStore = create(
           };
         });
       },
+
+      setIsOnBreak: (isOnBreak) =>
+        set((state) => ({
+          isOnBreak,
+          activeBreak: isOnBreak ? state.activeBreak : null,
+        })),
 
       setActiveMode: (mode) => set({ activeMode: mode }),
 

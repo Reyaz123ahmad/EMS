@@ -84,6 +84,37 @@ async function checkApprovedLeave(employeeId, date) {
 }
 
 /**
+ * Calculate the shift end cutoff time for absent marking
+ * Handles both regular same-day shifts and overnight (cross-midnight) shifts
+ */
+export function calculateShiftEndCutoff(targetDate, shift, bufferMinutes = 15) {
+  const startTimeStr = shift.startTime || '09:00';
+  const endTimeStr = shift.endTime || '18:00';
+
+  const [startH, startM] = startTimeStr.split(':').map(Number);
+  const [endH, endM] = endTimeStr.split(':').map(Number);
+
+  const shiftStart = new Date(targetDate);
+  shiftStart.setHours(startH, startM, 0, 0);
+
+  const shiftEnd = new Date(targetDate);
+  shiftEnd.setHours(endH, endM, 0, 0);
+
+  // If night shift or end time is earlier than start time (crosses midnight)
+  if (shift.isNightShift || endH < startH || (endH === startH && endM <= startM)) {
+    shiftEnd.setDate(shiftEnd.getDate() + 1);
+  }
+
+  const absentCutoff = new Date(shiftEnd.getTime() + bufferMinutes * 60 * 1000);
+  return {
+    shiftStart,
+    shiftEnd,
+    absentCutoff,
+    isOvernight: shiftEnd.getDate() !== shiftStart.getDate()
+  };
+}
+
+/**
  * Mark absentees for a single company
  * Scoped by companyId for multi-tenant isolation
  * 
@@ -163,25 +194,21 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
     }
 
     const shift = shiftInfo.shift;
-    const graceMinutes = Number(shift.gracePeriodMinutes ?? shift.graceMinutes ?? 15);
-    const startTimeStr = shift.startTime || '09:00';
 
-    // D. Shift Start Time & Grace Period Cutoff Calculation
-    const [startH, startM] = startTimeStr.split(':').map(Number);
-    const shiftStartTimeToday = new Date(targetDate);
-    shiftStartTimeToday.setHours(startH, startM, 0, 0);
+    // D. Shift End Time Cutoff Calculation (Mark absent only AFTER shift ends + buffer)
+    const { shiftStart, shiftEnd, absentCutoff } = calculateShiftEndCutoff(targetDate, shift, 15);
 
-    const graceCutoffTime = new Date(shiftStartTimeToday.getTime() + graceMinutes * 60 * 1000);
-
-    // If current time is before grace period cutoff and not forced, shift grace period is still running
-    if (!force && now.getTime() < graceCutoffTime.getTime()) {
+    // If current time is before absent cutoff and not forced, shift is still in progress
+    if (!force && now.getTime() < absentCutoff.getTime()) {
       skippedCount++;
       details.push({
         employeeId: empId,
         employeeCode: employee.employeeCode,
         action: 'SKIPPED',
-        reason: 'GRACE_PERIOD_ACTIVE',
-        graceCutoff: graceCutoffTime.toISOString()
+        reason: 'SHIFT_IN_PROGRESS',
+        shiftStart: shiftStart.toISOString(),
+        shiftEnd: shiftEnd.toISOString(),
+        absentCutoff: absentCutoff.toISOString()
       });
       continue;
     }
@@ -222,7 +249,11 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
           shiftName: shift.name,
           shiftStartTime: shift.startTime,
           shiftEndTime: shift.endTime,
-          remarks: 'Automatically marked absent: No punch-in within shift grace period',
+          shiftSource: shiftInfo.source || 'COMPANY_DEFAULT',
+          expectedStart: shiftStart,
+          expectedEnd: shiftEnd,
+          isRosterOverride: Boolean(shiftInfo.source === 'ROSTER'),
+          remarks: 'Automatically marked absent: No punch-in recorded after shift concluded',
           attendanceMethod: 'SYSTEM'
         }
       });
@@ -243,7 +274,11 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
         shiftName: shift.name,
         shiftStartTime: shift.startTime,
         shiftEndTime: shift.endTime,
-        remarks: 'Automatically marked absent: No punch-in within shift grace period',
+        shiftSource: shiftInfo.source || 'COMPANY_DEFAULT',
+        expectedStart: shiftStart,
+        expectedEnd: shiftEnd,
+        isRosterOverride: Boolean(shiftInfo.source === 'ROSTER'),
+        remarks: 'Automatically marked absent: No punch-in recorded after shift concluded',
         attendanceMethod: 'SYSTEM',
         isLate: false,
         lateMinutes: 0

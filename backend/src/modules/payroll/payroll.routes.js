@@ -16,10 +16,16 @@ router.put('/components/:id', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_AD
 router.delete('/components/:id', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.deleteComponent);
 
 // Salary Structures & Directives
+router.get('/salary-structures/templates', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listStructureTemplates);
+router.get('/templates', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listStructureTemplates);
+router.post('/salary-structures', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.createStructureTemplate);
+router.post('/structures', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.createStructureTemplate);
 router.get('/salary-structures', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listSalaryStructures);
 router.get('/structures', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.listSalaryStructures);
 router.get('/structure/:employeeId', payrollController.getStructure);
+router.get('/employee/:employeeId/structure', payrollController.getStructure);
 router.put('/structure/:employeeId', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.updateStructure);
+router.put('/employee/:employeeId/structure', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.updateStructure);
 router.post('/structure/bulk-update', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), payrollController.bulkUpdateStructure);
 
 // Reimbursements, Loans & Tax Slabs

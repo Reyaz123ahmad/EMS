@@ -1,3 +1,4 @@
+import { resolveShiftForEmployee, getEffectiveShiftOverview } from '../shifts/services/shift-resolver.service.js';
 import attendanceRepository from './attendance.repository.js';
 import { attendanceSecurityRepository } from '../attendance-security/attendance-security.repository.js';
 import { biometricCardsService } from '../biometric-cards/biometric-cards.service.js';
@@ -58,94 +59,10 @@ export const attendanceService = {
   },
 
   /**
-   * 2. Shift Assignment Check
+   * 2. Shift Assignment Check (Delegates to Canonical Shift Resolver)
    */
   async checkShiftAssignment(employeeId, date = new Date(), companyId = null) {
-    const targetDate = new Date(date);
-
-    // 1. Check ShiftAssignment
-    const assignment = await prisma.shiftAssignment.findFirst({
-      where: {
-        employeeId,
-        effectiveFrom: { lte: targetDate },
-        OR: [
-          { effectiveTo: null },
-          { effectiveTo: { gte: targetDate } }
-        ]
-      },
-      include: {
-        shift: true
-      },
-      orderBy: { effectiveFrom: 'desc' }
-    });
-
-    if (assignment && assignment.shift && assignment.shift.isActive) {
-      const s = assignment.shift;
-      return {
-        hasShift: true,
-        shift: {
-          id: s.id,
-          name: s.name,
-          startTime: s.startTime || '09:00',
-          endTime: s.endTime || '18:00',
-          graceMinutes: s.graceMinutes !== undefined ? s.graceMinutes : 15,
-          workingHours: s.workingHours || 8,
-          isNightShift: s.isNightShift || false
-        }
-      };
-    }
-
-    // 2. Check Roster
-    const startOfDay = new Date(targetDate);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const roster = await prisma.roster.findFirst({
-      where: {
-        employeeId,
-        date: startOfDay,
-        isPublished: true
-      },
-      include: { shift: true }
-    });
-
-    if (roster && roster.shift && roster.shift.isActive) {
-      const s = roster.shift;
-      return {
-        hasShift: true,
-        shift: {
-          id: s.id,
-          name: s.name,
-          startTime: s.startTime || '09:00',
-          endTime: s.endTime || '18:00',
-          graceMinutes: s.graceMinutes !== undefined ? s.graceMinutes : 15,
-          workingHours: s.workingHours || 8,
-          isNightShift: s.isNightShift || false
-        }
-      };
-    }
-
-    // 3. Fallback to active company default shift if available
-    if (companyId) {
-      const defaultShift = await prisma.shift.findFirst({
-        where: { companyId, isActive: true },
-        orderBy: { createdAt: 'asc' }
-      });
-      if (defaultShift) {
-        return {
-          hasShift: true,
-          shift: {
-            id: defaultShift.id,
-            name: defaultShift.name,
-            startTime: defaultShift.startTime || '09:00',
-            endTime: defaultShift.endTime || '18:00',
-            graceMinutes: defaultShift.graceMinutes !== undefined ? defaultShift.graceMinutes : 15,
-            workingHours: defaultShift.workingHours || 8,
-            isNightShift: defaultShift.isNightShift || false
-          }
-        };
-      }
-    }
-
-    return { hasShift: false, shift: null };
+    return resolveShiftForEmployee({ employeeId, companyId, date });
   },
 
   /**
@@ -490,14 +407,24 @@ export const attendanceService = {
     const lateMinutes = lateCalc.lateMinutes;
     const initialStatus = isLate ? 'LATE' : 'PRESENT';
 
-    // 11. Rule 4: Auto Checkout Extension (Adjusted Checkout Time)
-    const [endH, endM] = (assignedShift?.endTime || '18:00').split(':').map(Number);
-    const shiftEndDate = new Date();
-    shiftEndDate.setHours(endH, endM, 0, 0);
+    // 11. Rule 4: Expected Shift Start & End Timing Calculations
+    const checkInDate = new Date();
+    const [startH, startM] = (assignedShift?.startTime || '09:00').split(':').map(Number);
+    const expectedStart = new Date(checkInDate);
+    expectedStart.setHours(startH, startM, 0, 0);
 
-    let adjustedCheckOutTime = shiftEndDate;
+    const [endH, endM] = (assignedShift?.endTime || '18:00').split(':').map(Number);
+    const expectedEnd = new Date(checkInDate);
+    expectedEnd.setHours(endH, endM, 0, 0);
+    if (assignedShift?.isNightShift || endH < startH || (endH === startH && endM <= startM)) {
+      expectedEnd.setDate(expectedEnd.getDate() + 1);
+    }
+
+    const isRosterOverride = Boolean(shiftInfo.source === 'ROSTER');
+
+    let adjustedCheckOutTime = expectedEnd;
     if (isLate && settings.lateRules?.autoExtendCheckout !== false) {
-      adjustedCheckOutTime = new Date(shiftEndDate.getTime() + lateMinutes * 60000);
+      adjustedCheckOutTime = new Date(expectedEnd.getTime() + lateMinutes * 60000);
     }
 
     const requiredMinutes = (assignedShift?.workingHours || settings.checkoutRules?.workingHours || 8) * 60;
@@ -533,6 +460,10 @@ export const attendanceService = {
       shiftName: assignedShift?.name || null,
       shiftStartTime: assignedShift?.startTime || null,
       shiftEndTime: assignedShift?.endTime || null,
+      shiftSource: shiftInfo.source || 'COMPANY_DEFAULT',
+      expectedStart,
+      expectedEnd,
+      isRosterOverride,
       isLate,
       lateMinutes,
       adjustedCheckOutTime,
@@ -640,6 +571,14 @@ export const attendanceService = {
       todayLog.breaks
     );
 
+    let earlyExitMinutes = 0;
+    if (todayLog.expectedEnd) {
+      const expEnd = new Date(todayLog.expectedEnd);
+      if (checkOutTime < expEnd) {
+        earlyExitMinutes = Math.max(0, Math.floor((expEnd.getTime() - checkOutTime.getTime()) / 60000));
+      }
+    }
+
     const requiredMinutes = todayLog.requiredMinutes || (settings.checkoutRules?.workingHours || 8) * 60;
     const overtimeMinutes = Math.max(0, actualMinutes - requiredMinutes);
 
@@ -656,8 +595,10 @@ export const attendanceService = {
       checkOutLongitude: location?.lng,
       checkOutAccuracy: location?.accuracy,
       totalWorkedMinutes: actualMinutes,
+      workedMinutes: actualMinutes,
       actualMinutes,
-      shortfallMinutes: 0,
+      earlyExitMinutes,
+      shortfallMinutes: Math.max(0, requiredMinutes - actualMinutes),
       overtimeMinutes,
       status: finalStatus,
       remarks: remarks ? `${todayLog.remarks ? todayLog.remarks + ' | ' : ''}${remarks}` : todayLog.remarks
@@ -1011,6 +952,7 @@ export const attendanceService = {
 
     const holidayInfo = await this.checkHoliday(realCompanyId, new Date());
     const shiftInfo = await this.checkShiftAssignment(empId, new Date(), realCompanyId);
+    const effectiveOverview = await getEffectiveShiftOverview({ employeeId: empId, companyId: realCompanyId, date: new Date() });
     const checkoutStatus = await this.canCheckout(empId, realCompanyId);
     const breakStatus = await this.checkBreakLimit(empId, realCompanyId);
 
@@ -1022,6 +964,12 @@ export const attendanceService = {
       date: new Date().toISOString().split('T')[0],
       holiday: holidayInfo,
       shift: shiftInfo,
+      currentShift: shiftInfo.shift,
+      shiftSource: shiftInfo.source,
+      validTill: shiftInfo.validTill || null,
+      isRosterOverride: shiftInfo.source === 'ROSTER',
+      defaultShift: effectiveOverview.defaultShift,
+      defaultShiftStatus: shiftInfo.source === 'ROSTER' ? 'DEACTIVATED_BY_ROSTER' : 'ACTIVE',
       checkoutStatus,
       breakStatus
     };

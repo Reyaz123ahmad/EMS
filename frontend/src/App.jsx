@@ -42,6 +42,7 @@ import AttendanceSettingsPage from './pages/settings/AttendanceSettingsPage.jsx'
 import SecuritySettingsPage from './pages/settings/SecuritySettingsPage.jsx';
 import LeaveSettingsPage from './pages/settings/LeaveSettingsPage.jsx';
 import PayrollSettingsPage from './pages/settings/PayrollSettingsPage.jsx';
+import PayrollRulesPage from './pages/settings/PayrollRulesPage.jsx';
 import NotificationSettingsPage from './pages/settings/NotificationSettingsPage.jsx';
 
 // Company Module Pages
@@ -329,8 +330,12 @@ export default function App() {
           <Route path="attendance" element={<AttendanceSettingsPage />} />
           <Route path="security" element={<SecuritySettingsPage />} />
           <Route path="leave" element={<LeaveSettingsPage />} />
-          <Route path="payroll" element={<PayrollSettingsPage />} />
+          <Route path="payroll" element={<PayrollRulesPage />} />
+          <Route path="payroll-rules" element={<PayrollRulesPage />} />
           <Route path="notifications" element={<NotificationSettingsPage />} />
+        </Route>
+        <Route path="/settings/payroll-rules" element={<SettingsLayout />}>
+          <Route index element={<PayrollRulesPage />} />
         </Route>
 
         {/* Company Routes */}

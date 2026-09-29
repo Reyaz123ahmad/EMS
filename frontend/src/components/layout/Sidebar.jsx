@@ -121,9 +121,14 @@ export const Sidebar = ({
             label: 'Payroll',
             icon: DollarSign,
             children: [
+              { label: 'Run Payroll', to: '/payroll/run' },
               { label: 'Payroll Runs', to: '/payroll/runs' },
               { label: 'Salary Slips', to: '/payroll/slips' },
-              { label: 'Salary Structures', to: '/payroll/salary-structure' }
+              { label: 'Salary Structures', to: '/payroll/salary-structures' },
+              { label: 'Payroll Rules', to: '/settings/payroll-rules' },
+              { label: 'Reimbursements', to: '/payroll/reimbursements' },
+              { label: 'Loans & Advances', to: '/payroll/loans-advances' },
+              { label: 'Tax Slabs', to: '/payroll/tax-slabs' }
             ]
           },
           { label: 'Documents', to: '/documents', icon: FileText },
@@ -190,8 +195,11 @@ export const Sidebar = ({
             label: 'Payroll',
             icon: DollarSign,
             children: [
+              { label: 'Run Payroll', to: '/payroll/run' },
               { label: 'Payroll Runs', to: '/payroll/runs' },
+              { label: 'Salary Slips', to: '/payroll/slips' },
               { label: 'Salary Structures', to: '/payroll/salary-structures' },
+              { label: 'Payroll Rules', to: '/settings/payroll-rules' },
               { label: 'Reimbursements', to: '/payroll/reimbursements' },
               { label: 'Loans & Advances', to: '/payroll/loans-advances' },
               { label: 'Tax Slabs', to: '/payroll/tax-slabs' },

@@ -87,7 +87,13 @@ export const attendanceRepository = {
       shiftName: data.shiftName || null,
       shiftStartTime: data.shiftStartTime || null,
       shiftEndTime: data.shiftEndTime || null,
+      shiftSource: data.shiftSource || null,
+      expectedStart: data.expectedStart || null,
+      expectedEnd: data.expectedEnd || null,
+      isRosterOverride: Boolean(data.isRosterOverride),
       requiredMinutes: data.requiredMinutes || null,
+      workedMinutes: data.workedMinutes !== undefined ? data.workedMinutes : data.actualMinutes || null,
+      earlyExitMinutes: data.earlyExitMinutes || 0,
       actualMinutes: data.actualMinutes || null,
       shortfallMinutes: data.shortfallMinutes || null,
       totalBreaks: data.totalBreaks || 0,
@@ -178,7 +184,22 @@ export const attendanceRepository = {
               lastName: true,
               employeeCode: true,
               department: { select: { id: true, name: true } },
-              branch: { select: { id: true, name: true } }
+              branch: { select: { id: true, name: true } },
+              shiftAssignments: {
+                where: {
+                  OR: [
+                    { effectiveTo: null },
+                    { effectiveTo: { gte: new Date() } }
+                  ]
+                },
+                select: {
+                  shift: {
+                    select: { id: true, name: true, startTime: true, endTime: true }
+                  }
+                },
+                orderBy: { effectiveFrom: 'desc' },
+                take: 1
+              }
             }
           },
           breaks: true
@@ -189,8 +210,21 @@ export const attendanceRepository = {
       })
     ]);
 
+    const formattedLogs = logs.map((log) => ({
+      ...log,
+      currentShift: log.shiftId
+        ? {
+            id: log.shiftId,
+            name: log.shiftName,
+            startTime: log.shiftStartTime,
+            endTime: log.shiftEndTime
+          }
+        : null,
+      defaultShift: log.employee?.shiftAssignments?.[0]?.shift || null
+    }));
+
     return {
-      logs,
+      logs: formattedLogs,
       pagination: {
         total,
         page,

@@ -53,6 +53,26 @@ export const payrollController = {
     }
   },
 
+  async listStructureTemplates(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const templates = await payrollService.listStructureTemplates(companyId);
+      res.status(200).json({ status: 'ok', data: { templates } });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async createStructureTemplate(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const created = await payrollService.createStructureTemplate(companyId, req.body);
+      res.status(201).json({ status: 'ok', message: 'Salary structure template created successfully', data: created });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async getStructure(req, res, next) {
     try {
       const employeeId = req.params.employeeId || req.user.employee?.id || req.user.id;
@@ -241,7 +261,7 @@ export const payrollController = {
       }
 
       const { default: prismaClient } = await import('../../config/prisma.js');
-      let slip = await prismaClient.salarySlip.findFirst({
+      const slip = await prismaClient.salarySlip.findFirst({
         where,
         include: {
           payrollItem: {
@@ -251,55 +271,40 @@ export const payrollController = {
                   department: true,
                   designation: true,
                 }
-              }
+              },
+              payrollRun: true,
+              lineItems: true
             }
           }
         }
       }).catch(() => null);
 
-      if (slip) {
-        const slipEmpId = slip.payrollItem?.employeeId;
-        // Ownership check
-        if (role === 'EMPLOYEE') {
-          const authEmpId = await getAuthEmployeeId(req);
-          if (slipEmpId && slipEmpId !== authEmpId) {
-            return res.status(403).json({ status: 'error', message: 'Access denied: You cannot access another employee’s salary slip' });
-          }
-        } else if (role === 'MANAGER') {
-          const emp = await getAuthEmployee(req);
-          const teamIds = await getManagerTeamIds(emp?.id);
-          if (slipEmpId && !teamIds.includes(slipEmpId)) {
-            return res.status(403).json({ status: 'error', message: 'Access denied: Salary slip belongs outside your team' });
-          }
-        } else if (role === 'HR_MANAGER') {
-          const emp = await getAuthEmployee(req);
-          if (slip.payrollItem?.employee?.departmentId && emp?.departmentId && slip.payrollItem.employee.departmentId !== emp.departmentId) {
-            return res.status(403).json({ status: 'error', message: 'Access denied: Salary slip belongs to a different department' });
-          }
+      if (!slip) {
+        return res.status(404).json({ status: 'error', message: 'Salary slip not found' });
+      }
+
+      const slipEmpId = slip.payrollItem?.employeeId;
+      // Ownership check
+      if (role === 'EMPLOYEE') {
+        const authEmpId = await getAuthEmployeeId(req);
+        if (slipEmpId && slipEmpId !== authEmpId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: You cannot access another employee’s salary slip' });
+        }
+      } else if (role === 'MANAGER') {
+        const emp = await getAuthEmployee(req);
+        const teamIds = await getManagerTeamIds(emp?.id);
+        if (slipEmpId && !teamIds.includes(slipEmpId)) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Salary slip belongs outside your team' });
+        }
+      } else if (role === 'HR_MANAGER') {
+        const emp = await getAuthEmployee(req);
+        if (slip.payrollItem?.employee?.departmentId && emp?.departmentId && slip.payrollItem.employee.departmentId !== emp.departmentId) {
+          return res.status(403).json({ status: 'error', message: 'Access denied: Salary slip belongs to a different department' });
         }
       }
 
-      if (!slip) {
-        slip = {
-          id,
-          month: new Date().getMonth() + 1,
-          year: new Date().getFullYear(),
-          basicSalary: 45000,
-          hra: 18000,
-          allowances: 7000,
-          providentFund: 1800,
-          taxDeduction: 2200,
-          netPay: 66000,
-          payableDays: 30,
-          presentDays: 30,
-          employee: {
-            firstName: 'Rahul',
-            lastName: 'Sharma',
-            employeeCode: 'MIND-EMP-0001',
-            department: { name: 'Engineering' },
-            designation: { name: 'Senior Software Engineer' }
-          }
-        };
+      if (!slip.payrollItem?.lineItems || slip.payrollItem.lineItems.length === 0) {
+        return res.status(500).json({ status: 'error', message: 'PDF gen refused: no component breakdown' });
       }
 
       const { generateSalarySlipPDFStream } = await import('../../utils/pdfGenerator.js');

@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { logger } from '../../config/logger.js';
 
 export const payrollService = {
   /**
@@ -59,7 +60,122 @@ export const payrollService = {
     });
   },
 
+  /**
+   * Salary Structure Templates
+   */
+  async listStructureTemplates(companyId) {
+    const company = await prisma.company.findUnique({ where: { id: companyId } });
+    if (!company) return [];
+
+    const payrollSettings = (typeof company.payrollSettings === 'object' && company.payrollSettings !== null)
+      ? company.payrollSettings
+      : {};
+
+    const basicPct = Number(payrollSettings.basicPercentOfCTC ?? 40);
+    const hraPct = Number(payrollSettings.hraPercentOfCTC ?? 20);
+    const specialPct = Math.max(0, 100 - basicPct - hraPct);
+    const pfPct = Number(company.pfEmployeePercent ?? 12);
+    const esiPct = Number(company.esiEmployeePercent ?? 0.75);
+
+    const defaultTemplates = [
+      {
+        id: 'standard-company-rules',
+        name: 'Company Standard (Auto-Inherited from Rules)',
+        description: `Auto-derived from company rules: Basic ${basicPct}%, HRA ${hraPct}%, Special ${specialPct}%, PF ${pfPct}%, ESI ${esiPct}%`,
+        components: [
+          { name: 'Basic', code: 'BASIC', basis: '% of CTC', value: basicPct, type: 'EARNING' },
+          { name: 'HRA', code: 'HRA', basis: '% of CTC', value: hraPct, type: 'EARNING' },
+          { name: 'Special', code: 'SPECIAL', basis: '% of CTC', value: specialPct, type: 'EARNING' },
+          ...(company.pfEnabled !== false ? [{ name: 'PF', code: 'PF', basis: '% of Basic', value: pfPct, type: 'DEDUCTION' }] : []),
+          ...(company.esiEnabled !== false ? [{ name: 'ESI', code: 'ESI', basis: '% of Gross', value: esiPct, type: 'DEDUCTION' }] : [])
+        ]
+      }
+    ];
+
+    const currentTemplates = payrollSettings.templates;
+    return (Array.isArray(currentTemplates) && currentTemplates.length > 0) ? currentTemplates : defaultTemplates;
+  },
+
+  async createStructureTemplate(companyId, data) {
+    const company = await prisma.company.findUnique({ where: { id: companyId } });
+    if (!company) throw new Error('Company not found');
+
+    const currentSettings = (typeof company.payrollSettings === 'object' && company.payrollSettings !== null)
+      ? company.payrollSettings
+      : {};
+
+    const templates = Array.isArray(currentSettings.templates) && currentSettings.templates.length > 0
+      ? [...currentSettings.templates]
+      : [
+          {
+            id: 'standard-engineer',
+            name: 'Standard Engineer',
+            description: 'Standard 40% Basic, 20% HRA, 40% Special Allowance structure with statutory PF & ESI',
+            components: [
+              { name: 'Basic', basis: '% of CTC', value: 40, type: 'EARNING' },
+              { name: 'HRA', basis: '% of CTC', value: 20, type: 'EARNING' },
+              { name: 'Special', basis: '% of CTC', value: 40, type: 'EARNING' },
+              { name: 'PF', basis: '% of Basic', value: 12, type: 'DEDUCTION' },
+              { name: 'ESI', basis: '% of Gross', value: 0.75, type: 'DEDUCTION' }
+            ]
+          }
+        ];
+
+    const newTemplate = {
+      id: data.id || `template_${Date.now()}`,
+      name: data.name || 'Custom Structure',
+      description: data.description || '',
+      components: data.components || [],
+      createdAt: new Date().toISOString()
+    };
+
+    // Auto-create/upsert salary components in SalaryComponent table
+    for (const comp of (data.components || [])) {
+      const code = (comp.code || comp.name || 'COMP').toUpperCase().replace(/[^A-Z0-9]/g, '_').slice(0, 20);
+      await prisma.salaryComponent.upsert({
+        where: {
+          companyId_code: {
+            companyId,
+            code
+          }
+        },
+        update: {
+          name: comp.name,
+          type: comp.type || 'EARNING',
+          calculationType: comp.basis?.includes('%') ? 'PERCENTAGE' : 'FIXED',
+          percentage: Number(comp.value || 0)
+        },
+        create: {
+          companyId,
+          name: comp.name,
+          code,
+          type: comp.type || 'EARNING',
+          calculationType: comp.basis?.includes('%') ? 'PERCENTAGE' : 'FIXED',
+          percentage: Number(comp.value || 0)
+        }
+      });
+    }
+
+    templates.push(newTemplate);
+
+    await prisma.company.update({
+      where: { id: companyId },
+      data: {
+        payrollSettings: {
+          ...currentSettings,
+          templates
+        }
+      }
+    });
+
+    return newTemplate;
+  },
+
   async updateEmployeeSalaryStructure(employeeId, data) {
+    const emp = await prisma.employee.findUnique({ where: { id: employeeId } });
+    if (!emp) throw new Error('Employee not found');
+    const companyId = emp.companyId;
+
     const ctc = parseFloat(data.ctc);
     const effectiveFrom = data.effectiveFrom ? new Date(data.effectiveFrom) : new Date();
 
@@ -69,20 +185,83 @@ export const payrollService = {
       create: { employeeId, ctc, effectiveFrom }
     });
 
-    if (data.components && data.components.length > 0) {
-      await prisma.salaryStructureComponent.deleteMany({
-        where: { structureId: structure.id }
-      });
+    const componentsToSave = [];
 
+    if (Array.isArray(data.components) && data.components.length > 0) {
       for (const c of data.components) {
-        await prisma.salaryStructureComponent.create({
-          data: {
-            structureId: structure.id,
-            componentId: c.componentId,
-            amount: parseFloat(c.amount)
-          }
+        let componentId = c.componentId;
+        if (!componentId) {
+          const code = (c.code || c.name || 'COMP').toUpperCase().replace(/[^A-Z0-9]/g, '_').slice(0, 20);
+          const compRecord = await prisma.salaryComponent.upsert({
+            where: {
+              companyId_code: {
+                companyId,
+                code
+              }
+            },
+            update: {
+              name: c.name || code,
+              type: c.type || 'EARNING'
+            },
+            create: {
+              companyId,
+              name: c.name || code,
+              code,
+              type: c.type || 'EARNING',
+              calculationType: 'FIXED'
+            }
+          });
+          componentId = compRecord.id;
+        }
+
+        componentsToSave.push({
+          componentId,
+          amount: parseFloat(c.amount || 0)
         });
       }
+    } else {
+      // Default structure components: 40% Basic, 20% HRA, 40% Special Allowance
+      const monthlyCTC = ctc / 12;
+      const basicAmount = parseFloat((monthlyCTC * 0.40).toFixed(2));
+      const hraAmount = parseFloat((monthlyCTC * 0.20).toFixed(2));
+      const specialAmount = parseFloat((monthlyCTC - basicAmount - hraAmount).toFixed(2));
+
+      const defaultDefs = [
+        { code: 'BASIC', name: 'Basic Salary', type: 'EARNING', amount: basicAmount },
+        { code: 'HRA', name: 'House Rent Allowance', type: 'EARNING', amount: hraAmount },
+        { code: 'SPECIAL', name: 'Special Allowance', type: 'EARNING', amount: specialAmount }
+      ];
+
+      for (const def of defaultDefs) {
+        const compRecord = await prisma.salaryComponent.upsert({
+          where: {
+            companyId_code: {
+              companyId,
+              code: def.code
+            }
+          },
+          update: { name: def.name, type: def.type },
+          create: { companyId, name: def.name, code: def.code, type: def.type, calculationType: 'PERCENTAGE' }
+        });
+        componentsToSave.push({
+          componentId: compRecord.id,
+          amount: def.amount
+        });
+      }
+    }
+
+    await prisma.salaryStructureComponent.deleteMany({
+      where: { structureId: structure.id }
+    });
+
+    for (const c of componentsToSave) {
+      await prisma.salaryStructureComponent.create({
+        data: {
+          structureId: structure.id,
+          componentId: c.componentId,
+          amount: c.amount
+        }
+      });
     }
 
     return this.getEmployeeSalaryStructure(employeeId);
@@ -107,53 +286,333 @@ export const payrollService = {
   },
 
   /**
-   * Preview Payroll
+   * Preview Payroll with Complete Statutory, LOP, OT, Loans & Reimbursements
    */
   async previewPayroll({ companyId, month, year }) {
     const m = parseInt(month, 10);
     const y = parseInt(year, 10);
 
-    const employees = await prisma.employee.findMany({
-      where: { companyId, status: 'ACTIVE' },
-      include: {
-        salaryStructure: {
-          include: { components: { include: { component: true } } }
-        },
-        department: true,
-        designation: true
-      }
-    });
+    const [company, employees] = await Promise.all([
+      prisma.company.findUnique({ where: { id: companyId } }),
+      prisma.employee.findMany({
+        where: { companyId, status: 'ACTIVE' },
+        include: {
+          salaryStructure: {
+            include: { components: { include: { component: true } } }
+          },
+          department: true,
+          designation: true
+        }
+      })
+    ]);
+
+    if (!company) {
+      throw new Error('Company not found');
+    }
 
     const startDate = new Date(Date.UTC(y, m - 1, 1));
     const endDate = new Date(Date.UTC(y, m, 0, 23, 59, 59));
     const daysInMonth = new Date(y, m, 0).getDate();
+    const lopDivisor = company.lopDivisor || 30;
+    const lateThreshold = company.lateMarksForHalfDay || 3;
 
     const items = [];
+    const skipped = [];
     let totalGross = 0;
     let totalDeductions = 0;
     let totalNet = 0;
 
     for (const emp of employees) {
-      const attendanceLogs = await prisma.attendanceLog.findMany({
-        where: {
+      // FIX 1 (CRITICAL) & FIX 10: Skip employees without salary structure
+      if (!emp.salaryStructure || !emp.salaryStructure.ctc) {
+        logger.warn({ employeeId: emp.id }, 'No salary structure — skipping');
+        skipped.push({
           employeeId: emp.id,
-          attendanceDate: { gte: startDate, lte: endDate }
-        }
-      });
+          employeeCode: emp.employeeCode,
+          employeeName: `${emp.firstName} ${emp.lastName}`,
+          reason: 'NO_SALARY_STRUCTURE'
+        });
+        continue;
+      }
 
-      const presentDays = attendanceLogs.filter((l) => l.status === 'PRESENT' || l.status === 'LATE').length;
+      const monthlyCTC = Number(emp.salaryStructure.ctc) / 12;
+
+      // Fetch Attendance, Leaves, Overtime, Loans, and Reimbursements
+      const [attendanceLogs, leaveRequests, otRecords, activeLoans, approvedReimbursements] = await Promise.all([
+        prisma.attendanceLog.findMany({
+          where: {
+            employeeId: emp.id,
+            attendanceDate: { gte: startDate, lte: endDate }
+          }
+        }),
+        prisma.leaveRequest.findMany({
+          where: {
+            employeeId: emp.id,
+            status: 'APPROVED',
+            startDate: { lte: endDate },
+            endDate: { gte: startDate }
+          },
+          include: { leaveType: true }
+        }),
+        prisma.overtimeRecord.findMany({
+          where: {
+            employeeId: emp.id,
+            date: { gte: startDate, lte: endDate },
+            status: 'APPROVED'
+          }
+        }),
+        prisma.loan.findMany({
+          where: {
+            employeeId: emp.id,
+            companyId,
+            status: 'ACTIVE'
+          }
+        }),
+        prisma.reimbursement.findMany({
+          where: {
+            employeeId: emp.id,
+            companyId,
+            status: 'APPROVED',
+            paidInPayrollRunId: null
+          }
+        })
+      ]);
+
+      // Attendance processing
+      const presentCount = attendanceLogs.filter((l) => l.status === 'PRESENT').length;
+      const lateLogs = attendanceLogs.filter((l) => l.status === 'LATE' || l.isLate);
+      const lateCount = lateLogs.length;
       const halfDays = attendanceLogs.filter((l) => l.status === 'HALF_DAY').length;
-      const leaveDays = attendanceLogs.filter((l) => l.status === 'ON_LEAVE').length;
-      const effectivePresent = presentDays + halfDays * 0.5 + leaveDays;
-      const absentDays = Math.max(0, daysInMonth - effectivePresent);
+      const onLeaveLogs = attendanceLogs.filter((l) => l.status === 'ON_LEAVE');
 
-      const monthlyCTC = emp.salaryStructure ? Number(emp.salaryStructure.ctc) / 12 : 50000;
-      const grossSalary = monthlyCTC;
-      const deductionAmount = parseFloat(((absentDays / daysInMonth) * grossSalary).toFixed(2));
-      const netSalary = Math.max(0, grossSalary - deductionAmount);
+      // FIX 4 (HIGH) — Check isPaid for each ON_LEAVE log
+      let paidLeaveDays = 0;
+      let unpaidLeaveDays = 0;
+
+      for (const log of onLeaveLogs) {
+        const logDate = new Date(log.attendanceDate);
+        const matchingRequest = leaveRequests.find((req) => {
+          const reqStart = new Date(req.startDate);
+          const reqEnd = new Date(req.endDate);
+          return logDate >= reqStart && logDate <= reqEnd;
+        });
+
+        if (matchingRequest && matchingRequest.leaveType && matchingRequest.leaveType.isPaid === false) {
+          unpaidLeaveDays += 1;
+        } else {
+          paidLeaveDays += 1;
+        }
+      }
+
+      // FIX 9 (MEDIUM) — Late marks penalty rule
+      let extraAbsentFromLate = 0;
+      if (lateCount >= lateThreshold) {
+        const extraHalfDays = Math.floor(lateCount / lateThreshold);
+        extraAbsentFromLate = extraHalfDays * 0.5;
+      }
+
+      // Effective attendance and absent calculation
+      const totalPresentDays = presentCount + lateCount;
+      const effectivePresent = totalPresentDays + (halfDays * 0.5) + paidLeaveDays;
+      const directAbsent = attendanceLogs.filter((l) => l.status === 'ABSENT').length;
+      
+      let absentDays = 0;
+      if (attendanceLogs.length === 0) {
+        absentDays = daysInMonth;
+      } else {
+        absentDays = directAbsent + (halfDays * 0.5) + unpaidLeaveDays + extraAbsentFromLate;
+      }
+
+      // LOP calculation based on company.lopDivisor
+      const lopDeduction = parseFloat(((absentDays / lopDivisor) * monthlyCTC).toFixed(2));
+
+      // Line items container
+      const lineItems = [];
+
+      // Base Structure Components Breakdown (40% Basic, 20% HRA, remainder Special Allowance by standard Indian HRMS convention if not itemized)
+      let basic = 0;
+      let hra = 0;
+      let specialAllowance = 0;
+
+      const structComponents = emp.salaryStructure.components || [];
+      if (structComponents.length > 0) {
+        for (const sc of structComponents) {
+          const cName = sc.component?.name || 'Allowance';
+          const cType = sc.component?.type || 'EARNING';
+          const cAmt = Number(sc.amount);
+          if (cName.toLowerCase().includes('basic')) basic = cAmt;
+          else if (cName.toLowerCase().includes('hra') || cName.toLowerCase().includes('rent')) hra = cAmt;
+          lineItems.push({
+            componentId: sc.componentId,
+            componentName: cName,
+            type: cType,
+            amount: cAmt
+          });
+        }
+      } else {
+        basic = parseFloat((monthlyCTC * 0.40).toFixed(2));
+        hra = parseFloat((monthlyCTC * 0.20).toFixed(2));
+        specialAllowance = parseFloat((monthlyCTC - (basic + hra)).toFixed(2));
+
+        lineItems.push(
+          { componentName: 'Basic Salary', type: 'EARNING', amount: basic },
+          { componentName: 'House Rent Allowance (HRA)', type: 'EARNING', amount: hra },
+          { componentName: 'Special Allowance', type: 'EARNING', amount: specialAllowance }
+        );
+      }
+
+      // FIX 5 (HIGH) — Overtime calculation
+      const otRate = Number(company.overtimeRate) > 0 ? Number(company.overtimeRate) : (monthlyCTC / 30 / 8);
+      const otPay = parseFloat(
+        otRecords.reduce((sum, r) => sum + (r.minutes / 60) * otRate * Number(r.multiplier || 1), 0).toFixed(2)
+      );
+
+      if (otPay > 0) {
+        lineItems.push({
+          componentName: 'Overtime',
+          type: 'EARNING',
+          amount: otPay
+        });
+      }
+
+      // FIX 7 (MEDIUM) — Reimbursements
+      let totalReimbursements = 0;
+      for (const reimb of approvedReimbursements) {
+        const rAmt = Number(reimb.amount);
+        totalReimbursements += rAmt;
+        lineItems.push({
+          componentName: `Reimbursement (${reimb.category})`,
+          type: 'EARNING',
+          amount: rAmt,
+          reimbursementId: reimb.id
+        });
+      }
+
+      // Total Gross Earnings
+      const grossSalary = parseFloat((monthlyCTC + otPay + totalReimbursements).toFixed(2));
+
+      // DEDUCTIONS
+      // 1. LOP
+      if (lopDeduction > 0) {
+        lineItems.push({
+          componentName: 'LOP / Loss of Pay',
+          type: 'DEDUCTION',
+          amount: lopDeduction
+        });
+      }
+
+      // FIX 6 (HIGH) — PF (Provident Fund)
+      let pfEmployee = 0;
+      if (company.pfEnabled !== false) {
+        const pfCeiling = Number(company.pfCeiling || 15000);
+        const pfPercent = Number(company.pfEmployeePercent || 12) / 100;
+        pfEmployee = parseFloat((Math.min(basic, pfCeiling) * pfPercent).toFixed(2));
+        if (pfEmployee > 0) {
+          lineItems.push({
+            componentName: 'Provident Fund (PF)',
+            type: 'DEDUCTION',
+            amount: pfEmployee
+          });
+        }
+      }
+
+      // FIX 6 (HIGH) — ESI (Employee State Insurance)
+      let esiEmployee = 0;
+      const esiCeiling = Number(company.esiCeiling || 21000);
+      if (company.esiEnabled !== false && grossSalary <= esiCeiling) {
+        const esiPercent = Number(company.esiEmployeePercent || 0.75) / 100;
+        esiEmployee = parseFloat((grossSalary * esiPercent).toFixed(2));
+        if (esiEmployee > 0) {
+          lineItems.push({
+            componentName: 'Employee State Insurance (ESI)',
+            type: 'DEDUCTION',
+            amount: esiEmployee
+          });
+        }
+      }
+
+      // FIX 6 (HIGH) — PT (Professional Tax)
+      let ptAmount = 0;
+      const ptState = (company.ptState || 'MAHARASHTRA').toUpperCase();
+      if (ptState === 'MAHARASHTRA') {
+        if (grossSalary > 10000) ptAmount = (m === 2) ? 300 : 200;
+        else if (grossSalary > 7500) ptAmount = 175;
+      } else if (ptState === 'KARNATAKA') {
+        if (grossSalary > 15000) ptAmount = 200;
+      } else if (ptState === 'TELANGANA' || ptState === 'ANDHRA PRADESH') {
+        if (grossSalary > 20000) ptAmount = 200;
+        else if (grossSalary > 15000) ptAmount = 150;
+      } else {
+        if (grossSalary > 10000) ptAmount = 200;
+      }
+
+      if (ptAmount > 0) {
+        lineItems.push({
+          componentName: 'Professional Tax (PT)',
+          type: 'DEDUCTION',
+          amount: ptAmount
+        });
+      }
+
+      // FIX 6 (HIGH) — TDS (Income Tax)
+      let monthlyTDS = 0;
+      if (company.tdsEnabled !== false) {
+        const annualGross = grossSalary * 12;
+        const standardDeduction = 75000;
+        const taxableIncome = Math.max(0, annualGross - standardDeduction);
+        let annualTax = 0;
+        if (taxableIncome > 1500000) {
+          annualTax = 140000 + (taxableIncome - 1500000) * 0.30;
+        } else if (taxableIncome > 1200000) {
+          annualTax = 80000 + (taxableIncome - 1200000) * 0.20;
+        } else if (taxableIncome > 1000000) {
+          annualTax = 50000 + (taxableIncome - 1000000) * 0.15;
+        } else if (taxableIncome > 700000) {
+          annualTax = 20000 + (taxableIncome - 700000) * 0.10;
+        } else if (taxableIncome > 300000) {
+          annualTax = (taxableIncome - 300000) * 0.05;
+        }
+        if (taxableIncome <= 700000) annualTax = 0;
+        else annualTax = annualTax * 1.04;
+        monthlyTDS = parseFloat((annualTax / 12).toFixed(2));
+
+        if (monthlyTDS > 0) {
+          lineItems.push({
+            componentName: 'Tax Deducted at Source (TDS)',
+            type: 'DEDUCTION',
+            amount: monthlyTDS
+          });
+        }
+      }
+
+      // FIX 7 (MEDIUM) — Loans EMI
+      let totalLoanEMI = 0;
+      for (const loan of activeLoans) {
+        const emi = Math.min(Number(loan.emiAmount), Number(loan.remainingAmount));
+        if (emi > 0) {
+          totalLoanEMI += emi;
+          lineItems.push({
+            componentName: 'Loan EMI',
+            type: 'DEDUCTION',
+            amount: parseFloat(emi.toFixed(2)),
+            loanId: loan.id
+          });
+        }
+      }
+
+      // Total Deductions
+      const totalDeductionsForEmp = parseFloat(
+        (lopDeduction + pfEmployee + esiEmployee + ptAmount + monthlyTDS + totalLoanEMI).toFixed(2)
+      );
+
+      // Net Salary
+      let netSalary = Math.max(0, parseFloat((grossSalary - totalDeductionsForEmp).toFixed(2)));
+      if (company.roundOffRule === 'NEAREST_RUPEE') {
+        netSalary = Math.round(netSalary);
+      }
 
       totalGross += grossSalary;
-      totalDeductions += deductionAmount;
+      totalDeductions += totalDeductionsForEmp;
       totalNet += netSalary;
 
       items.push({
@@ -162,11 +621,16 @@ export const payrollService = {
         employeeName: `${emp.firstName} ${emp.lastName}`,
         department: emp.department?.name || 'General',
         grossSalary,
-        totalDeductions: deductionAmount,
+        totalDeductions: totalDeductionsForEmp,
         netSalary,
         presentDays: Math.floor(effectivePresent),
-        absentDays,
-        leaveDays
+        absentDays: Math.round(absentDays * 10) / 10,
+        leaveDays: paidLeaveDays,
+        unpaidLeaveDays,
+        overtimePay: otPay,
+        reimbursementAmount: totalReimbursements,
+        loanEMI: totalLoanEMI,
+        lineItems
       });
     }
 
@@ -175,6 +639,9 @@ export const payrollService = {
       month: m,
       year: y,
       totalEmployees: employees.length,
+      processedCount: items.length,
+      skippedCount: skipped.length,
+      skipped,
       totalGross: parseFloat(totalGross.toFixed(2)),
       totalDeductions: parseFloat(totalDeductions.toFixed(2)),
       totalNet: parseFloat(totalNet.toFixed(2)),
@@ -183,7 +650,7 @@ export const payrollService = {
   },
 
   /**
-   * Process Payroll Run
+   * Process Payroll Run & Persist Component-Level Line Items
    */
   async processPayroll({ companyId, month, year, processedBy }) {
     const preview = await this.previewPayroll({ companyId, month, year });
@@ -217,6 +684,10 @@ export const payrollService = {
       }
     });
 
+    // Delete existing salary slips and payroll items for this run
+    await prisma.salarySlip.deleteMany({
+      where: { payrollItem: { payrollRunId: run.id } }
+    });
     await prisma.payrollItem.deleteMany({
       where: { payrollRunId: run.id }
     });
@@ -230,19 +701,60 @@ export const payrollService = {
           totalDeductions: item.totalDeductions,
           netSalary: item.netSalary,
           presentDays: item.presentDays,
-          absentDays: item.absentDays,
+          absentDays: Math.floor(item.absentDays),
           leaveDays: item.leaveDays
         }
       });
 
+      // FIX 2 (CRITICAL) — Persist component-level line items
+      if (item.lineItems && item.lineItems.length > 0) {
+        const lineItemRecords = item.lineItems.map((li) => ({
+          payrollItemId: pItem.id,
+          componentId: li.componentId || null,
+          componentName: li.componentName,
+          type: li.type,
+          amount: li.amount
+        }));
+
+        await prisma.payslipLineItem.createMany({
+          data: lineItemRecords
+        });
+
+        // Update active loans if loan EMI was deducted
+        for (const li of item.lineItems) {
+          if (li.loanId) {
+            const currentLoan = await prisma.loan.findUnique({ where: { id: li.loanId } });
+            if (currentLoan) {
+              const newRemaining = Math.max(0, Number(currentLoan.remainingAmount) - Number(li.amount));
+              await prisma.loan.update({
+                where: { id: li.loanId },
+                data: {
+                  remainingAmount: newRemaining,
+                  status: newRemaining <= 0 ? 'CLOSED' : 'ACTIVE'
+                }
+              });
+            }
+          }
+
+          // Mark reimbursements as PAID and link to payroll run
+          if (li.reimbursementId) {
+            await prisma.reimbursement.update({
+              where: { id: li.reimbursementId },
+              data: {
+                status: 'PAID',
+                paidInPayrollRunId: run.id
+              }
+            });
+          }
+        }
+      }
+
       const slipNumber = `SLIP-${preview.year}${String(preview.month).padStart(2, '0')}-${item.employeeCode}`;
-      await prisma.salarySlip.upsert({
-        where: { payrollItemId: pItem.id },
-        update: {
-          slipNumber,
-          pdfUrl: `https://storage.googleapis.com/ems-slips/${slipNumber}.pdf`
-        },
-        create: {
+      await prisma.salarySlip.deleteMany({
+        where: { slipNumber }
+      });
+      await prisma.salarySlip.create({
+        data: {
           payrollItemId: pItem.id,
           slipNumber,
           pdfUrl: `https://storage.googleapis.com/ems-slips/${slipNumber}.pdf`
@@ -250,7 +762,12 @@ export const payrollService = {
       });
     }
 
-    return this.getPayrollRunDetail(run.id);
+    const detail = await this.getPayrollRunDetail(run.id);
+    return {
+      ...detail,
+      skipped: preview.skipped,
+      skippedCount: preview.skippedCount
+    };
   },
 
   /**
@@ -267,7 +784,8 @@ export const payrollService = {
         items: {
           include: {
             employee: true,
-            salarySlip: true
+            salarySlip: true,
+            lineItems: true
           }
         }
       }
@@ -300,7 +818,8 @@ export const payrollService = {
             employee: {
               select: { id: true, firstName: true, lastName: true, employeeCode: true, email: true, department: true }
             },
-            salarySlip: true
+            salarySlip: true,
+            lineItems: true
           }
         }
       }
@@ -331,7 +850,8 @@ export const payrollService = {
             employee: {
               select: { id: true, firstName: true, lastName: true, employeeCode: true, email: true }
             },
-            payrollRun: true
+            payrollRun: true,
+            lineItems: true
           }
         }
       },
@@ -367,7 +887,8 @@ export const payrollService = {
             employee: {
               select: { id: true, firstName: true, lastName: true, employeeCode: true, email: true }
             },
-            payrollRun: true
+            payrollRun: true,
+            lineItems: true
           }
         }
       },
@@ -486,35 +1007,72 @@ export const payrollService = {
   },
 
   /**
-   * List Reimbursements
+   * List Reimbursements with Real Model
    */
   async listReimbursements({ companyId, filters = {}, pagination = { page: 1, limit: 20 } }) {
     const page = parseInt(pagination.page) || 1;
     const limit = parseInt(pagination.limit) || 20;
+    const where = { companyId };
 
-    // Return structured reimbursement claims
+    if (filters.status) where.status = filters.status;
+    if (filters.employeeId) where.employeeId = filters.employeeId;
+
+    const [reimbursements, total] = await Promise.all([
+      prisma.reimbursement.findMany({
+        where,
+        include: {
+          employee: {
+            select: { id: true, firstName: true, lastName: true, employeeCode: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.reimbursement.count({ where })
+    ]);
+
     return {
-      reimbursements: [],
-      total: 0,
+      reimbursements,
+      total,
       page,
       limit,
-      totalPages: 1
+      totalPages: Math.ceil(total / limit) || 1
     };
   },
 
   /**
-   * List Loans & Advances
+   * List Loans & Advances with Real Model
    */
   async listLoansAdvances({ companyId, filters = {}, pagination = { page: 1, limit: 20 } }) {
     const page = parseInt(pagination.page) || 1;
     const limit = parseInt(pagination.limit) || 20;
+    const where = { companyId };
+
+    if (filters.status) where.status = filters.status;
+    if (filters.employeeId) where.employeeId = filters.employeeId;
+
+    const [loans, total] = await Promise.all([
+      prisma.loan.findMany({
+        where,
+        include: {
+          employee: {
+            select: { id: true, firstName: true, lastName: true, employeeCode: true }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.loan.count({ where })
+    ]);
 
     return {
-      loans: [],
-      total: 0,
+      loans,
+      total,
       page,
       limit,
-      totalPages: 1
+      totalPages: Math.ceil(total / limit) || 1
     };
   },
 

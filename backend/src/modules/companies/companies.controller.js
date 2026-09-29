@@ -183,6 +183,31 @@ export const companiesController = {
 
 
   /**
+   * Payroll Config Handlers
+   */
+  async getPayrollConfig(req, res, next) {
+    try {
+      const companyId = req.params.id || req.user?.companyId || req.query.companyId;
+      if (!companyId) return res.status(400).json({ status: 'error', message: 'Company ID is required' });
+      const config = await companiesService.getPayrollConfig(companyId);
+      res.status(200).json({ status: 'ok', data: config });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async updatePayrollConfig(req, res, next) {
+    try {
+      const companyId = req.params.id || req.user?.companyId || req.body.companyId;
+      if (!companyId) return res.status(400).json({ status: 'error', message: 'Company ID is required' });
+      const updated = await companiesService.updatePayrollConfig(companyId, req.body);
+      res.status(200).json({ status: 'ok', message: 'Payroll configuration updated successfully', data: updated });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * Granular settings handlers
    */
   async getSettingsSchema(req, res, next) {

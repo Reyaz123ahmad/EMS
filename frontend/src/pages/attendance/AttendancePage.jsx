@@ -180,9 +180,13 @@ export const AttendancePage = () => {
           ...payload,
           breakType: selectedBreakType || 'SHORT'
         });
+        if (res?.data) {
+          useAttendanceStore.getState().addBreak(res.data);
+        }
         toast.success(res.message || 'Break started with biometric verification!');
       } else if (activeAction === 'BREAK_END') {
         const res = await endBreakMutation.mutateAsync(payload);
+        useAttendanceStore.getState().endBreak(res?.data);
         if (res.warning) {
           toast.warning(res.warning);
         } else {
@@ -284,7 +288,14 @@ export const AttendancePage = () => {
             attendance={todayStatus?.attendance}
             breaks={todayStatus?.breaks || breaks}
             holiday={holiday}
-            shift={shift}
+            shift={{
+              shift: todayStatus?.currentShift || shift?.shift || shift,
+              source: todayStatus?.shiftSource || shift?.source,
+              validTill: todayStatus?.validTill || shift?.validTill,
+              isRosterOverride: todayStatus?.isRosterOverride ?? (todayStatus?.shiftSource === 'ROSTER'),
+              defaultShift: todayStatus?.defaultShift || shift?.defaultShift,
+              defaultShiftStatus: todayStatus?.defaultShiftStatus
+            }}
           />
 
           {/* Action Trigger / Working Hours Control */}

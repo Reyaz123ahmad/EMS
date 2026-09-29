@@ -22,6 +22,12 @@ router.get('/', authenticate, requireRole('SUPER_ADMIN'), cacheResponse('cache:c
 router.get('/stats', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), cacheResponse('cache:companies_stats', 120), companiesController.getStats);
 router.get('/analytics', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN'), cacheResponse('cache:companies_analytics', 120), companiesController.getAnalytics);
 
+// Dedicated Payroll Rules & Statutory Config
+router.get('/payroll-config', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN'), companiesController.getPayrollConfig);
+router.put('/payroll-config', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN'), companiesController.updatePayrollConfig);
+router.get('/:id/payroll-config', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN'), companiesController.getPayrollConfig);
+router.put('/:id/payroll-config', authenticate, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN'), companiesController.updatePayrollConfig);
+
 // Granular Category Settings
 router.get('/:id/settings/attendance', authenticate, (req, res, next) => { req.params.type = 'attendance'; companiesController.getSettingByType(req, res, next); });
 router.put('/:id/settings/attendance', authenticate, (req, res, next) => { req.params.type = 'attendance'; companiesController.updateSettingByType(req, res, next); });

@@ -34,7 +34,7 @@ export const SettingsLayout = () => {
     { label: 'Attendance & Shifts', to: '/settings/attendance', icon: CalendarCheck, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] },
     { label: 'Zero-Trust Security', to: '/settings/security', icon: ShieldCheck, allowed: ['COMPANY_ADMIN'] },
     { label: 'Leave & Holidays', to: '/settings/leave', icon: Calendar, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] },
-    { label: 'Payroll & CTC', to: '/settings/payroll', icon: DollarSign, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] },
+    { label: 'Payroll Rules', to: '/settings/payroll-rules', icon: DollarSign, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] },
     { label: 'Notifications', to: '/settings/notifications', icon: Bell, allowed: ['COMPANY_ADMIN', 'HR_ADMIN'] }
   ];
 

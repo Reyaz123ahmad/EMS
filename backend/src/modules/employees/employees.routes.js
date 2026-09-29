@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import employeesController from './employees.controller.js';
+import shiftsController from '../shifts/shifts.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 import { requireRole } from '../../middlewares/role.middleware.js';
 import { requireActiveSubscription, checkSubscriptionLimit } from '../../middlewares/subscription.middleware.js';
@@ -87,6 +88,9 @@ router.get('/', cacheResponse('cache:employees_list', 60), employeesController.l
 
 // Single employee detail
 router.get('/:id', employeesController.getEmployee);
+
+// Effective active shift for employee (Roster override > Assignment > Default)
+router.get('/:id/effective-shift', shiftsController.getEffectiveShift);
 
 // Update employee
 router.put(

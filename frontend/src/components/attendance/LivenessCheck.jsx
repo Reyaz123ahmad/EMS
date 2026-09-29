@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Eye, ArrowLeft, ArrowRight, ArrowUp, ArrowDown, CheckCircle, ShieldCheck, RefreshCw, AlertCircle } from 'lucide-react';
-import { detectFace, calculateEAR, detectHeadPose, loadFaceModels } from '../../utils/face-detector.js';
+import { detectFace, calculateEAR, detectHeadPose, checkFaceBounds, loadFaceModels } from '../../utils/face-detector.js';
 
 export function LivenessCheck({ challenge, employeeId, onComplete, onCancel }) {
   const videoRef = useRef(null);
@@ -12,8 +12,17 @@ export function LivenessCheck({ challenge, employeeId, onComplete, onCancel }) {
   const [detectedDirection, setDetectedDirection] = useState('CENTER');
   const [isBlinking, setIsBlinking] = useState(false);
   const [earValue, setEarValue] = useState(0);
+  const [yawValue, setYawValue] = useState(0);
+  const [pitchValue, setPitchValue] = useState(1.0);
   const [stepCompleted, setStepCompleted] = useState(false);
   const [faceDetected, setFaceDetected] = useState(false);
+  const [faceBounds, setFaceBounds] = useState({
+    isInside: false,
+    isSizeOk: false,
+    isProperlyPositioned: false,
+    status: 'NO_FACE',
+    message: 'Align Face Inside Guide'
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [cameraError, setCameraError] = useState(null);
 
@@ -263,45 +272,64 @@ export function LivenessCheck({ challenge, employeeId, onComplete, onCancel }) {
       try {
         const result = await detectFace(video);
 
-        if (result) {
+        if (result && result.landmarks) {
           setFaceDetected(true);
 
+          // 1. Evaluate spatial bounds inside guide circle
+          const bounds = checkFaceBounds(result.box, video.videoWidth || 640, video.videoHeight || 480);
+          setFaceBounds(bounds);
+
+          // 2. Compute biometric metrics (EAR and user-centric Head Pose)
           const ear = calculateEAR(result.landmarks);
           const headPose = detectHeadPose(result.landmarks);
 
           setEarValue(ear);
+          setYawValue(headPose.yaw);
+          setPitchValue(headPose.pitch);
           setDetectedDirection(headPose.direction);
           setIsBlinking(ear < 0.23);
 
-          const currentChallenge = steps[currentStep];
+          // CRITICAL: Only evaluate liveness challenges when face is PROPERLY POSITIONED inside the circle
+          if (bounds.isProperlyPositioned) {
+            const currentChallenge = steps[currentStep];
 
-          if (currentChallenge === 'BLINK') {
-            checkBlink(ear);
-          } else if (
-            currentChallenge === 'TURN_LEFT' ||
-            currentChallenge === 'TURN_HEAD_LEFT'
-          ) {
-            if (headPose.direction === 'LEFT' || headPose.yaw < -0.12) {
-              completeStep(currentStep);
-            }
-          } else if (
-            currentChallenge === 'TURN_RIGHT' ||
-            currentChallenge === 'TURN_HEAD_RIGHT'
-          ) {
-            if (headPose.direction === 'RIGHT' || headPose.yaw > 0.12) {
-              completeStep(currentStep);
-            }
-          } else if (currentChallenge === 'LOOK_UP') {
-            if (headPose.direction === 'UP' || headPose.pitch > 1.3) {
-              completeStep(currentStep);
-            }
-          } else if (currentChallenge === 'LOOK_DOWN') {
-            if (headPose.direction === 'DOWN' || headPose.pitch < 0.75) {
-              completeStep(currentStep);
+            if (currentChallenge === 'BLINK') {
+              checkBlink(ear);
+            } else if (
+              currentChallenge === 'TURN_LEFT' ||
+              currentChallenge === 'TURN_HEAD_LEFT'
+            ) {
+              // User turned head to their LEFT (userYaw < -0.12)
+              if (headPose.direction === 'LEFT' && headPose.yaw < -0.12) {
+                completeStep(currentStep);
+              }
+            } else if (
+              currentChallenge === 'TURN_RIGHT' ||
+              currentChallenge === 'TURN_HEAD_RIGHT'
+            ) {
+              // User turned head to their RIGHT (userYaw > 0.12)
+              if (headPose.direction === 'RIGHT' && headPose.yaw > 0.12) {
+                completeStep(currentStep);
+              }
+            } else if (currentChallenge === 'LOOK_UP') {
+              if (headPose.direction === 'UP' && headPose.pitch > 1.35) {
+                completeStep(currentStep);
+              }
+            } else if (currentChallenge === 'LOOK_DOWN') {
+              if (headPose.direction === 'DOWN' && headPose.pitch < 0.75) {
+                completeStep(currentStep);
+              }
             }
           }
         } else {
           setFaceDetected(false);
+          setFaceBounds({
+            isInside: false,
+            isSizeOk: false,
+            isProperlyPositioned: false,
+            status: 'NO_FACE',
+            message: 'Align Face Inside Guide'
+          });
         }
       } catch (error) {
         console.error('[LivenessCheck] Frame detection error:', error);
@@ -435,14 +463,23 @@ export function LivenessCheck({ challenge, employeeId, onComplete, onCancel }) {
         {!isLoading && !cameraError && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
             <div
-              className={`w-56 h-72 border-4 rounded-full transition-all duration-300 ${
+              className={`w-56 h-72 border-4 rounded-full transition-all duration-300 flex items-center justify-center ${
                 stepCompleted
-                  ? 'border-emerald-500 shadow-[0_0_35px_rgba(16,185,129,0.5)]'
-                  : faceDetected
-                  ? 'border-emerald-400/90 shadow-[0_0_25px_rgba(52,211,153,0.35)]'
-                  : 'border-rose-500/70 shadow-[0_0_25px_rgba(244,63,94,0.3)]'
+                  ? 'border-emerald-500 shadow-[0_0_35px_rgba(16,185,129,0.5)] bg-emerald-500/5'
+                  : !faceDetected || faceBounds.status === 'OUTSIDE_CIRCLE'
+                  ? 'border-rose-500/80 shadow-[0_0_25px_rgba(244,63,94,0.35)]'
+                  : faceBounds.status === 'TOO_FAR'
+                  ? 'border-amber-400/90 shadow-[0_0_25px_rgba(251,191,36,0.35)]'
+                  : 'border-emerald-400/90 shadow-[0_0_25px_rgba(52,211,153,0.35)]'
               }`}
-            />
+            >
+              {/* Optional inner guide crosshair or hint */}
+              {!faceDetected && (
+                <span className="text-[11px] text-rose-300 font-semibold px-2 py-0.5 bg-black/60 rounded-full border border-rose-500/30">
+                  Position Face Here
+                </span>
+              )}
+            </div>
           </div>
         )}
 
@@ -454,20 +491,32 @@ export function LivenessCheck({ challenge, employeeId, onComplete, onCancel }) {
         )}
 
         {/* Debug Telemetry HUD (Top-right, z-20) */}
-        <div className="absolute top-3 right-3 bg-black/75 backdrop-blur-md text-white text-[10px] font-mono px-2.5 py-1.5 rounded-lg border border-slate-700 z-20 space-y-0.5 pointer-events-none">
-          <div>Video: {debug.videoReady ? <span className="text-emerald-400 font-bold">✓ Ready</span> : <span className="text-amber-400">⏳ Loading</span>}</div>
-          <div>Size: {debug.videoWidth > 0 ? `${debug.videoWidth}x${debug.videoHeight}` : 'Detecting...'}</div>
-          <div>Stream: {debug.streamActive ? <span className="text-emerald-400 font-bold">✓ Active</span> : <span className="text-rose-400">✗ Offline</span>}</div>
+        <div className="absolute top-3 right-3 bg-black/80 backdrop-blur-md text-white text-[10px] font-mono px-2.5 py-1.5 rounded-lg border border-slate-700 z-20 space-y-0.5 pointer-events-none">
+          <div>Status: <span className={faceBounds.isProperlyPositioned ? 'text-emerald-400 font-bold' : faceBounds.status === 'TOO_FAR' ? 'text-amber-400' : 'text-rose-400'}>{faceBounds.status || 'NO_FACE'}</span></div>
+          <div>Yaw: <span className="text-indigo-300 font-bold">{yawValue > 0 ? '+' : ''}{yawValue.toFixed(2)}</span> | Pose: <span className="text-indigo-200">{detectedDirection}</span></div>
+          <div>Goal: <span className="text-amber-300 font-bold">{steps[currentStep]}</span></div>
         </div>
 
         {/* Live HUD Telemetry Bar (Bottom-center, z-20) */}
         {!isLoading && !cameraError && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700 z-20 flex items-center gap-3">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/85 backdrop-blur-md px-4 py-2 rounded-full border border-slate-700 z-20 flex items-center gap-3 whitespace-nowrap shadow-xl">
             {faceDetected ? (
               <>
-                <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Face Detected
+                <span className={`flex items-center gap-1.5 text-xs font-semibold ${
+                  faceBounds.status === 'ALIGNED'
+                    ? 'text-emerald-400'
+                    : faceBounds.status === 'TOO_FAR'
+                    ? 'text-amber-400'
+                    : 'text-rose-400'
+                }`}>
+                  <span className={`h-2 w-2 rounded-full ${
+                    faceBounds.status === 'ALIGNED'
+                      ? 'bg-emerald-400 animate-pulse'
+                      : faceBounds.status === 'TOO_FAR'
+                      ? 'bg-amber-400'
+                      : 'bg-rose-500'
+                  }`} />
+                  {faceBounds.message}
                 </span>
                 <span className="text-xs text-slate-300 font-mono">
                   EAR: <strong>{earValue.toFixed(2)}</strong>

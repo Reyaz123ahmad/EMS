@@ -43,8 +43,18 @@ export default function AssignShiftPage() {
     employeeIds: [],
   });
 
+  const [searchTerm, setSearchTerm] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const filteredEmployees = rawEmployees.filter((emp) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase();
+    const fullName = `${emp.firstName || ''} ${emp.lastName || ''}`.toLowerCase();
+    const code = (emp.employeeCode || '').toLowerCase();
+    const dept = (emp.department?.name || emp.department || '').toLowerCase();
+    return fullName.includes(term) || code.includes(term) || dept.includes(term);
+  });
 
   const handleToggleEmployee = (id) => {
     setFormData((prev) => ({
@@ -133,6 +143,88 @@ export default function AssignShiftPage() {
             </select>
           </div>
 
+          {/* Employee Multi-Select Picker */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-300">
+                Target Employees <span className="text-rose-400">*</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 font-mono">
+                  {formData.employeeIds.length > 0
+                    ? `${formData.employeeIds.length} of ${rawEmployees.length} selected`
+                    : `All ${rawEmployees.length} employees (Default)`}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleSelectAllEmployees}
+                  className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition"
+                >
+                  {formData.employeeIds.length === rawEmployees.length && rawEmployees.length > 0
+                    ? 'Deselect All'
+                    : 'Select All'}
+                </button>
+              </div>
+            </div>
+
+            <div className="border border-slate-700 bg-slate-900/60 rounded-xl p-3 space-y-3">
+              {/* Search Filter */}
+              <input
+                type="text"
+                placeholder="Search employees by name, code, or department..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-slate-800/80 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+
+              {/* Employee Selection List */}
+              <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-800/40">
+                {filteredEmployees.length === 0 ? (
+                  <p className="text-xs text-slate-500 text-center py-4">
+                    {rawEmployees.length === 0 ? 'No active employees found in company.' : 'No employees matching search.'}
+                  </p>
+                ) : (
+                  filteredEmployees.map((emp) => {
+                    const isSelected = formData.employeeIds.includes(emp.id);
+                    return (
+                      <div
+                        key={emp.id}
+                        onClick={() => handleToggleEmployee(emp.id)}
+                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition select-none pt-2 ${
+                          isSelected
+                            ? 'bg-indigo-600/20 border border-indigo-500/40 text-white'
+                            : 'hover:bg-slate-800/50 text-slate-300 border border-transparent'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}} // Handled by container click
+                            className="w-4 h-4 rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 bg-slate-800"
+                          />
+                          <div>
+                            <div className="text-xs font-bold text-slate-200">
+                              {emp.firstName} {emp.lastName}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              {emp.employeeCode || 'EMP-N/A'} • {emp.department?.name || emp.designation?.name || 'General'}
+                            </div>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/30 text-indigo-300">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="Effective From"
@@ -150,7 +242,7 @@ export default function AssignShiftPage() {
           </div>
 
           <p className="text-xs text-slate-400">
-            Note: All active employees without customized roster entries will default to this assignment.
+            Note: If no specific employees are selected, this assignment will apply to all active employees.
           </p>
 
           <div className="flex justify-end gap-3 pt-4">

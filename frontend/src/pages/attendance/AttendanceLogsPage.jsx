@@ -13,6 +13,8 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
+  Tag,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import dayjs from 'dayjs';
@@ -195,6 +197,7 @@ export const AttendanceLogsPage = () => {
               <tr>
                 {!isEmployee && <th className="px-5 py-3.5">Employee</th>}
                 <th className="px-5 py-3.5">Date</th>
+                <th className="px-5 py-3.5">Shift</th>
                 <th className="px-5 py-3.5">Status</th>
                 <th className="px-5 py-3.5">Check In / Out</th>
                 <th className="px-5 py-3.5">Worked (Net)</th>
@@ -205,7 +208,7 @@ export const AttendanceLogsPage = () => {
             <tbody className="divide-y divide-slate-800/60">
               {isLoading ? (
                 <tr>
-                  <td colSpan={isEmployee ? 6 : 7} className="py-12 text-center text-slate-400">
+                  <td colSpan={isEmployee ? 7 : 8} className="py-12 text-center text-slate-400">
                     <div className="flex flex-col items-center justify-center space-y-2">
                       <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
                       <span>Loading attendance audit records...</span>
@@ -214,7 +217,7 @@ export const AttendanceLogsPage = () => {
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={isEmployee ? 6 : 7} className="py-12 text-center text-slate-400">
+                  <td colSpan={isEmployee ? 7 : 8} className="py-12 text-center text-slate-400">
                     No biometric attendance records found matching filters.
                   </td>
                 </tr>
@@ -242,7 +245,31 @@ export const AttendanceLogsPage = () => {
                     )}
 
                     <td className="px-5 py-4 font-mono text-slate-300">
-                      {dayjs(log.date).format('MMM DD, YYYY')}
+                      {dayjs(log.date || log.attendanceDate).format('MMM DD, YYYY')}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-1.5 font-medium text-slate-200">
+                          <span>{log.shiftName || log.currentShift?.name || 'Standard Shift'}</span>
+                          {(log.isRosterOverride || log.shiftSource === 'ROSTER') && (
+                            <span className="inline-flex items-center gap-0.5 rounded bg-cyan-500/20 px-1.5 py-0.5 text-[9px] font-bold text-cyan-300 border border-cyan-500/30">
+                              <Sparkles className="h-2.5 w-2.5" />
+                              Roster
+                            </span>
+                          )}
+                        </div>
+                        {(log.isRosterOverride || log.shiftSource === 'ROSTER') && log.defaultShift && (
+                          <div className="text-[10px] text-slate-500 line-through">
+                            Default: {log.defaultShift.name}
+                          </div>
+                        )}
+                        {log.expectedStart && log.expectedEnd && (
+                          <div className="text-[10px] text-slate-400 font-mono">
+                            {dayjs(log.expectedStart).format('HH:mm')} - {dayjs(log.expectedEnd).format('HH:mm')}
+                          </div>
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-5 py-4">

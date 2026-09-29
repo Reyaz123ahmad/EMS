@@ -36,7 +36,11 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
     ? 'In Progress'
     : '0h 0m';
 
-  const assignedShift = shift?.shift || shift || {
+  const isRoster = shift?.source === 'ROSTER' || shift?.isRosterOverride || attendance?.shiftSource === 'ROSTER' || attendance?.isRosterOverride;
+  const validTill = shift?.validTill;
+  const defaultShift = shift?.defaultShift;
+
+  const assignedShift = shift?.shift || (shift?.name ? shift : null) || {
     name: attendance?.shiftName || 'Standard Shift',
     startTime: attendance?.shiftStartTime || '09:00',
     endTime: attendance?.shiftEndTime || '18:00',
@@ -71,9 +75,30 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
             {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
           </h3>
           {assignedShift && (
-            <p className="mt-0.5 text-xs text-indigo-400 flex items-center gap-1.5 font-medium">
-              <Tag className="h-3 w-3" /> Shift: {assignedShift.name} ({assignedShift.startTime} - {assignedShift.endTime})
-            </p>
+            <div className="mt-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs text-indigo-400 flex items-center gap-1.5 font-semibold">
+                  <Tag className="h-3.5 w-3.5" /> Shift: {assignedShift.name} ({assignedShift.startTime} - {assignedShift.endTime})
+                  {assignedShift.graceMinutes !== undefined ? ` • Grace ${assignedShift.graceMinutes}m` : ''}
+                </p>
+                {isRoster && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/15 border border-cyan-500/40 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                    <Sparkles className="h-2.5 w-2.5 text-cyan-400" />
+                    ROSTER ACTIVE
+                  </span>
+                )}
+              </div>
+              {isRoster && validTill && (
+                <p className="text-[11px] text-cyan-400/90 font-medium">
+                  Live Status: On roster till {new Date(validTill).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                </p>
+              )}
+              {isRoster && defaultShift && (
+                <p className="text-[11px] text-slate-500 line-through decoration-slate-600">
+                  Default shift (deactivated during roster): {defaultShift.name} ({defaultShift.startTime} - {defaultShift.endTime})
+                </p>
+              )}
+            </div>
           )}
         </div>
 

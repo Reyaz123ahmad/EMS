@@ -94,7 +94,67 @@ function eyeAspectRatio(eye) {
 }
 
 /**
+ * Validate whether the detected face is centered inside the guide circle/oval and has adequate size
+ */
+export function checkFaceBounds(box, frameWidth = 640, frameHeight = 480) {
+  if (!box) {
+    return {
+      isInside: false,
+      isSizeOk: false,
+      isProperlyPositioned: false,
+      status: 'NO_FACE',
+      message: 'No face detected in camera feed',
+      distance: 999,
+      radius: 0
+    };
+  }
+
+  const centerX = frameWidth / 2;
+  const centerY = frameHeight / 2;
+  // Guide circle radius: approx 38% of smaller dimension (e.g. 182px in 640x480)
+  const radius = Math.min(frameWidth, frameHeight) * 0.38;
+  const tolerance = radius * 0.15;
+
+  const faceCx = box.x + box.width / 2;
+  const faceCy = box.y + box.height / 2;
+  const d = Math.hypot(faceCx - centerX, faceCy - centerY);
+
+  // Minimum face size threshold to ensure close proximity
+  const MIN_FACE_WIDTH = 110;
+  const MIN_FACE_HEIGHT = 110;
+
+  const isSizeOk = box.width >= MIN_FACE_WIDTH && box.height >= MIN_FACE_HEIGHT;
+  const isInside = (d + box.width / 2) <= (radius + tolerance) && d <= (radius * 0.65);
+
+  let status = 'ALIGNED';
+  let message = 'Face centered';
+
+  if (!isInside) {
+    status = 'OUTSIDE_CIRCLE';
+    message = 'Move face to the center of the circle';
+  } else if (!isSizeOk) {
+    status = 'TOO_FAR';
+    message = 'Move closer to camera';
+  }
+
+  return {
+    isInside,
+    isSizeOk,
+    isProperlyPositioned: isInside && isSizeOk,
+    status,
+    message,
+    distance: d,
+    radius,
+    faceCenter: { x: faceCx, y: faceCy },
+    frameCenter: { x: centerX, y: centerY }
+  };
+}
+
+/**
  * Detect head pose (Yaw & Pitch)
+ * User-Centric:
+ * - When user turns head to THEIR RIGHT: userYaw > +0.12, direction = 'RIGHT'
+ * - When user turns head to THEIR LEFT: userYaw < -0.12, direction = 'LEFT'
  */
 export function detectHeadPose(landmarks) {
   if (!landmarks || landmarks.length < 68) {
@@ -102,8 +162,8 @@ export function detectHeadPose(landmarks) {
   }
 
   const nose = landmarks[30];
-  const leftEye = landmarks[36];
-  const rightEye = landmarks[45];
+  const leftEye = landmarks[36]; // in 2D image coordinates (camera image left, lower x)
+  const rightEye = landmarks[45]; // in 2D image coordinates (camera image right, higher x)
   const chin = landmarks[8];
   const noseBridge = landmarks[27];
 
@@ -113,8 +173,12 @@ export function detectHeadPose(landmarks) {
 
   if (eyeDistance === 0) return { yaw: 0, pitch: 0, direction: 'CENTER' };
 
-  // Yaw: horizontal ratio
-  const yaw = (nose.x - eyeCenterX) / eyeDistance;
+  // In raw 2D camera image coordinates:
+  // - Turning head to user's RIGHT moves nose towards lower X (nose.x < eyeCenterX)
+  // - Turning head to user's LEFT moves nose towards higher X (nose.x > eyeCenterX)
+  // We compute user-centric yaw:
+  const rawImageYaw = (nose.x - eyeCenterX) / eyeDistance;
+  const userYaw = -rawImageYaw;
 
   // Pitch: vertical ratio between eye-nose and nose-chin
   const upperFaceHeight = Math.abs(nose.y - eyeCenterY);
@@ -122,15 +186,15 @@ export function detectHeadPose(landmarks) {
   const pitchRatio = lowerFaceHeight === 0 ? 1 : upperFaceHeight / lowerFaceHeight;
 
   let direction = 'CENTER';
-  if (yaw < -0.12) {
-    direction = 'LEFT';
-  } else if (yaw > 0.12) {
-    direction = 'RIGHT';
+  if (userYaw > 0.12) {
+    direction = 'RIGHT'; // User turned head to their right
+  } else if (userYaw < -0.12) {
+    direction = 'LEFT'; // User turned head to their left
   } else if (pitchRatio > 1.35 || (noseBridge && nose.y - noseBridge.y < 15)) {
     direction = 'UP';
   } else if (pitchRatio < 0.7) {
     direction = 'DOWN';
   }
 
-  return { yaw, pitch: pitchRatio, direction };
+  return { yaw: userYaw, rawImageYaw, pitch: pitchRatio, direction };
 }

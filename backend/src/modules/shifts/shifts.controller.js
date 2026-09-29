@@ -72,6 +72,16 @@ export const shiftsController = {
     }
   },
 
+  async removeAssignment(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      const result = await shiftsService.removeShiftAssignment(req.params.id, companyId);
+      res.status(200).json({ status: 'ok', success: true, message: result.message, data: result });
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async getStats(req, res, next) {
     try {
       const companyId = req.user.companyId;
@@ -89,6 +99,35 @@ export const shiftsController = {
 
       const myShift = await shiftsService.getMyShift({ userId, companyId, email: req.user?.email });
       res.status(200).json({ status: 'ok', success: true, data: myShift });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getEffectiveShift(req, res, next) {
+    try {
+      let employeeId = req.params.employeeId || req.user?.employeeId;
+      if (!employeeId && req.user?.id) {
+        const emp = await prisma.employee.findFirst({
+          where: {
+            OR: [
+              { userId: req.user.id },
+              { email: req.user.email, ...(req.user.companyId ? { companyId: req.user.companyId } : {}) }
+            ]
+          }
+        });
+        employeeId = emp?.id;
+      }
+
+      if (!employeeId) {
+        return res.status(400).json({ status: 'error', success: false, message: 'employeeId required' });
+      }
+
+      const companyId = req.user?.companyId;
+      const date = req.query.date ? new Date(req.query.date) : new Date();
+
+      const result = await shiftsService.getEffectiveShift(employeeId, companyId, date);
+      res.status(200).json({ status: 'ok', success: true, message: 'Effective shift retrieved', data: result });
     } catch (err) {
       next(err);
     }

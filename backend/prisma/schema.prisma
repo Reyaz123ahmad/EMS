@@ -48,6 +48,27 @@ model Company {
   notificationSettings Json @default("{}")
   generalSettings      Json @default("{}")
 
+  // PAYROLL & STATUTORY CONFIGURATION
+  payrollCycleStartDay   Int      @default(1)
+  payrollCycleEndDay     Int      @default(0)   // 0 = last day
+  payrollRunDay          Int      @default(1)
+  payrollRunTime         String   @default("00:05")
+  payrollAutoRunEnabled  Boolean  @default(false)
+  overtimeRate           Decimal? @default(0) @db.Decimal(10, 2)
+  lopDivisor             Int      @default(30)  // 30 or 26
+  lateMarksForHalfDay    Int      @default(3)
+  roundOffRule           String   @default("NEAREST_RUPEE")
+  pfEnabled              Boolean  @default(true)
+  pfEmployeePercent      Decimal? @default(12.00) @db.Decimal(5, 2)
+  pfEmployerPercent      Decimal? @default(12.00) @db.Decimal(5, 2)
+  pfCeiling              Decimal? @default(15000.00) @db.Decimal(12, 2)
+  esiEnabled             Boolean  @default(true)
+  esiEmployeePercent     Decimal? @default(0.75) @db.Decimal(5, 2)
+  esiEmployerPercent     Decimal? @default(3.25) @db.Decimal(5, 2)
+  esiCeiling             Decimal? @default(21000.00) @db.Decimal(12, 2)
+  ptState                String?  @default("MAHARASHTRA")
+  tdsEnabled             Boolean  @default(true)
+
   status    CompanyStatus @default(ACTIVE)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
@@ -73,6 +94,8 @@ model Company {
   attendanceLogs   AttendanceLog[]
   devicePunches    DevicePunch[]
   reportHistories  ReportHistory[]
+  loans            Loan[]
+  reimbursements   Reimbursement[]
 
   @@map("companies")
 }
@@ -484,6 +507,8 @@ model Employee {
   fraudSignals          FraudSignal[]
   livenessVerifications LivenessVerification[]
   faceRegistrationRequests FaceRegistrationRequest[]
+  loans                 Loan[]
+  reimbursements        Reimbursement[]
 
   @@unique([companyId, employeeCode])
   @@index([companyId, email])
@@ -553,13 +578,19 @@ model AttendanceLog {
   shiftName             String?
   shiftStartTime        String?
   shiftEndTime          String?
+  shiftSource           String?           // 'ROSTER' | 'ASSIGNMENT' | 'EMPLOYEE_DEFAULT' | 'COMPANY_DEFAULT'
+  expectedStart         DateTime?
+  expectedEnd           DateTime?
+  isRosterOverride      Boolean           @default(false)
 
   // Late
   isLate                Boolean           @default(false)
   lateMinutes           Int?              @default(0)
+  earlyExitMinutes      Int?              @default(0)
   adjustedCheckOutTime  DateTime?
 
-  // Checkout
+  // Checkout & Worked Duration
+  workedMinutes         Int?
   requiredMinutes       Int?
   actualMinutes         Int?
   shortfallMinutes      Int?
@@ -579,6 +610,7 @@ model AttendanceLog {
   @@unique([employeeId, attendanceDate])
   @@index([companyId, attendanceDate])
   @@index([employeeId, attendanceDate])
+  @@index([shiftId])
   @@map("attendance_logs")
 }
 
@@ -1172,21 +1204,79 @@ model PayrollRun {
 }
 
 model PayrollItem {
-  id              String      @id @default(uuid())
+  id              String            @id @default(uuid())
   payrollRunId    String
-  payrollRun      PayrollRun  @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  payrollRun      PayrollRun        @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
   employeeId      String
-  employee        Employee    @relation(fields: [employeeId], references: [id])
-  grossSalary     Decimal     @db.Decimal(12, 2)
-  totalDeductions Decimal     @db.Decimal(12, 2)
-  netSalary       Decimal     @db.Decimal(12, 2)
+  employee        Employee          @relation(fields: [employeeId], references: [id])
+  grossSalary     Decimal           @db.Decimal(12, 2)
+  totalDeductions Decimal           @db.Decimal(12, 2)
+  netSalary       Decimal           @db.Decimal(12, 2)
   presentDays     Int
   absentDays      Int
   leaveDays       Int
-  createdAt       DateTime    @default(now())
+  createdAt       DateTime          @default(now())
   salarySlip      SalarySlip?
+  lineItems       PayslipLineItem[]
 
   @@map("payroll_items")
+}
+
+model PayslipLineItem {
+  id            String      @id @default(uuid())
+  payrollItemId String
+  payrollItem   PayrollItem @relation(fields: [payrollItemId], references: [id], onDelete: Cascade)
+  componentId   String?
+  componentName String
+  type          String      // EARNING | DEDUCTION
+  amount        Decimal     @db.Decimal(12, 2)
+  createdAt     DateTime    @default(now())
+
+  @@index([payrollItemId])
+  @@map("payslip_line_items")
+}
+
+model Loan {
+  id              String    @id @default(uuid())
+  employeeId      String
+  employee        Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  companyId       String
+  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  principal       Decimal   @db.Decimal(12, 2)
+  interestRate    Decimal   @default(0) @db.Decimal(5, 2)
+  tenureMonths    Int
+  emiAmount       Decimal   @db.Decimal(12, 2)
+  startDate       DateTime
+  endDate         DateTime?
+  remainingAmount Decimal   @db.Decimal(12, 2)
+  status          String    @default("ACTIVE") // ACTIVE, CLOSED
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([employeeId, status])
+  @@index([companyId, status])
+  @@map("loans")
+}
+
+model Reimbursement {
+  id                 String    @id @default(uuid())
+  employeeId         String
+  employee           Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  companyId          String
+  company            Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  category           String
+  amount             Decimal   @db.Decimal(12, 2)
+  billDate           DateTime
+  status             String    @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  approvedBy         String?
+  approvedAt         DateTime?
+  paidInPayrollRunId String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([employeeId, status])
+  @@index([companyId, status])
+  @@map("reimbursements")
 }
 
 model SalarySlip {

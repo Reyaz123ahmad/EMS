@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { resolveShiftForEmployee, getEffectiveShiftOverview } from './services/shift-resolver.service.js';
 
 export const shiftsService = {
   async listShifts(arg1, arg2) {
@@ -81,6 +82,41 @@ export const shiftsService = {
 
     for (const empId of employeeIds) {
       try {
+        // Validate overlapping ShiftAssignment for the employee
+        const overlapConditions = [
+          // Case 1: Existing assignment is permanent (effectiveTo == null) and started on or before the new end date (or new is also permanent)
+          {
+            effectiveTo: null,
+            ...(toDate ? { effectiveFrom: { lte: toDate } } : {})
+          }
+        ];
+
+        // Case 2: Existing assignment has a finite date range that intersects [fromDate, toDate]
+        if (toDate) {
+          overlapConditions.push({
+            effectiveFrom: { lte: toDate },
+            effectiveTo: { gte: fromDate }
+          });
+        } else {
+          overlapConditions.push({
+            effectiveTo: { gte: fromDate }
+          });
+        }
+
+        const existingOverlap = await prisma.shiftAssignment.findFirst({
+          where: {
+            employeeId: empId,
+            OR: overlapConditions
+          },
+          include: { shift: { select: { name: true } } }
+        });
+
+        if (existingOverlap) {
+          throw new Error(
+            `Overlapping shift assignment found (${existingOverlap.shift?.name || 'Assigned Shift'}). Please remove or update existing assignment first.`
+          );
+        }
+
         const assignment = await prisma.shiftAssignment.create({
           data: {
             employeeId: empId,
@@ -101,6 +137,21 @@ export const shiftsService = {
       failedCount: results.filter((r) => r.status === 'FAILED').length,
       results
     };
+  },
+
+  async removeShiftAssignment(assignmentId, companyId) {
+    const where = { id: assignmentId };
+    if (companyId) {
+      where.employee = { companyId };
+    }
+
+    const existing = await prisma.shiftAssignment.findFirst({ where });
+    if (!existing) {
+      return { success: true, message: 'Shift assignment not found or already removed' };
+    }
+
+    await prisma.shiftAssignment.delete({ where: { id: assignmentId } });
+    return { success: true, message: 'Shift assignment removed successfully' };
   },
 
   async getShiftStats(companyId) {
@@ -143,80 +194,41 @@ export const shiftsService = {
       });
     }
 
-    const now = new Date();
-
-    if (employee) {
-      const assignment = await prisma.shiftAssignment.findFirst({
-        where: {
-          employeeId: employee.id,
-          OR: [
-            { effectiveTo: null },
-            { effectiveTo: { gte: now } }
-          ]
-        },
-        include: {
-          shift: {
-            include: {
-              shiftBreakRules: {
-                include: { breakRule: true }
-              }
-            }
-          }
-        },
-        orderBy: { effectiveFrom: 'desc' }
-      });
-
-      if (assignment?.shift) {
-        return {
-          shift: assignment.shift,
-          assignment,
-          employee: {
-            id: employee.id,
-            firstName: employee.firstName,
-            lastName: employee.lastName,
-            employeeCode: employee.employeeCode,
-            department: employee.department?.name,
-            designation: employee.designation?.name
-          }
-        };
-      }
+    if (!employee) {
+      const fallback = await resolveShiftForEmployee({ employeeId: null, companyId, date: new Date() });
+      return {
+        shift: fallback.shift,
+        source: fallback.source,
+        validTill: null,
+        assignment: null,
+        roster: null,
+        employee: null
+      };
     }
 
-    // Fallback to active default shift for the company
-    const targetCompanyId = companyId || employee?.companyId;
-    if (targetCompanyId) {
-      const defaultShift = await prisma.shift.findFirst({
-        where: {
-          companyId: targetCompanyId,
-          isActive: true
-        },
-        include: {
-          shiftBreakRules: {
-            include: { breakRule: true }
-          }
-        },
-        orderBy: { createdAt: 'asc' }
-      });
-
-      if (defaultShift) {
-        return {
-          shift: defaultShift,
-          assignment: null,
-          employee: employee ? {
-            id: employee.id,
-            firstName: employee.firstName,
-            lastName: employee.lastName,
-            employeeCode: employee.employeeCode
-          } : null
-        };
-      }
-    }
+    const resolved = await resolveShiftForEmployee({
+      employeeId: employee.id,
+      companyId: companyId || employee.companyId,
+      date: new Date()
+    });
 
     return {
-      shift: null,
-      assignment: null,
-      employee: null
+      shift: resolved.shift,
+      source: resolved.source,
+      validTill: resolved.validTill,
+      employee: {
+        id: employee.id,
+        firstName: employee.firstName,
+        lastName: employee.lastName,
+        employeeCode: employee.employeeCode,
+        department: employee.department?.name,
+        designation: employee.designation?.name
+      }
     };
+  },
+
+  async getEffectiveShift(employeeId, companyId, date = new Date()) {
+    return getEffectiveShiftOverview({ employeeId, companyId, date });
   }
 };
 
