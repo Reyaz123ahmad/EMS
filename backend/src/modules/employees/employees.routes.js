@@ -95,6 +95,13 @@ router.put(
   employeesController.updateEmployee
 );
 
+// Update employee role (role assignment / promotion)
+router.patch(
+  '/:id/role',
+  requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'SUPER_ADMIN'),
+  employeesController.updateEmployeeRole
+);
+
 // Delete employee
 router.delete(
   '/:id',

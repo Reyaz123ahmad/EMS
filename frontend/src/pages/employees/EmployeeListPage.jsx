@@ -66,12 +66,22 @@ export function EmployeeListPage() {
     {
       header: 'Department / Role',
       key: 'dept',
-      render: (row) => (
-        <div className="text-xs text-slate-300">
-          <div className="font-medium text-slate-200">{row.department?.name || 'General Dept'}</div>
-          <div className="text-slate-400">{row.designation?.title || row.employmentType}</div>
-        </div>
-      )
+      render: (row) => {
+        const roleName = row.user?.userRoles?.[0]?.role?.name || row.user?.role;
+        return (
+          <div className="text-xs text-slate-300">
+            <div className="font-medium text-slate-200 flex items-center gap-1.5">
+              <span>{row.department?.name || 'General Dept'}</span>
+              {roleName && roleName !== 'EMPLOYEE' && (
+                <span className="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  {roleName}
+                </span>
+              )}
+            </div>
+            <div className="text-slate-400">{row.designation?.title || row.employmentType}</div>
+          </div>
+        );
+      }
     },
     {
       header: 'Contact',

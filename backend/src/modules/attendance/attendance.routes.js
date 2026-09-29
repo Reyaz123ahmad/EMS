@@ -126,6 +126,12 @@ router.put(
 );
 
 router.post(
+  '/mark-absentees',
+  requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
+  attendanceController.markAbsentees
+);
+
+router.post(
   '/fraud-signals/:id/review',
   requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
   attendanceController.reviewFraudSignal

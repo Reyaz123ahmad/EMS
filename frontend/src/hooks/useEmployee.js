@@ -100,6 +100,24 @@ export function useEmployeeAnalytics(params = {}) {
   });
 }
 
+export function useRoles() {
+  return useQuery({
+    queryKey: ['roles'],
+    queryFn: () => employeeService.getRoles()
+  });
+}
+
+export function useUpdateEmployeeRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => employeeService.updateEmployeeRole(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['employee', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+    }
+  });
+}
+
 export default {
   useEmployees,
   useEmployee,
@@ -107,10 +125,12 @@ export default {
   useVerifyEmployeeOTP,
   useCreateEmployee,
   useUpdateEmployee,
+  useUpdateEmployeeRole,
   useDeleteEmployee,
   useEmployeeDashboard,
   useBulkImportEmployees,
   useExportEmployees,
   useEmployeeStats,
-  useEmployeeAnalytics
+  useEmployeeAnalytics,
+  useRoles
 };

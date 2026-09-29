@@ -547,6 +547,34 @@ export const attendanceController = {
     } catch (err) {
       next(err);
     }
+  },
+
+  /**
+   * POST /attendance/mark-absentees
+   * Trigger automatic absent evaluation for company
+   */
+  async markAbsentees(req, res, next) {
+    try {
+      const companyId = req.user?.companyId;
+      if (!companyId) {
+        return res.status(400).json({ status: 'error', message: 'Company ID is required.' });
+      }
+
+      const { forceAllShifts = true, date } = req.body || {};
+      const { markAbsenteesForCompany } = await import('./services/markAbsentees.service.js');
+      const result = await markAbsenteesForCompany(companyId, {
+        forceAllShifts: Boolean(forceAllShifts),
+        date: date || new Date()
+      });
+
+      return res.status(200).json({
+        status: 'ok',
+        message: `Absent marking evaluation completed: ${result.marked} marked absent, ${result.skipped} skipped.`,
+        data: result
+      });
+    } catch (err) {
+      next(err);
+    }
   }
 };
 

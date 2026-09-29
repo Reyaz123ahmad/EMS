@@ -235,8 +235,28 @@ router.get('/dashboard/super-admin', authenticate, requireRole('SUPER_ADMIN'), c
   }
 });
 
-router.get('/roles', authenticate, cacheResponse('cache:roles', 3600), (req, res) => {
-  return successResponse(res, ['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'CLIENT'], 'Roles retrieved');
+router.get('/roles', authenticate, cacheResponse('cache:roles', 60), async (req, res, next) => {
+  try {
+    const roles = await prisma.role.findMany({
+      where: {
+        OR: [
+          { companyId: null },
+          { companyId: req.user?.companyId || null }
+        ],
+        name: { notIn: ['SUPER_ADMIN', 'CLIENT'] }
+      },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+        description: true
+      },
+      orderBy: { name: 'asc' }
+    });
+    return successResponse(res, roles, 'Roles retrieved');
+  } catch (err) {
+    next(err);
+  }
 });
 
 router.get('/permissions', authenticate, cacheResponse('cache:permissions', 3600), (req, res) => {

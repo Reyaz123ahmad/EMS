@@ -26,6 +26,19 @@ export const attendanceWorker = new Worker(
         logger.info({ companyId, deviceId }, 'Attendance / Finger templates synced');
         return { success: true, companyId, deviceId };
       }
+      case 'mark-absentees':
+      case 'auto-absent': {
+        const { markAbsenteesForCompany, markAbsenteesAllCompanies } = await import('../modules/attendance/services/markAbsentees.service.js');
+        const { companyId, forceAllShifts } = data || {};
+        logger.info({ companyId }, 'Executing automated absent marking worker task...');
+        let result;
+        if (companyId) {
+          result = await markAbsenteesForCompany(companyId, { forceAllShifts });
+        } else {
+          result = await markAbsenteesAllCompanies({ forceAllShifts });
+        }
+        return { success: true, ...result };
+      }
       default:
         throw new Error(`Unknown attendance job: ${name}`);
     }

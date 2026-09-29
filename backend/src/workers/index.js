@@ -33,6 +33,11 @@ export function startAllWorkers() {
     activeAIWorker = createAIWorker();
   }
 
+  // Schedule repeatable auto-absent evaluation
+  import('../queues/attendance.queue.js').then(({ scheduleAutoAbsentCron }) => {
+    scheduleAutoAbsentCron();
+  }).catch(() => {});
+
   logger.info('All BullMQ workers (including AI Worker) active and listening for jobs.');
 }
 

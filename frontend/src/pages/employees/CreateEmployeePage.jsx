@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSendEmployeeOTP, useVerifyEmployeeOTP, useCreateEmployee } from '../../hooks/useEmployee.js';
+import { useSendEmployeeOTP, useVerifyEmployeeOTP, useCreateEmployee, useRoles } from '../../hooks/useEmployee.js';
 import { useShifts } from '../../hooks/useShifts.js';
+import { useAuthStore } from '../../store/auth.store.js';
 import { StepWizard } from '../../components/shared/StepWizard.jsx';
 import { OTPInput } from '../../components/ui/OTPInput.jsx';
 import { Input } from '../../components/ui/Input.jsx';
@@ -10,6 +11,7 @@ import { EmailPreview } from '../../components/shared/EmailPreview.jsx';
 
 export function CreateEmployeePage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [currentStep, setCurrentStep] = useState(1);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -29,6 +31,33 @@ export function CreateEmployeePage() {
     ? shiftsData.data
     : [];
 
+  const { data: rolesData } = useRoles();
+  const rawRoles = Array.isArray(rolesData)
+    ? rolesData
+    : Array.isArray(rolesData?.data)
+    ? rolesData.data
+    : [];
+
+  const userRoles = Array.isArray(user?.roles)
+    ? user.roles
+    : user?.role
+    ? [user.role]
+    : ['EMPLOYEE'];
+  const isSuper = userRoles.includes('SUPER_ADMIN');
+  const isCompanyAdmin = userRoles.includes('COMPANY_ADMIN');
+  const isHRAdmin = userRoles.includes('HR_ADMIN');
+  const isHRManager = userRoles.includes('HR_MANAGER');
+
+  const allowedRoleNames = isSuper || isCompanyAdmin
+    ? ['HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE']
+    : isHRAdmin
+    ? ['HR_MANAGER', 'MANAGER', 'EMPLOYEE']
+    : isHRManager
+    ? ['EMPLOYEE']
+    : ['EMPLOYEE'];
+
+  const allowedRoles = rawRoles.filter((r) => allowedRoleNames.includes(r.name));
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -37,9 +66,19 @@ export function CreateEmployeePage() {
     department: 'Engineering',
     employmentType: 'FULL_TIME',
     shiftId: '',
+    roleId: '',
     employeeCode: '',
     joiningDate: new Date().toISOString().split('T')[0]
   });
+
+  useEffect(() => {
+    if (allowedRoles.length > 0 && !formData.roleId) {
+      const defaultRole = allowedRoles.find((r) => r.name === 'EMPLOYEE') || allowedRoles[0];
+      if (defaultRole) {
+        setFormData((prev) => ({ ...prev, roleId: defaultRole.id }));
+      }
+    }
+  }, [allowedRoles, formData.roleId]);
 
   const sendOTPMutation = useSendEmployeeOTP();
   const verifyOTPMutation = useVerifyEmployeeOTP();
@@ -69,6 +108,7 @@ export function CreateEmployeePage() {
           phone: formData.phone,
           employmentType: formData.employmentType,
           shiftId: formData.shiftId || undefined,
+          roleId: formData.roleId || undefined,
           employeeCode: formData.employeeCode || undefined,
           joiningDate: formData.joiningDate
         }
@@ -110,6 +150,7 @@ export function CreateEmployeePage() {
           phone: formData.phone,
           employmentType: formData.employmentType,
           shiftId: formData.shiftId || undefined,
+          roleId: formData.roleId || undefined,
           employeeCode: formData.employeeCode || undefined,
           joiningDate: formData.joiningDate
         }
@@ -264,6 +305,28 @@ export function CreateEmployeePage() {
                     value={formData.joiningDate}
                     onChange={handleInputChange}
                   />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    System Access Role <span className="text-rose-400">*</span>
+                  </label>
+                  <select
+                    name="roleId"
+                    value={formData.roleId}
+                    onChange={handleInputChange}
+                    className="w-full h-11 px-3 rounded-lg bg-slate-950/60 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                    required
+                  >
+                    {allowedRoles.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.displayName || r.name} ({r.name})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Defines user login permissions and platform capabilities (e.g. HR Admin, Manager, Employee).
+                  </p>
                 </div>
 
                 <div className="sm:col-span-2">

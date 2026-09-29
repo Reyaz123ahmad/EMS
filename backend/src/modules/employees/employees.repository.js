@@ -113,7 +113,15 @@ export const employeesRepository = {
         include: {
           department: true,
           designation: true,
-          branch: true
+          branch: true,
+          user: {
+            select: {
+              id: true,
+              userRoles: {
+                include: { role: true }
+              }
+            }
+          }
         }
       })
     ]);

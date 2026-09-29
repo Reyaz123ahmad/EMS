@@ -56,48 +56,57 @@ export const attendanceRepository = {
     const targetDate = new Date(data.attendanceDate || new Date());
     targetDate.setUTCHours(0, 0, 0, 0);
 
-    return prisma.attendanceLog.create({
-      data: {
-        companyId: data.companyId,
-        employeeId: data.employeeId,
-        attendanceDate: targetDate,
-        checkInAt: data.checkInAt || new Date(),
-        checkInPhotoUrl: data.checkInPhotoUrl || null,
-        attendanceMethod: data.attendanceMethod || 'FACE',
-        faceMatchScore: data.faceMatchScore ? String(data.faceMatchScore) : null,
-        livenessScore: data.livenessScore ? String(data.livenessScore) : null,
-        verificationLayers: data.verificationLayers || {},
-        checkInLatitude: data.checkInLatitude !== undefined ? data.checkInLatitude : null,
-        checkInLongitude: data.checkInLongitude !== undefined ? data.checkInLongitude : null,
-        checkInAccuracy: data.checkInAccuracy !== undefined ? data.checkInAccuracy : null,
-        checkInDistance: data.checkInDistance !== undefined ? data.checkInDistance : null,
-        checkInBranchId: data.checkInBranchId || null,
-        cardNumber: data.cardNumber || null,
-        deviceId: data.deviceId || null,
-        isMockLocation: data.isMockLocation || false,
-        isVpnDetected: data.isVpnDetected || false,
-        isDeviceTrusted: data.isDeviceTrusted || true,
-        ipAddress: data.ipAddress || null,
-        lateMinutes: data.lateMinutes || 0,
-        isLate: data.isLate || (data.lateMinutes > 0),
-        adjustedCheckOutTime: data.adjustedCheckOutTime || null,
-        isHoliday: data.isHoliday || false,
-        holidayName: data.holidayName || null,
-        holidayType: data.holidayType || null,
-        shiftId: data.shiftId || null,
-        shiftName: data.shiftName || null,
-        shiftStartTime: data.shiftStartTime || null,
-        shiftEndTime: data.shiftEndTime || null,
-        requiredMinutes: data.requiredMinutes || null,
-        actualMinutes: data.actualMinutes || null,
-        shortfallMinutes: data.shortfallMinutes || null,
-        totalBreaks: data.totalBreaks || 0,
-        totalBreakMinutes: data.totalBreakMinutes || 0,
-        remainingBreaks: data.remainingBreaks !== undefined ? data.remainingBreaks : null,
-        remainingBreakMinutes: data.remainingBreakMinutes !== undefined ? data.remainingBreakMinutes : null,
-        status: data.status || 'PRESENT',
-        remarks: data.remarks || null
-      }
+    const logData = {
+      companyId: data.companyId,
+      employeeId: data.employeeId,
+      attendanceDate: targetDate,
+      checkInAt: data.checkInAt || new Date(),
+      checkInPhotoUrl: data.checkInPhotoUrl || null,
+      attendanceMethod: data.attendanceMethod || 'FACE',
+      faceMatchScore: data.faceMatchScore ? String(data.faceMatchScore) : null,
+      livenessScore: data.livenessScore ? String(data.livenessScore) : null,
+      verificationLayers: data.verificationLayers || {},
+      checkInLatitude: data.checkInLatitude !== undefined ? data.checkInLatitude : null,
+      checkInLongitude: data.checkInLongitude !== undefined ? data.checkInLongitude : null,
+      checkInAccuracy: data.checkInAccuracy !== undefined ? data.checkInAccuracy : null,
+      checkInDistance: data.checkInDistance !== undefined ? data.checkInDistance : null,
+      checkInBranchId: data.checkInBranchId || null,
+      cardNumber: data.cardNumber || null,
+      deviceId: data.deviceId || null,
+      isMockLocation: data.isMockLocation || false,
+      isVpnDetected: data.isVpnDetected || false,
+      isDeviceTrusted: data.isDeviceTrusted !== undefined ? data.isDeviceTrusted : true,
+      ipAddress: data.ipAddress || null,
+      lateMinutes: data.lateMinutes || 0,
+      isLate: data.isLate || (data.lateMinutes > 0),
+      adjustedCheckOutTime: data.adjustedCheckOutTime || null,
+      isHoliday: data.isHoliday || false,
+      holidayName: data.holidayName || null,
+      holidayType: data.holidayType || null,
+      shiftId: data.shiftId || null,
+      shiftName: data.shiftName || null,
+      shiftStartTime: data.shiftStartTime || null,
+      shiftEndTime: data.shiftEndTime || null,
+      requiredMinutes: data.requiredMinutes || null,
+      actualMinutes: data.actualMinutes || null,
+      shortfallMinutes: data.shortfallMinutes || null,
+      totalBreaks: data.totalBreaks || 0,
+      totalBreakMinutes: data.totalBreakMinutes || 0,
+      remainingBreaks: data.remainingBreaks !== undefined ? data.remainingBreaks : null,
+      remainingBreakMinutes: data.remainingBreakMinutes !== undefined ? data.remainingBreakMinutes : null,
+      status: data.status || 'PRESENT',
+      remarks: data.remarks || null
+    };
+
+    return prisma.attendanceLog.upsert({
+      where: {
+        employeeId_attendanceDate: {
+          employeeId: data.employeeId,
+          attendanceDate: targetDate
+        }
+      },
+      update: logData,
+      create: logData
     });
   },
 

@@ -19,6 +19,10 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
         return { label: 'Half Day', bg: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' };
       case 'ON_LEAVE':
         return { label: 'On Leave', bg: 'bg-blue-500/10 text-blue-400 border-blue-500/30' };
+      case 'WEEKLY_OFF':
+        return { label: 'Weekly Off', bg: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30' };
+      case 'ABSENT':
+        return { label: 'Absent', bg: 'bg-rose-500/10 text-rose-400 border-rose-500/30' };
       default:
         return { label: status || 'Not Checked In', bg: 'bg-slate-700/30 text-slate-400 border-slate-700' };
     }

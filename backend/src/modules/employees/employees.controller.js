@@ -4,6 +4,7 @@ import {
   verifyEmployeeOTPSchema,
   createEmployeeSchema,
   updateEmployeeSchema,
+  updateEmployeeRoleSchema,
   employeeFiltersSchema
 } from './employees.validator.js';
 import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
@@ -196,10 +197,14 @@ export const employeesController = {
       const result = await employeesService.sendEmployeeOTP({
         employeeData: value.employeeData,
         companyId,
-        createdBy: req.user?.id
+        createdBy: req.user?.id,
+        reqUser: req.user
       });
       res.status(200).json({ status: 'ok', data: result });
     } catch (err) {
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({ status: 'error', message: err.message });
+      }
       next(err);
     }
   },
@@ -240,10 +245,14 @@ export const employeesController = {
         sessionId: value.sessionId,
         employeeData: value.employeeData,
         companyId,
-        createdBy: req.user?.id
+        createdBy: req.user?.id,
+        reqUser: req.user
       });
       res.status(201).json({ status: 'ok', data: result });
     } catch (err) {
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({ status: 'error', message: err.message });
+      }
       next(err);
     }
   },
@@ -505,6 +514,36 @@ export const employeesController = {
     } catch (error) {
       next(error);
     }
+  },
+
+  /**
+   * PATCH /employees/:id/role
+   */
+  async updateEmployeeRole(req, res, next) {
+    try {
+      const { error, value } = updateEmployeeRoleSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+      }
+
+      const result = await employeesService.updateEmployeeRole(
+        req.params.id,
+        value,
+        req.user
+      );
+
+      return res.status(200).json({
+        status: 'ok',
+        success: true,
+        data: result,
+        message: 'Employee role updated successfully'
+      });
+    } catch (err) {
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({ status: 'error', message: err.message });
+      }
+      next(err);
+    }
   }
 };
 
@@ -523,6 +562,7 @@ export const getManagers = employeesController.getManagers;
 export const listEmployees = employeesController.listEmployees;
 export const getEmployee = employeesController.getEmployee;
 export const updateEmployee = employeesController.updateEmployee;
+export const updateEmployeeRole = employeesController.updateEmployeeRole;
 export const deleteEmployee = employeesController.deleteEmployee;
 export const getDashboard = employeesController.getDashboard;
 export const registerFace = employeesController.registerFace;

@@ -15,6 +15,8 @@ export const sendEmployeeOTPSchema = Joi.object({
       .valid('FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN', 'CONSULTANT')
       .default('FULL_TIME'),
     employeeCode: Joi.string().optional().allow('', null),
+    roleId: Joi.string().optional().allow('', null),
+    role: Joi.string().valid('HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE').optional().allow('', null),
     status: Joi.string()
       .valid('ACTIVE', 'INACTIVE', 'TERMINATED', 'RESIGNED', 'ON_LEAVE')
       .optional()
@@ -44,6 +46,8 @@ export const createEmployeeSchema = Joi.object({
       .valid('FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN', 'CONSULTANT')
       .default('FULL_TIME'),
     employeeCode: Joi.string().optional().allow('', null),
+    roleId: Joi.string().optional().allow('', null),
+    role: Joi.string().valid('HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE').optional().allow('', null),
     status: Joi.string()
       .valid('ACTIVE', 'INACTIVE', 'TERMINATED', 'RESIGNED', 'ON_LEAVE')
       .optional()
@@ -67,6 +71,11 @@ export const updateEmployeeSchema = Joi.object({
     .optional()
 });
 
+export const updateEmployeeRoleSchema = Joi.object({
+  roleId: Joi.string().optional().allow('', null),
+  role: Joi.string().valid('HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE').optional().allow('', null)
+}).or('roleId', 'role');
+
 export const employeeFiltersSchema = Joi.object({
   departmentId: Joi.string().optional().allow('', null),
   designationId: Joi.string().optional().allow('', null),
@@ -88,6 +97,7 @@ export default {
   verifyEmployeeOTPSchema,
   createEmployeeSchema,
   updateEmployeeSchema,
+  updateEmployeeRoleSchema,
   employeeFiltersSchema,
   listEmployeesSchema
 };

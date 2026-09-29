@@ -20,11 +20,34 @@ function parseSessionData(rawData) {
   return payload;
 }
 
+export const ROLE_ASSIGNMENT_MATRIX = {
+  SUPER_ADMIN: ['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE'],
+  COMPANY_ADMIN: ['HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE'],
+  HR_ADMIN: ['HR_MANAGER', 'MANAGER', 'EMPLOYEE'],
+  HR_MANAGER: ['EMPLOYEE'],
+  MANAGER: [],
+  EMPLOYEE: []
+};
+
+export function checkRoleAssignmentPermission(creatorRoleOrRoles, targetRoleName) {
+  const roles = Array.isArray(creatorRoleOrRoles) ? creatorRoleOrRoles : [creatorRoleOrRoles];
+  if (roles.includes('SUPER_ADMIN')) return true;
+
+  let allowed = [];
+  for (const r of roles) {
+    if (ROLE_ASSIGNMENT_MATRIX[r]) {
+      allowed = allowed.concat(ROLE_ASSIGNMENT_MATRIX[r]);
+    }
+  }
+
+  return allowed.includes(targetRoleName);
+}
+
 export const employeesService = {
   /**
    * Step 1: Send Employee Verification OTP
    */
-  async sendEmployeeOTP({ employeeData, companyId }) {
+  async sendEmployeeOTP({ employeeData, companyId, reqUser }) {
     const existingUser = await authRepository.findUserByEmail(employeeData.email);
     if (existingUser) {
       throw new Error(`An account with email ${employeeData.email} already exists.`);
@@ -33,6 +56,42 @@ export const employeesService = {
     const company = await companiesRepository.findCompanyById(companyId);
     if (!company) {
       throw new Error('Target company not found.');
+    }
+
+    // Validate role permissions upfront if roleId or role name provided
+    if (employeeData.roleId || employeeData.role) {
+      let targetRole = null;
+      if (employeeData.roleId) {
+        targetRole = await prisma.role.findFirst({
+          where: {
+            id: employeeData.roleId,
+            OR: [{ companyId: null }, { companyId }]
+          }
+        });
+      } else {
+        targetRole = await prisma.role.findFirst({
+          where: {
+            name: employeeData.role,
+            OR: [{ companyId: null }, { companyId }]
+          }
+        });
+      }
+
+      if (!targetRole) {
+        const error = new Error('Selected role does not exist.');
+        error.statusCode = 400;
+        throw error;
+      }
+
+      const creatorRoles = Array.isArray(reqUser?.roles)
+        ? reqUser.roles
+        : [reqUser?.role || 'EMPLOYEE'];
+
+      if (!checkRoleAssignmentPermission(creatorRoles, targetRole.name)) {
+        const error = new Error(`You do not have permission to assign the ${targetRole.name} role.`);
+        error.statusCode = 403;
+        throw error;
+      }
     }
 
     const sessionId = crypto.randomUUID();
@@ -124,7 +183,7 @@ export const employeesService = {
   /**
    * Step 3: Create Employee, User account, and initial allocations
    */
-  async createEmployeeWithUser({ sessionId, employeeData, companyId, createdBy }) {
+  async createEmployeeWithUser({ sessionId, employeeData, companyId, createdBy, reqUser }) {
     const rawData = await authRepository.getOTP(`session:${sessionId}`, 'EMPLOYEE_CREATE');
     if (!rawData) {
       throw new Error('Verification session expired. Please verify OTP again.');
@@ -137,6 +196,46 @@ export const employeesService = {
 
     const company = await companiesRepository.findCompanyById(companyId);
     if (!company) throw new Error('Company not found');
+
+    // Determine target role (prioritize explicit employeeData, then session data, fallback to EMPLOYEE)
+    let targetRole = null;
+    const roleIdToUse = employeeData?.roleId || session?.employeeData?.roleId;
+    const roleNameToUse = employeeData?.role || session?.employeeData?.role;
+
+    if (roleIdToUse) {
+      targetRole = await prisma.role.findFirst({
+        where: {
+          id: roleIdToUse,
+          OR: [{ companyId: null }, { companyId }]
+        }
+      });
+    } else if (roleNameToUse) {
+      targetRole = await prisma.role.findFirst({
+        where: {
+          name: roleNameToUse,
+          OR: [{ companyId: null }, { companyId }]
+        }
+      });
+    }
+
+    if (!targetRole) {
+      targetRole = await prisma.role.findFirst({
+        where: { name: 'EMPLOYEE', companyId: null }
+      });
+    }
+
+    if (!targetRole) {
+      throw new Error('Default EMPLOYEE role not found.');
+    }
+
+    if (reqUser && targetRole.name !== 'EMPLOYEE') {
+      const creatorRoles = Array.isArray(reqUser.roles) ? reqUser.roles : [reqUser.role || 'EMPLOYEE'];
+      if (!checkRoleAssignmentPermission(creatorRoles, targetRole.name)) {
+        const error = new Error(`You do not have permission to assign the ${targetRole.name} role.`);
+        error.statusCode = 403;
+        throw error;
+      }
+    }
 
     // Generate employee code if not provided
     const employeeCode =
@@ -159,19 +258,13 @@ export const employeesService = {
         }
       });
 
-      // 2. Assign EMPLOYEE role
-      const employeeRole = await tx.role.findFirst({
-        where: { name: 'EMPLOYEE', companyId: null }
+      // 2. Assign Target role
+      await tx.userRole.create({
+        data: {
+          userId: user.id,
+          roleId: targetRole.id
+        }
       });
-
-      if (employeeRole) {
-        await tx.userRole.create({
-          data: {
-            userId: user.id,
-            roleId: employeeRole.id
-          }
-        });
-      }
 
       // 3. Fallback branch/department if not supplied
       let branchId = employeeData.branchId;
@@ -257,9 +350,15 @@ export const employeesService = {
       }
 
       // 7. Audit Log
+      let auditUserId = user.id;
+      if (createdBy) {
+        const creatorExists = await tx.user.findUnique({ where: { id: createdBy } });
+        if (creatorExists) auditUserId = createdBy;
+      }
+
       await tx.auditLog.create({
         data: {
-          userId: createdBy || user.id,
+          userId: auditUserId,
           action: 'CREATE_EMPLOYEE',
           entity: 'Employee',
           entityId: employee.id,
@@ -267,7 +366,8 @@ export const employeesService = {
             employeeCode,
             email: employee.email,
             companyName: company.name,
-            shiftId: finalShiftId
+            shiftId: finalShiftId,
+            role: targetRole.name
           }
         }
       });
@@ -287,7 +387,7 @@ export const employeesService = {
       name: `${employeeData.firstName} ${employeeData.lastName}`,
       email: employeeData.email,
       password: temporaryPassword,
-      role: 'EMPLOYEE',
+      role: targetRole.name || 'EMPLOYEE',
       companyName: company.name,
       employeeCode,
       department: employeeData.department || 'General',
@@ -660,6 +760,115 @@ export const employeesService = {
       totalHeadcount,
       totalNewJoiners: joiners.length,
       joiners
+    };
+  },
+
+  /**
+   * Update an employee's system role
+   */
+  async updateEmployeeRole(employeeId, { roleId, role: roleName }, reqUser) {
+    const employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: {
+        user: {
+          include: {
+            userRoles: {
+              include: { role: true }
+            }
+          }
+        }
+      }
+    });
+
+    if (!employee || !employee.user) {
+      const error = new Error('Employee user account not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    const companyId = employee.companyId;
+    let targetRole = null;
+
+    if (roleId) {
+      targetRole = await prisma.role.findFirst({
+        where: {
+          id: roleId,
+          OR: [{ companyId: null }, { companyId }]
+        }
+      });
+    } else if (roleName) {
+      targetRole = await prisma.role.findFirst({
+        where: {
+          name: roleName,
+          OR: [{ companyId: null }, { companyId }]
+        }
+      });
+    }
+
+    if (!targetRole) {
+      const error = new Error('Role not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    // Permission check
+    const creatorRoles = Array.isArray(reqUser?.roles)
+      ? reqUser.roles
+      : [reqUser?.role || 'EMPLOYEE'];
+
+    if (!checkRoleAssignmentPermission(creatorRoles, targetRole.name)) {
+      const error = new Error(`You do not have permission to assign the ${targetRole.name} role.`);
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // Transaction to update role and create audit log
+    const updatedUserRole = await prisma.$transaction(async (tx) => {
+      // Remove previous user roles
+      await tx.userRole.deleteMany({
+        where: { userId: employee.user.id }
+      });
+
+      // Add new role
+      const newUserRole = await tx.userRole.create({
+        data: {
+          userId: employee.user.id,
+          roleId: targetRole.id
+        },
+        include: { role: true }
+      });
+
+      // Audit Log
+      let auditUserId = employee.user.id;
+      if (reqUser?.id) {
+        const creatorExists = await tx.user.findUnique({ where: { id: reqUser.id } });
+        if (creatorExists) auditUserId = reqUser.id;
+      }
+
+      await tx.auditLog.create({
+        data: {
+          userId: auditUserId,
+          action: 'UPDATE_EMPLOYEE_ROLE',
+          entity: 'UserRole',
+          entityId: newUserRole.id,
+          oldValues: {
+            roles: employee.user.userRoles.map((ur) => ur.role.name)
+          },
+          newValues: {
+            role: targetRole.name,
+            roleId: targetRole.id
+          }
+        }
+      });
+
+      return newUserRole;
+    });
+
+    return {
+      employeeId: employee.id,
+      userId: employee.user.id,
+      role: targetRole,
+      userRole: updatedUserRole
     };
   }
 };

@@ -162,6 +162,24 @@ export const employeeService = {
   async getEmployeeAnalytics(params = {}) {
     const response = await api.get('/employees/analytics', { params });
     return response.data;
+  },
+
+  /**
+   * Get system roles for employee assignment
+   */
+  async getRoles() {
+    const response = await api.get('/roles');
+    return response.data?.data || response.data;
+  },
+
+  /**
+   * Update employee system role (promote/change role)
+   * @param {string} id
+   * @param {Object} data { roleId, role }
+   */
+  async updateEmployeeRole(id, data) {
+    const response = await api.patch(`/employees/${id}/role`, data);
+    return response.data;
   }
 };
 
