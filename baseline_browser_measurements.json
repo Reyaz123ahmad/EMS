@@ -1,0 +1,1797 @@
+{
+  "measuredAt": "2026-09-29T17:30:01.689Z",
+  "uiPages": [
+    {
+      "page": "Dashboard",
+      "path": "/dashboard",
+      "timeMs": 925
+    },
+    {
+      "page": "Employees",
+      "path": "/employees",
+      "timeMs": 1001
+    },
+    {
+      "page": "Attendance Logs",
+      "path": "/attendance/logs",
+      "timeMs": 999
+    },
+    {
+      "page": "Shift Roster",
+      "path": "/attendance/shift-roster",
+      "timeMs": 805
+    },
+    {
+      "page": "Leave Applications",
+      "path": "/leave/applications",
+      "timeMs": 906
+    },
+    {
+      "page": "Payroll Run",
+      "path": "/payroll/run",
+      "timeMs": 744
+    },
+    {
+      "page": "Salary Structures",
+      "path": "/payroll/salary-structures",
+      "timeMs": 757
+    },
+    {
+      "page": "Projects",
+      "path": "/projects",
+      "timeMs": 732
+    },
+    {
+      "page": "Tasks",
+      "path": "/tasks",
+      "timeMs": 933
+    },
+    {
+      "page": "Reports",
+      "path": "/reports",
+      "timeMs": 855
+    },
+    {
+      "page": "Settings",
+      "path": "/settings",
+      "timeMs": 4333
+    },
+    {
+      "page": "Notifications",
+      "path": "/notifications",
+      "timeMs": 3583
+    }
+  ],
+  "totalMeasured": 247,
+  "results": [
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/stats",
+      "status": 200,
+      "timeMs": 28305
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees",
+      "status": 200,
+      "timeMs": 22497
+    },
+    {
+      "module": "shifts",
+      "method": "GET",
+      "path": "/api/v1/shifts/my-shift",
+      "status": 200,
+      "timeMs": 17699
+    },
+    {
+      "module": "subscriptions",
+      "method": "GET",
+      "path": "/api/v1/subscriptions/current",
+      "status": 200,
+      "timeMs": 13253
+    },
+    {
+      "module": "subscriptions",
+      "method": "GET",
+      "path": "/api/v1/subscriptions/stats",
+      "status": 200,
+      "timeMs": 12597
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/employee/:employeeId/structure",
+      "status": 200,
+      "timeMs": 12178
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/shift-roster",
+      "status": 200,
+      "timeMs": 11575
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/dashboard/manager",
+      "status": 200,
+      "timeMs": 11449
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/dashboard/employee",
+      "status": 200,
+      "timeMs": 11323
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/dashboard/hr-manager",
+      "status": 200,
+      "timeMs": 10975
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees/me/photo",
+      "status": 200,
+      "timeMs": 10477
+    },
+    {
+      "module": "approvals",
+      "method": "GET",
+      "path": "/api/v1/approvals/stats",
+      "status": 200,
+      "timeMs": 10120
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/balances",
+      "status": 200,
+      "timeMs": 10096
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/types",
+      "status": 200,
+      "timeMs": 9765
+    },
+    {
+      "module": "rosters",
+      "method": "GET",
+      "path": "/api/v1/rosters",
+      "status": 200,
+      "timeMs": 9448
+    },
+    {
+      "module": "subscriptions",
+      "method": "GET",
+      "path": "/api/v1/subscriptions/check-expiry",
+      "status": 200,
+      "timeMs": 9129
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/dashboard/hr-admin",
+      "status": 200,
+      "timeMs": 8805
+    },
+    {
+      "module": "projects",
+      "method": "GET",
+      "path": "/api/v1/projects/:id/members/progress",
+      "status": 200,
+      "timeMs": 8736
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/dashboard/client",
+      "status": 200,
+      "timeMs": 8373
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/qr-scanner",
+      "status": 200,
+      "timeMs": 8126
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/structure/:employeeId",
+      "status": 200,
+      "timeMs": 8068
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/history/:employeeId",
+      "status": 200,
+      "timeMs": 8062
+    },
+    {
+      "module": "rosters",
+      "method": "GET",
+      "path": "/api/v1/rosters/calendar",
+      "status": 200,
+      "timeMs": 7830
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/monthly-summary",
+      "status": 200,
+      "timeMs": 7660
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees/:id",
+      "status": 404,
+      "timeMs": 7599
+    },
+    {
+      "module": "shifts",
+      "method": "GET",
+      "path": "/api/v1/shifts",
+      "status": 200,
+      "timeMs": 7597
+    },
+    {
+      "module": "assets",
+      "method": "GET",
+      "path": "/api/v1/assets/my",
+      "status": 200,
+      "timeMs": 7441
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/requests/my",
+      "status": 200,
+      "timeMs": 7419
+    },
+    {
+      "module": "approvals",
+      "method": "GET",
+      "path": "/api/v1/approvals/history",
+      "status": 200,
+      "timeMs": 7374
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/tasks",
+      "status": 200,
+      "timeMs": 7289
+    },
+    {
+      "module": "approvals",
+      "method": "GET",
+      "path": "/api/v1/approvals/pending",
+      "status": 200,
+      "timeMs": 7229
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/dashboard/company-admin",
+      "status": 200,
+      "timeMs": 7201
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/loans",
+      "status": 403,
+      "timeMs": 7167
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/history",
+      "status": 200,
+      "timeMs": 7133
+    },
+    {
+      "module": "approvals",
+      "method": "GET",
+      "path": "/api/v1/approvals/requests",
+      "status": 200,
+      "timeMs": 7131
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/loans-advances",
+      "status": 403,
+      "timeMs": 6988
+    },
+    {
+      "module": "overtime",
+      "method": "GET",
+      "path": "/api/v1/overtime/records",
+      "status": 200,
+      "timeMs": 6981
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/balances/:employeeId",
+      "status": 200,
+      "timeMs": 6941
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/stats",
+      "status": 403,
+      "timeMs": 6878
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees/analytics",
+      "status": 403,
+      "timeMs": 6844
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/exceptions",
+      "status": 200,
+      "timeMs": 6836
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/tax-slabs",
+      "status": 403,
+      "timeMs": 6765
+    },
+    {
+      "module": "projects",
+      "method": "GET",
+      "path": "/api/v1/projects",
+      "status": 200,
+      "timeMs": 6562
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/fraud-signals",
+      "status": 200,
+      "timeMs": 6559
+    },
+    {
+      "module": "approvals",
+      "method": "GET",
+      "path": "/api/v1/approvals/workflows/:id",
+      "status": 404,
+      "timeMs": 6557
+    },
+    {
+      "module": "shifts",
+      "method": "GET",
+      "path": "/api/v1/shifts/effective-shift",
+      "status": 400,
+      "timeMs": 6512
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/overtime-tracker",
+      "status": 200,
+      "timeMs": 6506
+    },
+    {
+      "module": "projects",
+      "method": "GET",
+      "path": "/api/v1/projects/my",
+      "status": 200,
+      "timeMs": 6505
+    },
+    {
+      "module": "shifts",
+      "method": "GET",
+      "path": "/api/v1/shifts/:id",
+      "status": 404,
+      "timeMs": 6491
+    },
+    {
+      "module": "overtime",
+      "method": "GET",
+      "path": "/api/v1/overtime/my-records",
+      "status": 200,
+      "timeMs": 6485
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/live-location",
+      "status": 200,
+      "timeMs": 6468
+    },
+    {
+      "module": "projects",
+      "method": "GET",
+      "path": "/api/v1/projects/my/:id",
+      "status": 404,
+      "timeMs": 6358
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/hr-manager-dashboard/metrics",
+      "status": 200,
+      "timeMs": 6319
+    },
+    {
+      "module": "tasks",
+      "method": "GET",
+      "path": "/api/v1/tasks/:id",
+      "status": 404,
+      "timeMs": 6264
+    },
+    {
+      "module": "overtime",
+      "method": "GET",
+      "path": "/api/v1/overtime/requests",
+      "status": 200,
+      "timeMs": 6186
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id",
+      "status": 200,
+      "timeMs": 6150
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/break-status",
+      "status": 403,
+      "timeMs": 5937
+    },
+    {
+      "module": "projects",
+      "method": "GET",
+      "path": "/api/v1/projects/:id/members",
+      "status": 200,
+      "timeMs": 5906
+    },
+    {
+      "module": "projects",
+      "method": "GET",
+      "path": "/api/v1/projects/:id",
+      "status": 404,
+      "timeMs": 5890
+    },
+    {
+      "module": "overtime",
+      "method": "GET",
+      "path": "/api/v1/overtime/stats",
+      "status": 403,
+      "timeMs": 5778
+    },
+    {
+      "module": "shifts",
+      "method": "GET",
+      "path": "/api/v1/shifts/effective-shift/:employeeId",
+      "status": 403,
+      "timeMs": 5768
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/stats",
+      "status": 403,
+      "timeMs": 5538
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/settings/notifications",
+      "status": 200,
+      "timeMs": 5515
+    },
+    {
+      "module": "overtime",
+      "method": "GET",
+      "path": "/api/v1/overtime/my",
+      "status": 200,
+      "timeMs": 5515
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/today",
+      "status": 403,
+      "timeMs": 5474
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/balance-report",
+      "status": 403,
+      "timeMs": 5363
+    },
+    {
+      "module": "overtime",
+      "method": "GET",
+      "path": "/api/v1/overtime/rules",
+      "status": 200,
+      "timeMs": 5315
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/salary-structures",
+      "status": 403,
+      "timeMs": 5114
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/structures",
+      "status": 403,
+      "timeMs": 5111
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/slips",
+      "status": 200,
+      "timeMs": 5099
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees/managers",
+      "status": 403,
+      "timeMs": 4987
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/analytics",
+      "status": 403,
+      "timeMs": 4893
+    },
+    {
+      "module": "tasks",
+      "method": "GET",
+      "path": "/api/v1/tasks",
+      "status": 200,
+      "timeMs": 4881
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/calendar",
+      "status": 200,
+      "timeMs": 4773
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/components",
+      "status": 200,
+      "timeMs": 4762
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees/export",
+      "status": 403,
+      "timeMs": 4737
+    },
+    {
+      "module": "projects",
+      "method": "GET",
+      "path": "/api/v1/projects/:id/tasks",
+      "status": 404,
+      "timeMs": 4720
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/employee-dashboard/attendance",
+      "status": 200,
+      "timeMs": 4690
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/reimbursements",
+      "status": 403,
+      "timeMs": 4685
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/settings/security",
+      "status": 200,
+      "timeMs": 4526
+    },
+    {
+      "module": "leave",
+      "method": "GET",
+      "path": "/api/v1/leave/requests",
+      "status": 403,
+      "timeMs": 4475
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/salary-structures/templates",
+      "status": 403,
+      "timeMs": 4458
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/settings/leave",
+      "status": 200,
+      "timeMs": 4454
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/settings/payroll",
+      "status": 200,
+      "timeMs": 4353
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/calendar",
+      "status": 403,
+      "timeMs": 4331
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees/stats",
+      "status": 403,
+      "timeMs": 4313
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees/:id/effective-shift",
+      "status": 400,
+      "timeMs": 4302
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/checkout-status",
+      "status": 403,
+      "timeMs": 4284
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/employee-summary",
+      "status": 403,
+      "timeMs": 4234
+    },
+    {
+      "module": "subscriptions",
+      "method": "GET",
+      "path": "/api/v1/subscriptions/history",
+      "status": 200,
+      "timeMs": 4127
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/settings/general",
+      "status": 200,
+      "timeMs": 4090
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/employee-dashboard/summary",
+      "status": 200,
+      "timeMs": 4089
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/manager-dashboard/team-summary",
+      "status": 200,
+      "timeMs": 3962
+    },
+    {
+      "module": "shifts",
+      "method": "GET",
+      "path": "/api/v1/shifts/stats",
+      "status": 403,
+      "timeMs": 3882
+    },
+    {
+      "module": "assets",
+      "method": "GET",
+      "path": "/api/v1/assets/export",
+      "status": 200,
+      "timeMs": 3874
+    },
+    {
+      "module": "assets",
+      "method": "GET",
+      "path": "/api/v1/assets/categories",
+      "status": 200,
+      "timeMs": 3844
+    },
+    {
+      "module": "employees",
+      "method": "GET",
+      "path": "/api/v1/employees/:id/dashboard",
+      "status": 403,
+      "timeMs": 3621
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/employee-dashboard/leave",
+      "status": 200,
+      "timeMs": 3574
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/slips/:id/download",
+      "status": 404,
+      "timeMs": 3514
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/summary",
+      "status": 403,
+      "timeMs": 3487
+    },
+    {
+      "module": "overtime",
+      "method": "GET",
+      "path": "/api/v1/overtime/report",
+      "status": 403,
+      "timeMs": 3486
+    },
+    {
+      "module": "assets",
+      "method": "GET",
+      "path": "/api/v1/assets/stats",
+      "status": 200,
+      "timeMs": 3465
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/runs",
+      "status": 403,
+      "timeMs": 3440
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/slips/my",
+      "status": 404,
+      "timeMs": 3410
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/settings/attendance",
+      "status": 200,
+      "timeMs": 3388
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/employee-dashboard/tasks",
+      "status": 200,
+      "timeMs": 3329
+    },
+    {
+      "module": "client-portal",
+      "method": "GET",
+      "path": "/api/v1/client-portal/dashboard",
+      "status": 200,
+      "timeMs": 3253
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/templates",
+      "status": 403,
+      "timeMs": 3189
+    },
+    {
+      "module": "health",
+      "method": "GET",
+      "path": "/api/v1/health",
+      "status": 200,
+      "timeMs": 3183
+    },
+    {
+      "module": "notifications",
+      "method": "GET",
+      "path": "/api/v1/notifications",
+      "status": 200,
+      "timeMs": 3099
+    },
+    {
+      "module": "payroll",
+      "method": "GET",
+      "path": "/api/v1/payroll/slips/:id/pdf",
+      "status": 404,
+      "timeMs": 3024
+    },
+    {
+      "module": "attendance",
+      "method": "GET",
+      "path": "/api/v1/attendance/logs",
+      "status": 403,
+      "timeMs": 2996
+    },
+    {
+      "module": "departments",
+      "method": "GET",
+      "path": "/api/v1/departments/:id",
+      "status": 404,
+      "timeMs": 2996
+    },
+    {
+      "module": "emergency-attendance",
+      "method": "GET",
+      "path": "/api/v1/emergency-attendance/stats",
+      "status": 200,
+      "timeMs": 2908
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/clients",
+      "status": 200,
+      "timeMs": 2889
+    },
+    {
+      "module": "designations",
+      "method": "GET",
+      "path": "/api/v1/designations",
+      "status": 200,
+      "timeMs": 2886
+    },
+    {
+      "module": "client-portal",
+      "method": "GET",
+      "path": "/api/v1/client-portal/projects/:id",
+      "status": 404,
+      "timeMs": 2790
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/certificates/:id/download",
+      "status": 200,
+      "timeMs": 2786
+    },
+    {
+      "module": "biometric-cards",
+      "method": "GET",
+      "path": "/api/v1/biometric-cards/:id",
+      "status": 404,
+      "timeMs": 2776
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/:id/download",
+      "status": 200,
+      "timeMs": 2686
+    },
+    {
+      "module": "biometric-cards",
+      "method": "GET",
+      "path": "/api/v1/biometric-cards/my",
+      "status": 404,
+      "timeMs": 2677
+    },
+    {
+      "module": "branches",
+      "method": "GET",
+      "path": "/api/v1/branches/:id",
+      "status": 404,
+      "timeMs": 2654
+    },
+    {
+      "module": "client-portal",
+      "method": "GET",
+      "path": "/api/v1/client-portal/payments",
+      "status": 200,
+      "timeMs": 2647
+    },
+    {
+      "module": "emergency-attendance",
+      "method": "GET",
+      "path": "/api/v1/emergency-attendance/:id",
+      "status": 404,
+      "timeMs": 2466
+    },
+    {
+      "module": "assets",
+      "method": "GET",
+      "path": "/api/v1/assets/employee/:employeeId",
+      "status": 200,
+      "timeMs": 2314
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents",
+      "status": 200,
+      "timeMs": 2308
+    },
+    {
+      "module": "subscriptions",
+      "method": "GET",
+      "path": "/api/v1/subscriptions/plans",
+      "status": 200,
+      "timeMs": 2308
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/roles",
+      "status": 200,
+      "timeMs": 2257
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/types",
+      "status": 200,
+      "timeMs": 2164
+    },
+    {
+      "module": "biometric-cards",
+      "method": "GET",
+      "path": "/api/v1/biometric-cards/:id/download",
+      "status": 404,
+      "timeMs": 2148
+    },
+    {
+      "module": "approvals",
+      "method": "GET",
+      "path": "/api/v1/approvals/workflows",
+      "status": 200,
+      "timeMs": 2140
+    },
+    {
+      "module": "notifications",
+      "method": "GET",
+      "path": "/api/v1/notifications/unread-count",
+      "status": 200,
+      "timeMs": 2099
+    },
+    {
+      "module": "health",
+      "method": "GET",
+      "path": "/api/v1/health/db",
+      "status": 200,
+      "timeMs": 2036
+    },
+    {
+      "module": "client-portal",
+      "method": "GET",
+      "path": "/api/v1/client-portal/invoices",
+      "status": 200,
+      "timeMs": 1962
+    },
+    {
+      "module": "approvals",
+      "method": "GET",
+      "path": "/api/v1/approvals",
+      "status": 200,
+      "timeMs": 1793
+    },
+    {
+      "module": "subscriptions",
+      "method": "GET",
+      "path": "/api/v1/subscriptions",
+      "status": 200,
+      "timeMs": 1788
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/certificates/templates",
+      "status": 200,
+      "timeMs": 1747
+    },
+    {
+      "module": "assets",
+      "method": "GET",
+      "path": "/api/v1/assets/:id/history",
+      "status": 200,
+      "timeMs": 1736
+    },
+    {
+      "module": "assets",
+      "method": "GET",
+      "path": "/api/v1/assets/:id",
+      "status": 404,
+      "timeMs": 1735
+    },
+    {
+      "module": "designations",
+      "method": "GET",
+      "path": "/api/v1/designations/:id",
+      "status": 404,
+      "timeMs": 1711
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/performance/cycles",
+      "status": 200,
+      "timeMs": 1701
+    },
+    {
+      "module": "emergency-attendance",
+      "method": "GET",
+      "path": "/api/v1/emergency-attendance",
+      "status": 200,
+      "timeMs": 1678
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/:id",
+      "status": 404,
+      "timeMs": 1661
+    },
+    {
+      "module": "client-portal",
+      "method": "GET",
+      "path": "/api/v1/client-portal/projects",
+      "status": 200,
+      "timeMs": 1656
+    },
+    {
+      "module": "approvals",
+      "method": "GET",
+      "path": "/api/v1/approvals/workflows/type/:entityType",
+      "status": 404,
+      "timeMs": 1640
+    },
+    {
+      "module": "auth",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 400,
+      "timeMs": 333
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/permissions",
+      "status": 200,
+      "timeMs": 103
+    },
+    {
+      "module": "subscriptions",
+      "method": "GET",
+      "path": "/api/v1/subscriptions/platform-status",
+      "status": 200,
+      "timeMs": 57
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/metrics",
+      "status": 200,
+      "timeMs": 34
+    },
+    {
+      "module": "advanced-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/audit-logs/export",
+      "status": 404,
+      "timeMs": 33
+    },
+    {
+      "module": "departments",
+      "method": "GET",
+      "path": "/api/v1/departments",
+      "status": 200,
+      "timeMs": 32
+    },
+    {
+      "module": "advanced-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/audit-logs",
+      "status": 404,
+      "timeMs": 30
+    },
+    {
+      "module": "health",
+      "method": "GET",
+      "path": "/api/v1/health/queues",
+      "status": 200,
+      "timeMs": 30
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/anomalies",
+      "status": 403,
+      "timeMs": 28
+    },
+    {
+      "module": "branches",
+      "method": "GET",
+      "path": "/api/v1/branches",
+      "status": 200,
+      "timeMs": 27
+    },
+    {
+      "module": "health",
+      "method": "GET",
+      "path": "/api/v1/health/redis",
+      "status": 200,
+      "timeMs": 27
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/settings/schema",
+      "status": 200,
+      "timeMs": 26
+    },
+    {
+      "module": "advanced-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/fraud-signals",
+      "status": 404,
+      "timeMs": 24
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/recommendations",
+      "status": 403,
+      "timeMs": 24
+    },
+    {
+      "module": "advanced-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/blocked-employees",
+      "status": 404,
+      "timeMs": 23
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/employees/:employeeId/attrition",
+      "status": 403,
+      "timeMs": 23
+    },
+    {
+      "module": "advanced-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/events",
+      "status": 404,
+      "timeMs": 22
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/employees/:employeeId/improvement-plan",
+      "status": 403,
+      "timeMs": 22
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/attendance/prediction",
+      "status": 403,
+      "timeMs": 22
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/analytics/company",
+      "status": 403,
+      "timeMs": 22
+    },
+    {
+      "module": "designations",
+      "method": "GET",
+      "path": "/api/v1/designations/stats",
+      "status": 403,
+      "timeMs": 22
+    },
+    {
+      "module": "advanced-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/dashboard",
+      "status": 404,
+      "timeMs": 21
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/analytics/platform",
+      "status": 403,
+      "timeMs": 21
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/usage-stats",
+      "status": 403,
+      "timeMs": 18
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/insights",
+      "status": 403,
+      "timeMs": 18
+    },
+    {
+      "module": "ai",
+      "method": "GET",
+      "path": "/api/v1/ai/employees/:employeeId/performance",
+      "status": 403,
+      "timeMs": 18
+    },
+    {
+      "module": "advanced-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/security-score",
+      "status": 404,
+      "timeMs": 17
+    },
+    {
+      "module": "assets",
+      "method": "GET",
+      "path": "/api/v1/assets",
+      "status": 400,
+      "timeMs": 15
+    },
+    {
+      "module": "refunds",
+      "method": "GET",
+      "path": "/api/v1/refunds/all",
+      "status": 403,
+      "timeMs": 13
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/certificates",
+      "status": 400,
+      "timeMs": 13
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports/download",
+      "status": 403,
+      "timeMs": 12
+    },
+    {
+      "module": "biometric-devices",
+      "method": "GET",
+      "path": "/api/v1/biometric-devices",
+      "status": 404,
+      "timeMs": 11
+    },
+    {
+      "module": "refunds",
+      "method": "GET",
+      "path": "/api/v1/refunds",
+      "status": 403,
+      "timeMs": 11
+    },
+    {
+      "module": "dashboard",
+      "method": "GET",
+      "path": "/api/v1/dashboard/super-admin",
+      "status": 403,
+      "timeMs": 11
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/performance/reviews",
+      "status": 400,
+      "timeMs": 11
+    },
+    {
+      "module": "branches",
+      "method": "GET",
+      "path": "/api/v1/branches/stats",
+      "status": 403,
+      "timeMs": 10
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies",
+      "status": 403,
+      "timeMs": 10
+    },
+    {
+      "module": "refunds",
+      "method": "GET",
+      "path": "/api/v1/refunds/:id",
+      "status": 403,
+      "timeMs": 10
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports/stats",
+      "status": 403,
+      "timeMs": 10
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports/history",
+      "status": 403,
+      "timeMs": 10
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/payroll-config",
+      "status": 403,
+      "timeMs": 9
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/dashboard",
+      "status": 403,
+      "timeMs": 9
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/analytics",
+      "status": 403,
+      "timeMs": 9
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/employee/:employeeId",
+      "status": 403,
+      "timeMs": 9
+    },
+    {
+      "module": "face-registration",
+      "method": "GET",
+      "path": "/api/v1/face-registration/stats",
+      "status": 404,
+      "timeMs": 9
+    },
+    {
+      "module": "queue-monitor",
+      "method": "GET",
+      "path": "/api/v1/queue-monitor/:queue/jobs",
+      "status": 404,
+      "timeMs": 9
+    },
+    {
+      "module": "refunds",
+      "method": "GET",
+      "path": "/api/v1/refunds/stats",
+      "status": 403,
+      "timeMs": 9
+    },
+    {
+      "module": "reports",
+      "method": "GET",
+      "path": "/api/v1/reports/:id/download",
+      "status": 403,
+      "timeMs": 9
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/users",
+      "status": 403,
+      "timeMs": 9
+    },
+    {
+      "module": "attendance-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/fraud-stats",
+      "status": 404,
+      "timeMs": 8
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/stats",
+      "status": 403,
+      "timeMs": 8
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/analytics",
+      "status": 403,
+      "timeMs": 8
+    },
+    {
+      "module": "departments",
+      "method": "GET",
+      "path": "/api/v1/departments/stats",
+      "status": 403,
+      "timeMs": 8
+    },
+    {
+      "module": "face-registration",
+      "method": "GET",
+      "path": "/api/v1/face-registration/pending",
+      "status": 404,
+      "timeMs": 8
+    },
+    {
+      "module": "face-registration",
+      "method": "GET",
+      "path": "/api/v1/face-registration/with-face",
+      "status": 404,
+      "timeMs": 8
+    },
+    {
+      "module": "health",
+      "method": "GET",
+      "path": "/api/v1/health/storage",
+      "status": 200,
+      "timeMs": 8
+    },
+    {
+      "module": "health",
+      "method": "GET",
+      "path": "/api/v1/health/email",
+      "status": 200,
+      "timeMs": 8
+    },
+    {
+      "module": "invoices",
+      "method": "GET",
+      "path": "/api/v1/invoices/:id/pdf",
+      "status": 403,
+      "timeMs": 8
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/revenue",
+      "status": 403,
+      "timeMs": 8
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/arr",
+      "status": 403,
+      "timeMs": 8
+    },
+    {
+      "module": "queue-monitor",
+      "method": "GET",
+      "path": "/api/v1/queue-monitor/stats",
+      "status": 404,
+      "timeMs": 8
+    },
+    {
+      "module": "queue-monitor",
+      "method": "GET",
+      "path": "/api/v1/queue-monitor/health",
+      "status": 404,
+      "timeMs": 8
+    },
+    {
+      "module": "attendance-security",
+      "method": "GET",
+      "path": "/api/v1/advanced-security/fraud-signals",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "biometric-cards",
+      "method": "GET",
+      "path": "/api/v1/biometric-cards",
+      "status": 403,
+      "timeMs": 7
+    },
+    {
+      "module": "biometric-devices",
+      "method": "GET",
+      "path": "/api/v1/biometric-devices/:id",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "biometric-devices",
+      "method": "GET",
+      "path": "/api/v1/biometric-devices/:id/status",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/payroll-config",
+      "status": 403,
+      "timeMs": 7
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/stats",
+      "status": 403,
+      "timeMs": 7
+    },
+    {
+      "module": "coupons",
+      "method": "GET",
+      "path": "/api/v1/coupons",
+      "status": 403,
+      "timeMs": 7
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/aadhaar/mode",
+      "status": 200,
+      "timeMs": 7
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/my",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "documents",
+      "method": "GET",
+      "path": "/api/v1/documents/stats",
+      "status": 403,
+      "timeMs": 7
+    },
+    {
+      "module": "face-registration",
+      "method": "GET",
+      "path": "/api/v1/face-registration/my-status",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "face-registration",
+      "method": "GET",
+      "path": "/api/v1/face-registration/status/:employeeId",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "face-registration",
+      "method": "GET",
+      "path": "/api/v1/face-registration/without-face",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "face-registration",
+      "method": "GET",
+      "path": "/api/v1/face-registration/export",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "holidayCalendar",
+      "method": "GET",
+      "path": "/api/v1/holiday-calendar/calendar-view",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "holidayCalendar",
+      "method": "GET",
+      "path": "/api/v1/holiday-calendar/calendars",
+      "status": 404,
+      "timeMs": 7
+    },
+    {
+      "module": "invoices",
+      "method": "GET",
+      "path": "/api/v1/invoices/:id/download",
+      "status": 403,
+      "timeMs": 7
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/mrr",
+      "status": 403,
+      "timeMs": 7
+    },
+    {
+      "module": "payments",
+      "method": "GET",
+      "path": "/api/v1/payments/razorpay-config",
+      "status": 200,
+      "timeMs": 7
+    },
+    {
+      "module": "core/platform",
+      "method": "GET",
+      "path": "/api/v1/onboarding/status",
+      "status": 200,
+      "timeMs": 7
+    },
+    {
+      "module": "companies",
+      "method": "GET",
+      "path": "/api/v1/companies/:id/settings",
+      "status": 403,
+      "timeMs": 6
+    },
+    {
+      "module": "coupons",
+      "method": "GET",
+      "path": "/api/v1/coupons/stats",
+      "status": 403,
+      "timeMs": 6
+    },
+    {
+      "module": "device-punches",
+      "method": "GET",
+      "path": "/api/v1/device-punches/stats",
+      "status": 404,
+      "timeMs": 6
+    },
+    {
+      "module": "finger-attendance",
+      "method": "GET",
+      "path": "/api/v1/finger-attendance/enroll/:employeeId",
+      "status": 404,
+      "timeMs": 6
+    },
+    {
+      "module": "finger-attendance",
+      "method": "GET",
+      "path": "/api/v1/finger-attendance/punches",
+      "status": 404,
+      "timeMs": 6
+    },
+    {
+      "module": "holidayCalendar",
+      "method": "GET",
+      "path": "/api/v1/holiday-calendar/calendar",
+      "status": 404,
+      "timeMs": 6
+    },
+    {
+      "module": "holidayCalendar",
+      "method": "GET",
+      "path": "/api/v1/holiday-calendar",
+      "status": 404,
+      "timeMs": 6
+    },
+    {
+      "module": "holidayCalendar",
+      "method": "GET",
+      "path": "/api/v1/holiday-calendar/holidays",
+      "status": 404,
+      "timeMs": 6
+    },
+    {
+      "module": "invoices",
+      "method": "GET",
+      "path": "/api/v1/invoices",
+      "status": 403,
+      "timeMs": 6
+    },
+    {
+      "module": "invoices",
+      "method": "GET",
+      "path": "/api/v1/invoices/:id",
+      "status": 403,
+      "timeMs": 6
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/churn",
+      "status": 403,
+      "timeMs": 6
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/success-rate",
+      "status": 403,
+      "timeMs": 6
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/refunds",
+      "status": 403,
+      "timeMs": 6
+    },
+    {
+      "module": "payments",
+      "method": "GET",
+      "path": "/api/v1/payments/history",
+      "status": 403,
+      "timeMs": 6
+    },
+    {
+      "module": "device-punches",
+      "method": "GET",
+      "path": "/api/v1/device-punches/punches",
+      "status": 404,
+      "timeMs": 5
+    },
+    {
+      "module": "finger-attendance",
+      "method": "GET",
+      "path": "/api/v1/finger-attendance/stats",
+      "status": 404,
+      "timeMs": 5
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/refund-rate",
+      "status": 403,
+      "timeMs": 5
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/payment-methods",
+      "status": 403,
+      "timeMs": 5
+    },
+    {
+      "module": "payments",
+      "method": "GET",
+      "path": "/api/v1/payments/:id/receipt",
+      "status": 403,
+      "timeMs": 5
+    },
+    {
+      "module": "payment-analytics",
+      "method": "GET",
+      "path": "/api/v1/payment-analytics/revenue-by-plan",
+      "status": 403,
+      "timeMs": 4
+    }
+  ]
+}
