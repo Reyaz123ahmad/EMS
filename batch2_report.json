@@ -1,0 +1,170 @@
+[
+  {
+    "Endpoint": "/api/v1/employees",
+    "Method": "GET",
+    "Before (ms)": "22497ms",
+    "After (ms)": "13ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/employees/stats",
+    "Method": "GET",
+    "Before (ms)": "4313ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/employees/analytics",
+    "Method": "GET",
+    "Before (ms)": "6844ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/employees/managers",
+    "Method": "GET",
+    "Before (ms)": "4987ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/today",
+    "Method": "GET",
+    "Before (ms)": "5474ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/checkout-status",
+    "Method": "GET",
+    "Before (ms)": "4284ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/break-status",
+    "Method": "GET",
+    "Before (ms)": "5937ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/logs",
+    "Method": "GET",
+    "Before (ms)": "2996ms",
+    "After (ms)": "12ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/monthly-summary",
+    "Method": "GET",
+    "Before (ms)": "7660ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/exceptions",
+    "Method": "GET",
+    "Before (ms)": "6836ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/stats",
+    "Method": "GET",
+    "Before (ms)": "28305ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/overtime-tracker",
+    "Method": "GET",
+    "Before (ms)": "6506ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/shift-roster",
+    "Method": "GET",
+    "Before (ms)": "11575ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/fraud-signals",
+    "Method": "GET",
+    "Before (ms)": "6559ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/calendar",
+    "Method": "GET",
+    "Before (ms)": "4331ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/employee-summary",
+    "Method": "GET",
+    "Before (ms)": "4234ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/attendance/summary",
+    "Method": "GET",
+    "Before (ms)": "3487ms",
+    "After (ms)": "11ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/shifts",
+    "Method": "GET",
+    "Before (ms)": "7597ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/shifts/stats",
+    "Method": "GET",
+    "Before (ms)": "3882ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/shifts/my-shift",
+    "Method": "GET",
+    "Before (ms)": "17699ms",
+    "After (ms)": "8ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/shifts/effective-shift",
+    "Method": "GET",
+    "Before (ms)": "6512ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  }
+]

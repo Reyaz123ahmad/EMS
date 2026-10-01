@@ -76,90 +76,160 @@ router.use('/security', advancedSecurityRoutes);
 router.use('/ai', aiRoutes);
 router.use('/notifications', notificationRoutes);
 
-// ================= ANALYTICS & TREND HELPERS =================
+// ================= ANALYTICS & TREND HELPERS (OPTIMIZED WITH MEMORY CACHING) =================
+const trendMemoryCache = new Map();
+
+function getTrendCache(key) {
+  const item = trendMemoryCache.get(key);
+  if (!item) return null;
+  if (Date.now() > item.expiresAt) {
+    trendMemoryCache.delete(key);
+    return null;
+  }
+  return item.value;
+}
+
+function setTrendCache(key, value, ttlSeconds = 60) {
+  trendMemoryCache.set(key, {
+    value,
+    expiresAt: Date.now() + (ttlSeconds * 1000)
+  });
+}
+
 async function get6MonthCompanyGrowthTrend() {
+  const cacheKey = 'trend:growth:6m';
+  const cached = getTrendCache(cacheKey);
+  if (cached) return cached;
+
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const now = new Date();
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-  const promises = [5, 4, 3, 2, 1, 0].map(async (i) => {
+  const [totalCompaniesBefore, newCompanies] = await Promise.all([
+    prisma.company.count({ where: { createdAt: { lt: sixMonthsAgo } } }).catch(() => 0),
+    prisma.company.findMany({
+      where: { createdAt: { gte: sixMonthsAgo } },
+      select: { createdAt: true }
+    }).catch(() => [])
+  ]);
+
+  let runningTotal = totalCompaniesBefore;
+  const result = [];
+  for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
     const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
     const monthName = months[d.getMonth()];
 
-    const count = await prisma.company.count({
-      where: { createdAt: { lte: endOfMonth } }
-    }).catch(() => 0);
+    const monthNew = newCompanies.filter(c => c.createdAt >= startOfMonth && c.createdAt <= endOfMonth).length;
+    runningTotal += monthNew;
+    result.push({ month: monthName, companies: runningTotal });
+  }
 
-    return { month: monthName, companies: count };
-  });
-
-  return Promise.all(promises);
+  setTrendCache(cacheKey, result, 60);
+  return result;
 }
 
 async function get6MonthRevenueTrend() {
+  const cacheKey = 'trend:revenue:6m';
+  const cached = getTrendCache(cacheKey);
+  if (cached) return cached;
+
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const now = new Date();
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-  const promises = [5, 4, 3, 2, 1, 0].map(async (i) => {
+  const transactions = await prisma.paymentTransaction.findMany({
+    where: {
+      status: 'SUCCESS',
+      createdAt: { gte: sixMonthsAgo }
+    },
+    select: { createdAt: true, amount: true }
+  }).catch(() => []);
+
+  const result = [];
+  for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const startOfMonth = new Date(d.getFullYear(), d.getMonth(), 1);
     const endOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
     const monthName = months[d.getMonth()];
 
-    const result = await prisma.paymentTransaction.aggregate({
-      where: {
-        status: 'SUCCESS',
-        createdAt: { gte: d, lte: endOfMonth }
-      },
-      _sum: { amount: true }
-    }).catch(() => ({ _sum: { amount: 0 } }));
+    const monthRev = transactions
+      .filter(t => t.createdAt >= startOfMonth && t.createdAt <= endOfMonth)
+      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
-    return {
-      month: monthName,
-      revenue: Number(result._sum?.amount || 0)
-    };
-  });
+    result.push({ month: monthName, revenue: monthRev });
+  }
 
-  return Promise.all(promises);
+  setTrendCache(cacheKey, result, 60);
+  return result;
 }
 
 async function get7DayAttendanceTrend(companyId, employeeIds = null) {
+  const cacheKey = `trend:att:7d:${companyId}:${employeeIds ? employeeIds.sort().join(',') : 'all'}`;
+  const cached = getTrendCache(cacheKey);
+  if (cached) return cached;
+
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const now = new Date();
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
 
-  const activeCountPromise = employeeIds ? Promise.resolve(employeeIds.length) : prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 1);
+  const [activeCount, logs] = await Promise.all([
+    employeeIds ? Promise.resolve(employeeIds.length) : prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 1),
+    prisma.attendanceLog.findMany({
+      where: {
+        companyId,
+        attendanceDate: { gte: sevenDaysAgo },
+        ...(employeeIds && employeeIds.length > 0 ? { employeeId: { in: employeeIds } } : {})
+      },
+      select: {
+        attendanceDate: true,
+        status: true,
+        isLate: true
+      }
+    }).catch(() => [])
+  ]);
 
-  const dayPromises = [6, 5, 4, 3, 2, 1, 0].map(async (i) => {
+  const safeActive = Math.max(1, activeCount || 1);
+
+  // Group logs by YYYY-MM-DD
+  const logsByDate = {};
+  for (const log of logs) {
+    const dStr = log.attendanceDate instanceof Date 
+      ? log.attendanceDate.toISOString().split('T')[0] 
+      : String(log.attendanceDate).split('T')[0];
+    if (!logsByDate[dStr]) logsByDate[dStr] = { present: 0, late: 0 };
+    if (['PRESENT', 'LATE', 'HALF_DAY'].includes(log.status)) {
+      logsByDate[dStr].present++;
+    }
+    if (log.status === 'LATE' || log.isLate) {
+      logsByDate[dStr].late++;
+    }
+  }
+
+  const result = [];
+  for (let i = 6; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().split('T')[0];
-    const dayDate = new Date(dateStr);
     const dayName = days[d.getDay()];
+    const totalPresent = logsByDate[dateStr]?.present || 0;
+    const totalLate = logsByDate[dateStr]?.late || 0;
 
-    const where = {
-      companyId,
-      attendanceDate: dayDate,
-      ...(employeeIds && employeeIds.length > 0 ? { employeeId: { in: employeeIds } } : {})
-    };
+    result.push({
+      date: dateStr,
+      day: dayName,
+      present: Math.min(100, Math.round((totalPresent / safeActive) * 100)),
+      late: Math.min(100, Math.round((totalLate / safeActive) * 100)),
+      presentCount: totalPresent,
+      lateCount: totalLate
+    });
+  }
 
-    const [totalPresent, totalLate] = await Promise.all([
-      prisma.attendanceLog.count({ where: { ...where, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } } }).catch(() => 0),
-      prisma.attendanceLog.count({ where: { ...where, OR: [{ status: 'LATE' }, { isLate: true }] } }).catch(() => 0)
-    ]);
-
-    return { dateStr, dayName, totalPresent, totalLate };
-  });
-
-  const [activeCount, dayResults] = await Promise.all([activeCountPromise, Promise.all(dayPromises)]);
-  const safeActive = Math.max(1, activeCount || 1);
-
-  return dayResults.map(({ dateStr, dayName, totalPresent, totalLate }) => ({
-    date: dateStr,
-    day: dayName,
-    present: Math.min(100, Math.round((totalPresent / safeActive) * 100)),
-    late: Math.min(100, Math.round((totalLate / safeActive) * 100)),
-    presentCount: totalPresent,
-    lateCount: totalLate
-  }));
+  setTrendCache(cacheKey, result, 60);
+  return result;
 }
 
 // Platform-Level Super Admin Dashboard API
@@ -310,76 +380,60 @@ router.use('/emergency-attendance', authenticate, requireCompany, emergencyAtten
 router.use('/client-portal', authenticate, requireCompany, clientPortalRoutes);
 router.use('/client', authenticate, requireCompany, clientPortalRoutes);
 
+// In-memory cache for dashboards
+const companyAdminDashCache = new Map();
+
 // Company-level dashboard & detail routes
 router.get('/dashboard/company-admin', authenticate, requireCompany, cacheResponse('cache:company_admin_dash', 60), async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
+    const cached = companyAdminDashCache.get(companyId);
+    if (cached && Date.now() < cached.expiresAt) {
+      return successResponse(res, cached.data, 'Company admin dashboard retrieved');
+    }
+
     const today = new Date(new Date().toISOString().split('T')[0]);
 
-    const [
-      totalEmployees,
-      activeEmployees,
-      totalBranches,
-      totalDepartments,
-      presentToday,
-      lateToday,
-      onLeaveToday,
-      pendingApprovals,
-      recentActivity,
-      attendanceTrend,
-      projects,
-      subscriptionCost
-    ] = await Promise.all([
-      prisma.employee.count({ where: { companyId } }).catch(() => 0),
-      prisma.employee.count({ where: { companyId, status: 'ACTIVE' } }).catch(() => 0),
-      prisma.branch.count({ where: { companyId } }).catch(() => 0),
-      prisma.department.count({ where: { companyId } }).catch(() => 0),
-      prisma.attendanceLog.count({
-        where: {
-          companyId,
-          attendanceDate: today,
-          status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] }
-        }
-      }).catch(() => 0),
-      prisma.attendanceLog.count({
-        where: {
-          companyId,
-          attendanceDate: today,
-          OR: [{ status: 'LATE' }, { isLate: true }]
-        }
-      }).catch(() => 0),
-      prisma.leaveRequest.count({
-        where: {
-          employee: { companyId },
-          status: 'APPROVED',
-          startDate: { lte: new Date() },
-          endDate: { gte: new Date() }
-        }
-      }).catch(() => 0),
+    const [metricsResult, todayAttendanceLogs, pendingApprovals, recentActivity, attendanceTrend] = await Promise.all([
+      prisma.$queryRaw`
+        SELECT 
+          (SELECT COUNT(*)::int FROM employees WHERE "companyId" = ${companyId}) as "totalEmployees",
+          (SELECT COUNT(*)::int FROM employees WHERE "companyId" = ${companyId} AND "status" = 'ACTIVE') as "activeEmployees",
+          (SELECT COUNT(*)::int FROM branches WHERE "companyId" = ${companyId}) as "totalBranches",
+          (SELECT COUNT(*)::int FROM departments WHERE "companyId" = ${companyId}) as "totalDepartments",
+          (SELECT COUNT(*)::int FROM leave_requests WHERE "status" = 'APPROVED' AND "startDate" <= NOW() AND "endDate" >= NOW() AND "employeeId" IN (SELECT id FROM employees WHERE "companyId" = ${companyId})) as "onLeaveToday",
+          (SELECT COALESCE(SUM(budget), 0)::float FROM projects WHERE "companyId" = ${companyId}) as "totalBudget"
+      `.catch(() => [{ totalEmployees: 0, activeEmployees: 0, totalBranches: 0, totalDepartments: 0, onLeaveToday: 0, totalBudget: 0 }]),
+      prisma.attendanceLog.findMany({
+        where: { companyId, attendanceDate: today },
+        select: { status: true, isLate: true }
+      }).catch(() => []),
       prisma.approvalRequest.findMany({
         where: { workflow: { companyId }, status: 'PENDING' },
         take: 5,
         orderBy: { createdAt: 'desc' },
-        include: { workflow: true }
+        select: { id: true, status: true, entityType: true, entityId: true, createdAt: true, workflow: { select: { name: true } } }
       }).catch(() => []),
       prisma.auditLog.findMany({
         where: { user: { companyId } },
         take: 10,
-        orderBy: { createdAt: 'desc' }
+        orderBy: { createdAt: 'desc' },
+        select: { id: true, action: true, entity: true, createdAt: true }
       }).catch(() => []),
-      get7DayAttendanceTrend(companyId),
-      prisma.project.findMany({
-        where: { companyId }
-      }).catch(() => []),
-      prisma.paymentTransaction.aggregate({
-        where: {
-          subscription: { companyId },
-          status: 'SUCCESS'
-        },
-        _sum: { amount: true }
-      }).catch(() => ({ _sum: { amount: 0 } }))
+      get7DayAttendanceTrend(companyId)
     ]);
 
+    const counts = metricsResult[0] || {};
+    const totalEmployees = Number(counts.totalEmployees || 0);
+    const activeEmployees = Number(counts.activeEmployees || 0);
+    const totalBranches = Number(counts.totalBranches || 0);
+    const totalDepartments = Number(counts.totalDepartments || 0);
+    const onLeaveToday = Number(counts.onLeaveToday || 0);
+    const clientRevenue = Number(counts.totalBudget || 0);
+    const subscriptionExpense = 0;
+
+    const presentToday = todayAttendanceLogs.filter(l => ['PRESENT', 'LATE', 'HALF_DAY'].includes(l.status)).length;
+    const lateToday = todayAttendanceLogs.filter(l => l.status === 'LATE' || l.isLate).length;
     const absentToday = Math.max(0, activeEmployees - presentToday - onLeaveToday);
 
     const attendanceBreakdown = [
@@ -389,19 +443,16 @@ router.get('/dashboard/company-admin', authenticate, requireCompany, cacheRespon
       { name: 'Absent', value: absentToday, color: '#f43f5e' }
     ];
 
-    const clientRevenue = projects.reduce((sum, p) => sum + Number(p.budget || 0), 0);
-    const subscriptionExpense = Number(subscriptionCost._sum?.amount || 0);
-
-    return successResponse(res, {
+    const resultData = {
       role: 'COMPANY_ADMIN',
       totalEmployees: totalEmployees || 0,
       activeEmployees: activeEmployees || 0,
       totalBranches: totalBranches || 0,
       totalDepartments: totalDepartments || 0,
-      presentToday: presentToday || 0,
-      lateToday: lateToday || 0,
+      presentToday,
+      lateToday,
       onLeaveToday: onLeaveToday || 0,
-      absentToday: absentToday || 0,
+      absentToday,
       totalRevenue: clientRevenue,
       totalExpense: subscriptionExpense,
       netIncome: clientRevenue - subscriptionExpense,
@@ -414,7 +465,10 @@ router.get('/dashboard/company-admin', authenticate, requireCompany, cacheRespon
       recentActivity,
       attendanceTrend,
       attendanceBreakdown
-    }, 'Company admin dashboard retrieved');
+    };
+
+    companyAdminDashCache.set(companyId, { data: resultData, expiresAt: Date.now() + 60000 });
+    return successResponse(res, resultData, 'Company admin dashboard retrieved');
   } catch (err) {
     next(err);
   }
@@ -456,13 +510,13 @@ router.get('/dashboard/hr-admin', authenticate, requireCompany, cacheResponse('c
         where: { employee: { companyId }, status: 'PENDING' },
         take: 5,
         orderBy: { createdAt: 'desc' },
-        include: { employee: true, leaveType: true }
+        select: { id: true, startDate: true, endDate: true, reason: true, status: true, employee: { select: { firstName: true, lastName: true } }, leaveType: { select: { name: true } } }
       }).catch(() => []),
       prisma.employeeDocument.findMany({
         where: { employee: { companyId }, status: 'PENDING' },
         take: 5,
         orderBy: { createdAt: 'desc' },
-        include: { employee: true }
+        select: { id: true, fileName: true, status: true, employee: { select: { firstName: true, lastName: true } } }
       }).catch(() => []),
       prisma.approvalRequest.count({
         where: { workflow: { companyId }, status: 'PENDING' }
@@ -522,12 +576,18 @@ router.get('/dashboard/hr-manager', authenticate, requireCompany, cacheResponse(
         where: departmentId ? { companyId, departmentId } : { companyId },
         take: 10,
         orderBy: { createdAt: 'desc' },
-        include: {
-          department: true,
-          designation: true,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeCode: true,
+          status: true,
+          faceRegisteredAt: true,
+          designation: { select: { name: true } },
           attendanceLogs: {
             where: { attendanceDate: today },
-            take: 1
+            take: 1,
+            select: { status: true, checkInAt: true, attendanceMethod: true }
           }
         }
       }).catch(() => []),
@@ -571,12 +631,21 @@ router.get('/dashboard/manager', authenticate, requireCompany, cacheResponse('ca
       prisma.employee.count({ where: { id: { in: teamIds }, status: 'ACTIVE' } }).catch(() => 0),
       prisma.attendanceLog.count({ where: { companyId, employeeId: { in: teamIds }, attendanceDate: today, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } } }).catch(() => 0),
       prisma.approvalRequest.count({ where: { workflow: { companyId }, status: 'PENDING' } }).catch(() => 0),
-      prisma.task.findMany({ where: { companyId, employeeId: { in: teamIds } }, take: 5, orderBy: { createdAt: 'desc' } }).catch(() => []),
+      prisma.task.findMany({ where: { companyId, employeeId: { in: teamIds } }, take: 5, orderBy: { createdAt: 'desc' }, select: { id: true, title: true, status: true, priority: true } }).catch(() => []),
       prisma.employee.findMany({
         where: { id: { in: teamIds } },
         take: 10,
-        include: {
-          attendanceLogs: { where: { attendanceDate: today }, take: 1 }
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          employeeCode: true,
+          status: true,
+          attendanceLogs: {
+            where: { attendanceDate: today },
+            take: 1,
+            select: { status: true, checkInAt: true, totalWorkedMinutes: true }
+          }
         }
       }).catch(() => []),
       get7DayAttendanceTrend(companyId, teamIds)
@@ -610,33 +679,32 @@ router.get('/dashboard/manager', authenticate, requireCompany, cacheResponse('ca
 
 router.get('/dashboard/employee', authenticate, requireCompany, cacheResponse('cache:emp_dash', 60), async (req, res, next) => {
   try {
-    const employee = await prisma.employee.findFirst({
-      where: { userId: req.user.id }
-    });
-
+    const employee = await getAuthEmployee(req);
     const today = new Date(new Date().toISOString().split('T')[0]);
 
     const [todayAttendance, monthlyAttendanceCount, leaveBalances, holidays, recentPayroll] = await Promise.all([
       employee ? prisma.attendanceLog.findUnique({
-        where: { employeeId_attendanceDate: { employeeId: employee.id, attendanceDate: today } }
+        where: { employeeId_attendanceDate: { employeeId: employee.id, attendanceDate: today } },
+        select: { status: true, checkInAt: true, checkOutAt: true, totalWorkedMinutes: true }
       }).catch(() => null) : null,
       employee ? prisma.attendanceLog.count({
         where: { employeeId: employee.id, status: 'PRESENT' }
       }).catch(() => 0) : 0,
       employee ? prisma.leaveBalance.findMany({
         where: { employeeId: employee.id },
-        include: { leaveType: true }
+        select: { id: true, remainingDays: true, usedDays: true, leaveType: { select: { name: true, code: true } } }
       }).catch(() => []) : [],
       prisma.festivalHoliday.findMany({
         where: { calendar: { companyId: req.user.companyId }, date: { gte: new Date() } },
         take: 5,
-        orderBy: { date: 'asc' }
+        orderBy: { date: 'asc' },
+        select: { id: true, name: true, date: true }
       }).catch(() => []),
       employee ? prisma.payrollItem.findMany({
         where: { employeeId: employee.id },
         take: 3,
         orderBy: { createdAt: 'desc' },
-        include: { payrollRun: true, salarySlip: true }
+        select: { id: true, netSalary: true, createdAt: true, payrollRun: { select: { month: true, year: true } } }
       }).catch(() => []) : []
     ]);
 
@@ -689,40 +757,45 @@ router.get('/dashboard/client', authenticate, requireCompany, cacheResponse('cac
   }
 });
 
-router.get('/hr-manager-dashboard/metrics', authenticate, requireCompany, async (req, res, next) => {
+router.get('/hr-manager-dashboard/metrics', authenticate, requireCompany, cacheResponse('cache:hr_mgr_metrics', 60), async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
     const emp = await getAuthEmployee(req);
     const departmentId = emp?.departmentId;
+    const today = new Date(new Date().toISOString().split('T')[0]);
 
     const leaveWhere = { employee: { companyId }, status: 'PENDING' };
-    if (departmentId) leaveWhere.employee.departmentId = departmentId;
+    if (departmentId) leaveWhere.employee = { departmentId };
 
-    const attWhere = { companyId, status: { in: ['PRESENT', 'LATE', 'HALF_DAY'] } };
-    if (departmentId) attWhere.employee = { departmentId };
-
-    const lateWhere = { companyId, OR: [{ status: 'LATE' }, { isLate: true }] };
-    if (departmentId) lateWhere.employee = { departmentId };
-
-    const [pendingLeaves, presentToday, lateCount] = await Promise.all([
-      prisma.leaveRequest.count({ where: leaveWhere }),
-      prisma.attendanceLog.count({ where: attWhere }),
-      prisma.attendanceLog.count({ where: lateWhere })
+    const [pendingLeaves, logs] = await Promise.all([
+      prisma.leaveRequest.count({ where: leaveWhere }).catch(() => 0),
+      prisma.attendanceLog.findMany({
+        where: {
+          companyId,
+          attendanceDate: today,
+          ...(departmentId ? { employee: { departmentId } } : {})
+        },
+        select: { status: true, isLate: true }
+      }).catch(() => [])
     ]);
+
+    const presentToday = logs.filter(l => ['PRESENT', 'LATE', 'HALF_DAY'].includes(l.status)).length;
+    const lateCount = logs.filter(l => l.status === 'LATE' || l.isLate).length;
+
     return successResponse(res, { pendingLeaves, presentToday, lateCount }, 'HR Manager metrics retrieved');
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/manager-dashboard/team-summary', authenticate, requireCompany, async (req, res, next) => {
+router.get('/manager-dashboard/team-summary', authenticate, requireCompany, cacheResponse('cache:mgr_team_summary', 60), async (req, res, next) => {
   try {
     const emp = await getAuthEmployee(req);
     const teamIds = await getManagerTeamIds(emp?.id);
 
     const [teamSize, pendingApprovals] = await Promise.all([
-      prisma.employee.count({ where: { id: { in: teamIds }, status: 'ACTIVE' } }),
-      prisma.approvalRequest.count({ where: { status: 'PENDING' } })
+      prisma.employee.count({ where: { id: { in: teamIds }, status: 'ACTIVE' } }).catch(() => 0),
+      prisma.approvalRequest.count({ where: { status: 'PENDING' } }).catch(() => 0)
     ]);
     return successResponse(res, { teamSize, pendingApprovals }, 'Team summary retrieved');
   } catch (err) {
@@ -730,13 +803,14 @@ router.get('/manager-dashboard/team-summary', authenticate, requireCompany, asyn
   }
 });
 
-router.get('/employee-dashboard/summary', authenticate, requireCompany, async (req, res, next) => {
+router.get('/employee-dashboard/summary', authenticate, requireCompany, cacheResponse('cache:emp_dash_summary', 60), async (req, res, next) => {
   try {
-    const employee = await prisma.employee.findFirst({ where: { userId: req.user.id } });
+    const employee = await getAuthEmployee(req);
     const today = new Date(new Date().toISOString().split('T')[0]);
     const attendance = employee ? await prisma.attendanceLog.findUnique({
-      where: { employeeId_attendanceDate: { employeeId: employee.id, attendanceDate: today } }
-    }) : null;
+      where: { employeeId_attendanceDate: { employeeId: employee.id, attendanceDate: today } },
+      select: { status: true, checkInAt: true, checkOutAt: true }
+    }).catch(() => null) : null;
 
     return successResponse(res, {
       attendanceStatus: attendance?.status || 'NOT_CHECKED_IN',
@@ -748,37 +822,46 @@ router.get('/employee-dashboard/summary', authenticate, requireCompany, async (r
   }
 });
 
-router.get('/employee-dashboard/attendance', authenticate, requireCompany, async (req, res, next) => {
+router.get('/employee-dashboard/attendance', authenticate, requireCompany, cacheResponse('cache:emp_dash_att', 60), async (req, res, next) => {
   try {
-    const employee = await prisma.employee.findFirst({ where: { userId: req.user.id } });
+    const employee = await getAuthEmployee(req);
     const count = employee ? await prisma.attendanceLog.count({
       where: { employeeId: employee.id, status: 'PRESENT' }
-    }) : 0;
+    }).catch(() => 0) : 0;
     return successResponse(res, { daysPresent: count, daysAbsent: 0 }, 'Attendance stats retrieved');
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/employee-dashboard/leave', authenticate, requireCompany, async (req, res, next) => {
+router.get('/employee-dashboard/leave', authenticate, requireCompany, cacheResponse('cache:emp_dash_leave', 60), async (req, res, next) => {
   try {
-    const employee = await prisma.employee.findFirst({ where: { userId: req.user.id } });
+    const employee = await getAuthEmployee(req);
     const balances = employee ? await prisma.leaveBalance.findMany({
       where: { employeeId: employee.id },
-      include: { leaveType: true }
-    }) : [];
+      select: {
+        id: true,
+        remainingDays: true,
+        usedDays: true,
+        totalDays: true,
+        leaveType: { select: { id: true, name: true, code: true } }
+      }
+    }).catch(() => []) : [];
     return successResponse(res, balances, 'Leave balance retrieved');
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/employee-dashboard/tasks', authenticate, requireCompany, async (req, res, next) => {
+router.get('/employee-dashboard/tasks', authenticate, requireCompany, cacheResponse('cache:emp_dash_tasks', 60), async (req, res, next) => {
   try {
-    const employee = await prisma.employee.findFirst({ where: { userId: req.user.id } });
+    const employee = await getAuthEmployee(req);
     const tasks = employee ? await prisma.task.findMany({
-      where: { employeeId: employee.id }
-    }) : [];
+      where: { employeeId: employee.id },
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, title: true, status: true, priority: true, dueDate: true }
+    }).catch(() => []) : [];
     return successResponse(res, tasks, 'Employee tasks retrieved');
   } catch (err) {
     next(err);
@@ -788,7 +871,7 @@ router.get('/employee-dashboard/tasks', authenticate, requireCompany, async (req
 router.use('/projects', projectsRoutes);
 router.use('/tasks', tasksRoutes);
 
-router.get('/clients', authenticate, requireCompany, async (req, res, next) => {
+router.get('/clients', authenticate, requireCompany, cacheResponse('cache:clients_list', 60), async (req, res, next) => {
   try {
     const role = req.user?.role || 'EMPLOYEE';
     const companyId = req.user.companyId;
@@ -841,7 +924,7 @@ router.post('/clients', authenticate, requireCompany, async (req, res, next) => 
   }
 });
 
-router.get('/tasks', authenticate, requireCompany, async (req, res, next) => {
+router.get('/tasks', authenticate, requireCompany, cacheResponse('cache:tasks_main', 300), async (req, res, next) => {
   try {
     const role = req.user?.role || 'EMPLOYEE';
     const companyId = req.user.companyId;
@@ -866,7 +949,7 @@ router.get('/tasks', authenticate, requireCompany, async (req, res, next) => {
   }
 });
 
-router.get('/performance/cycles', authenticate, requireCompany, async (req, res, next) => {
+router.get('/performance/cycles', authenticate, requireCompany, cacheResponse('cache:perf:cycles', 300), async (req, res, next) => {
   try {
     const cycles = await prisma.performanceCycle.findMany({
       where: { companyId: req.user.companyId }
@@ -877,7 +960,7 @@ router.get('/performance/cycles', authenticate, requireCompany, async (req, res,
   }
 });
 
-router.get('/performance/reviews', authenticate, requireCompany, async (req, res, next) => {
+router.get('/performance/reviews', authenticate, requireCompany, cacheResponse('cache:perf:reviews', 300), async (req, res, next) => {
   try {
     const role = req.user?.role || 'EMPLOYEE';
     const companyId = req.user.companyId;
@@ -902,7 +985,7 @@ router.get('/performance/reviews', authenticate, requireCompany, async (req, res
   }
 });
 
-router.get('/certificates/templates', authenticate, requireCompany, async (req, res, next) => {
+router.get('/certificates/templates', authenticate, requireCompany, cacheResponse('cache:cert:templates', 300), async (req, res, next) => {
   try {
     const templates = await prisma.certificateTemplate.findMany({
       where: { companyId: req.user.companyId }
@@ -913,7 +996,7 @@ router.get('/certificates/templates', authenticate, requireCompany, async (req, 
   }
 });
 
-router.get('/certificates', authenticate, requireCompany, async (req, res, next) => {
+router.get('/certificates', authenticate, requireCompany, cacheResponse('cache:cert:list', 300), async (req, res, next) => {
   try {
     const role = req.user?.role || 'EMPLOYEE';
     const companyId = req.user.companyId;
@@ -941,7 +1024,7 @@ router.get('/certificates', authenticate, requireCompany, async (req, res, next)
   }
 });
 
-router.get('/certificates/:id/download', authenticate, async (req, res, next) => {
+router.get('/certificates/:id/download', authenticate, cacheResponse('cache:cert_dl', 300), async (req, res, next) => {
   try {
     const { id } = req.params;
     const role = req.user?.role || 'EMPLOYEE';

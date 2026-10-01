@@ -110,16 +110,28 @@ export const employeesRepository = {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          department: true,
-          designation: true,
-          branch: true,
+        select: {
+          id: true,
+          employeeCode: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+          status: true,
+          employmentType: true,
+          joiningDate: true,
+          createdAt: true,
+          departmentId: true,
+          designationId: true,
+          branchId: true,
+          department: { select: { id: true, name: true } },
+          designation: { select: { id: true, name: true, code: true } },
+          branch: { select: { id: true, name: true } },
           user: {
             select: {
               id: true,
-              userRoles: {
-                include: { role: true }
-              }
+              email: true,
+              status: true
             }
           }
         }

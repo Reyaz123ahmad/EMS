@@ -4,6 +4,7 @@ import { authenticate } from '../../middlewares/auth.middleware.js';
 import { authorize, requireRole } from '../../middlewares/role.middleware.js';
 import { validate } from '../../middlewares/validate.middleware.js';
 import { chatSchema } from './ai.validator.js';
+import { cacheResponse } from '../../middlewares/cache.middleware.js';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.post(
 router.get(
   '/usage-stats',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:usage', 300),
   AIController.getUsageStats
 );
 
@@ -30,6 +32,7 @@ router.get(
 router.get(
   '/insights',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:insights', 300),
   AIController.listInsights
 );
 
@@ -37,12 +40,14 @@ router.get(
 router.get(
   '/employees/:employeeId/performance',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:emp-perf', 300),
   AIController.getEmployeePerformance
 );
 
 router.get(
   '/employees/:employeeId/improvement-plan',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:emp-plan', 300),
   AIController.getEmployeeImprovementPlan
 );
 
@@ -50,12 +55,14 @@ router.get(
 router.get(
   '/employees/:employeeId/attrition',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:emp-attrition', 300),
   AIController.getAttritionPrediction
 );
 
 router.get(
   '/attendance/prediction',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:att-prediction', 300),
   AIController.getAttendancePrediction
 );
 
@@ -63,12 +70,14 @@ router.get(
 router.get(
   '/analytics/company',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:comp-analytics', 300),
   AIController.getCompanyAnalytics
 );
 
 router.get(
   '/analytics/platform',
   requireRole(['SUPER_ADMIN']),
+  cacheResponse('cache:ai:plat-analytics', 300),
   AIController.getPlatformAnalytics
 );
 
@@ -76,12 +85,14 @@ router.get(
 router.get(
   '/anomalies',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:anomalies', 300),
   AIController.getAnomalyDetection
 );
 
 router.get(
   '/recommendations',
   requireRole(['SUPER_ADMIN', 'COMPANY_ADMIN']),
+  cacheResponse('cache:ai:recs', 300),
   AIController.getBusinessRecommendations
 );
 

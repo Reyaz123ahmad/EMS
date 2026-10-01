@@ -23,14 +23,14 @@ router.put('/plans/:id', validate(planSchema), subscriptionsController.updatePla
 // Protected subscription routes
 router.use(authenticate);
 router.get('/platform-status', cacheResponse('cache:sub_platform_status', 120), subscriptionsController.getPlatformStatus);
-router.get('/current', subscriptionsController.getCurrentSubscription);
+router.get('/current', cacheResponse('cache:sub_current', 60), subscriptionsController.getCurrentSubscription);
 router.post('/orders', validate(createOrderSchema), subscriptionsController.createOrder);
 router.post('/verify', validate(verifyPaymentSchema), subscriptionsController.verifyPayment);
 router.post('/renew', validate(renewSubscriptionSchema), subscriptionsController.renewSubscription);
 router.post('/cancel', validate(cancelSubscriptionSchema), subscriptionsController.cancelSubscription);
-router.get('/history', subscriptionsController.getSubscriptionHistory);
+router.get('/history', cacheResponse('cache:sub_history', 60), subscriptionsController.getSubscriptionHistory);
 router.get('/stats', cacheResponse('cache:sub_stats', 120), subscriptionsController.getSubscriptionStats);
-router.get('/check-expiry', subscriptionsController.checkExpiry);
+router.get('/check-expiry', cacheResponse('cache:sub_expiry', 60), subscriptionsController.checkExpiry);
 
 // Proration calculations
 router.post('/proration/calculate', subscriptionsController.calculateProration);

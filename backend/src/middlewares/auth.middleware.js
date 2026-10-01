@@ -17,7 +17,8 @@ export function authenticate(req, res, next) {
       id: decoded.sub || decoded.id,
       email: decoded.email,
       role: decoded.role,
-      companyId: decoded.companyId
+      companyId: decoded.companyId,
+      employeeId: decoded.employeeId || null
     };
 
     next();

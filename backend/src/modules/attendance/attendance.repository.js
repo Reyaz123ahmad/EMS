@@ -1,34 +1,38 @@
 import { prisma } from '../../config/prisma.js';
 
+if (!global._todayAttendanceCache) global._todayAttendanceCache = new Map();
+
 export const attendanceRepository = {
   /**
-   * Find today's attendance log for an employee
+   * Find today's attendance log for an employee (with fast in-memory caching)
    */
   async findTodayAttendance(employeeId, date = new Date()) {
+    if (!employeeId) return null;
     const startOfDay = new Date(date);
     startOfDay.setUTCHours(0, 0, 0, 0);
+    const cacheKey = `${employeeId}_${startOfDay.toISOString().split('T')[0]}`;
+    
+    const cached = global._todayAttendanceCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
+    }
 
-    return prisma.attendanceLog.findFirst({
+    const data = await prisma.attendanceLog.findUnique({
       where: {
-        employeeId,
-        attendanceDate: startOfDay
+        employeeId_attendanceDate: {
+          employeeId,
+          attendanceDate: startOfDay
+        }
       },
       include: {
         breaks: {
           orderBy: { breakStartAt: 'asc' }
-        },
-        employee: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            employeeCode: true,
-            branch: true,
-            department: true
-          }
         }
       }
     });
+
+    global._todayAttendanceCache.set(cacheKey, { data, expiresAt: Date.now() + 60000 });
+    return data;
   },
 
   /**
@@ -55,6 +59,8 @@ export const attendanceRepository = {
   async createAttendanceLog(data) {
     const targetDate = new Date(data.attendanceDate || new Date());
     targetDate.setUTCHours(0, 0, 0, 0);
+    const cacheKey = `${data.employeeId}_${targetDate.toISOString().split('T')[0]}`;
+    global._todayAttendanceCache.delete(cacheKey);
 
     const logData = {
       companyId: data.companyId,
@@ -104,7 +110,7 @@ export const attendanceRepository = {
       remarks: data.remarks || null
     };
 
-    return prisma.attendanceLog.upsert({
+    const res = await prisma.attendanceLog.upsert({
       where: {
         employeeId_attendanceDate: {
           employeeId: data.employeeId,
@@ -114,19 +120,31 @@ export const attendanceRepository = {
       update: logData,
       create: logData
     });
+
+    const fullResult = { ...res, breaks: [] };
+    global._todayAttendanceCache.set(cacheKey, { data: fullResult, expiresAt: Date.now() + 60000 });
+    return fullResult;
   },
 
   /**
    * Update attendance log (e.g. check-out, duration, status)
    */
   async updateAttendanceLog(id, data) {
-    return prisma.attendanceLog.update({
+    const res = await prisma.attendanceLog.update({
       where: { id },
-      data,
-      include: {
-        breaks: true
-      }
+      data
     });
+
+    if (res.employeeId && res.attendanceDate) {
+      const startOfDay = new Date(res.attendanceDate);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+      const cacheKey = `${res.employeeId}_${startOfDay.toISOString().split('T')[0]}`;
+      const existing = global._todayAttendanceCache.get(cacheKey)?.data || {};
+      const merged = { ...existing, ...res };
+      global._todayAttendanceCache.set(cacheKey, { data: merged, expiresAt: Date.now() + 60000 });
+    }
+
+    return res;
   },
 
   /**
@@ -238,6 +256,10 @@ export const attendanceRepository = {
    * Create an attendance break record
    */
   async createAttendanceBreak(data) {
+    if (data.employeeId) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      global._todayAttendanceCache.delete(`${data.employeeId}_${todayStr}`);
+    }
     return prisma.attendanceBreak.create({
       data: {
         attendanceLogId: data.attendanceLogId,
@@ -261,10 +283,15 @@ export const attendanceRepository = {
    * Update break record upon completion
    */
   async updateAttendanceBreak(id, data) {
-    return prisma.attendanceBreak.update({
+    const res = await prisma.attendanceBreak.update({
       where: { id },
       data
     });
+    if (res.employeeId) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      global._todayAttendanceCache.delete(`${res.employeeId}_${todayStr}`);
+    }
+    return res;
   },
 
   /**
@@ -297,19 +324,47 @@ export const attendanceRepository = {
    */
   async findEmployeeWithBranch(employeeId) {
     if (!employeeId) return null;
-    return prisma.employee.findFirst({
-      where: {
-        OR: [
-          { id: employeeId },
-          { userId: employeeId }
-        ]
-      },
-      include: {
-        branch: true,
-        department: true,
-        company: true
+    if (!global._empBranchCache) global._empBranchCache = new Map();
+    if (!global._inFlightEmpBranchPromises) global._inFlightEmpBranchPromises = new Map();
+
+    const cached = global._empBranchCache.get(employeeId);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
+    }
+
+    if (global._inFlightEmpBranchPromises.has(employeeId)) {
+      return global._inFlightEmpBranchPromises.get(employeeId);
+    }
+
+    const queryPromise = (async () => {
+      try {
+        const data = await prisma.employee.findFirst({
+          where: {
+            OR: [
+              { id: employeeId },
+              { userId: employeeId }
+            ]
+          },
+          include: {
+            branch: true,
+            department: true,
+            company: true
+          }
+        });
+
+        if (data) {
+          global._empBranchCache.set(employeeId, { data, expiresAt: Date.now() + 300000 });
+          if (data.id !== employeeId) global._empBranchCache.set(data.id, { data, expiresAt: Date.now() + 300000 });
+          if (data.userId && data.userId !== employeeId) global._empBranchCache.set(data.userId, { data, expiresAt: Date.now() + 300000 });
+        }
+        return data;
+      } finally {
+        global._inFlightEmpBranchPromises.delete(employeeId);
       }
-    });
+    })();
+
+    global._inFlightEmpBranchPromises.set(employeeId, queryPromise);
+    return queryPromise;
   },
 
   /**
@@ -322,13 +377,31 @@ export const attendanceRepository = {
   },
 
   /**
-   * Find card by unique number within company
+   * Find card by unique number within company (with 5-min caching)
    */
   async findCardByNumber(companyId, cardNumber) {
-    return prisma.employeeCard.findFirst({
+    if (!companyId || !cardNumber) return null;
+    const cacheKey = `card:${companyId}:${cardNumber}`;
+    if (!global._cardLookupCache) global._cardLookupCache = new Map();
+    const cached = global._cardLookupCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
+    }
+
+    const data = await prisma.employeeCard.findFirst({
       where: { companyId, cardNumber, isActive: true },
-      include: { employee: { include: { branch: true } } }
+      select: {
+        id: true,
+        cardNumber: true,
+        employeeId: true,
+        isActive: true
+      }
     });
+
+    if (data) {
+      global._cardLookupCache.set(cacheKey, { data, expiresAt: Date.now() + 300000 });
+    }
+    return data;
   },
 
   /**

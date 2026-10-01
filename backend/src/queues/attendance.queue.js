@@ -17,18 +17,27 @@ export async function addMarkAbsenteesJob({ companyId, forceAllShifts } = {}) {
 
 export async function scheduleAutoAbsentCron() {
   try {
-    await attendanceQueue.add(
-      'mark-absentees',
-      {},
-      {
-        repeat: {
-          every: 5 * 60 * 1000 // every 5 minutes
-        },
-        jobId: 'mark-absentees-cron'
-      }
-    );
+    const repeatableJobs = await attendanceQueue.getRepeatableJobs();
+    for (const job of repeatableJobs) {
+      await attendanceQueue.removeRepeatableByKey(job.key);
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+      await attendanceQueue.add(
+        'mark-absentees',
+        {},
+        {
+          repeat: {
+            every: 60 * 60 * 1000 // every 60 minutes in production
+          },
+          jobId: 'mark-absentees-cron',
+          removeOnComplete: true,
+          removeOnFail: true
+        }
+      );
+    }
   } catch (err) {
-    // Ignore duplicate or scheduling warnings
+    // Ignore scheduling errors
   }
 }
 

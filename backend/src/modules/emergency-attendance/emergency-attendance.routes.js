@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { emergencyAttendanceController } from './emergency-attendance.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 import { validate } from '../../middlewares/validate.middleware.js';
+import { cacheResponse } from '../../middlewares/cache.middleware.js';
 import {
   createEmergencyAttendanceSchema,
   approveEmergencySchema,
@@ -13,12 +14,12 @@ const router = Router();
 
 router.use(authenticate);
 
-router.get('/stats', emergencyAttendanceController.getEmergencyStats);
+router.get('/stats', cacheResponse('cache:emerg:stats', 300), emergencyAttendanceController.getEmergencyStats);
 router.post('/bulk-approve', validate(bulkApproveSchema), emergencyAttendanceController.bulkApprove);
 
-router.get('/', emergencyAttendanceController.getRequests);
+router.get('/', cacheResponse('cache:emerg:list', 300), emergencyAttendanceController.getRequests);
 router.post('/', validate(createEmergencyAttendanceSchema), emergencyAttendanceController.createRequest);
-router.get('/:id', emergencyAttendanceController.getRequestById);
+router.get('/:id', cacheResponse('cache:emerg:get', 300), emergencyAttendanceController.getRequestById);
 router.post('/:id/approve', validate(approveEmergencySchema), emergencyAttendanceController.approveRequest);
 router.post('/:id/reject', validate(rejectEmergencySchema), emergencyAttendanceController.rejectRequest);
 

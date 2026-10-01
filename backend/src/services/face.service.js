@@ -74,26 +74,19 @@ export async function checkAndRecordImageReplay(photoBase64, employeeId = 'anony
   const imageHash = crypto.createHash('sha256').update(cleanBase64).digest('hex');
   const key = `face:replay:${imageHash}`;
 
-  if (redis) {
-    try {
-      const existing = await redis.get(key);
-      if (existing) {
-        return { passed: false, isReplay: true, reason: 'REPLAY_DETECTED', hash: imageHash, originalUser: existing };
-      }
-      await redis.set(key, employeeId, 'EX', windowSeconds);
-      return { passed: true, isReplay: false, hash: imageHash };
-    } catch {
-      // Fall through to memory store on redis connection issues
-    }
-  }
-
   const now = Date.now();
-  const existing = inMemoryReplayStore.get(imageHash);
-  if (existing && (now - existing.timestamp) < windowSeconds * 1000) {
-    return { passed: false, isReplay: true, reason: 'REPLAY_DETECTED', hash: imageHash, originalUser: existing.employeeId };
+  const existingMemory = inMemoryReplayStore.get(imageHash);
+  if (existingMemory && (now - existingMemory.timestamp) < windowSeconds * 1000) {
+    return { passed: false, isReplay: true, reason: 'REPLAY_DETECTED', hash: imageHash, originalUser: existingMemory.employeeId };
   }
 
   inMemoryReplayStore.set(imageHash, { employeeId, timestamp: now });
+
+  // Async Redis sync in background if available
+  if (redis) {
+    redis.set(key, employeeId, 'EX', windowSeconds).catch(() => {});
+  }
+
   return { passed: true, isReplay: false, hash: imageHash };
 }
 

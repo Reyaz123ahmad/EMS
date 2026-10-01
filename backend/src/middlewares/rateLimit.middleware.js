@@ -65,7 +65,6 @@ export const authRateLimit = rateLimit({
   max: process.env.NODE_ENV === 'production' ? 20 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
-  store: createSafeRedisStore('rl:auth:'),
   message: {
     status: 'error',
     message: 'Too many authentication attempts. Please try again after 15 minutes.'

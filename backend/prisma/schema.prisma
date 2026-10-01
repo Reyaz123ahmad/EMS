@@ -257,6 +257,8 @@ model User {
   notifications    Notification[]
   securityEvents   SecurityEvent[]
 
+  @@index([companyId, status])
+  @@index([email])
   @@map("users")
 }
 
@@ -511,7 +513,11 @@ model Employee {
   reimbursements        Reimbursement[]
 
   @@unique([companyId, employeeCode])
+  @@index([companyId, status])
+  @@index([companyId, departmentId])
+  @@index([companyId, branchId])
   @@index([companyId, email])
+  @@index([userId])
   @@map("employees")
 }
 
@@ -609,6 +615,8 @@ model AttendanceLog {
 
   @@unique([employeeId, attendanceDate])
   @@index([companyId, attendanceDate])
+  @@index([companyId, attendanceDate, status])
+  @@index([companyId, isLate])
   @@index([employeeId, attendanceDate])
   @@index([shiftId])
   @@map("attendance_logs")
@@ -1725,6 +1733,7 @@ model Notification {
   createdAt DateTime  @default(now())
 
   @@index([userId, isRead])
+  @@index([userId, createdAt])
   @@map("notifications")
 }
 

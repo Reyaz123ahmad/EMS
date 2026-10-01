@@ -9,7 +9,24 @@ import logger from './config/logger.js';
 import routes from './routes/index.js';
 import { allQueues } from './queues/index.js';
 
+import compression from 'compression';
+
 const app = express();
+
+// Enable Gzip/Brotli compression
+app.use(compression());
+
+// Slow request logger middleware (> 1000ms)
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const ms = Date.now() - start;
+    if (ms > 1000) {
+      logger.warn({ method: req.method, url: req.originalUrl, ms, status: res.statusCode }, '⚠️ SLOW REQUEST (>1000ms)');
+    }
+  });
+  next();
+});
 
 // Security Middleware (Configure CSP to allow Bull Board styles/scripts)
 app.use(

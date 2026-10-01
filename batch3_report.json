@@ -1,0 +1,186 @@
+[
+  {
+    "Endpoint": "/api/v1/payroll/components",
+    "Method": "GET",
+    "Before (ms)": "4762ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/salary-structures/templates",
+    "Method": "GET",
+    "Before (ms)": "4458ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/templates",
+    "Method": "GET",
+    "Before (ms)": "3189ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/salary-structures",
+    "Method": "GET",
+    "Before (ms)": "5114ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/structures",
+    "Method": "GET",
+    "Before (ms)": "5111ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/structure/2ad5332a-f6fb-4811-a8cd-9ebcade5a927",
+    "Method": "GET",
+    "Before (ms)": "8068ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/employee/2ad5332a-f6fb-4811-a8cd-9ebcade5a927/structure",
+    "Method": "GET",
+    "Before (ms)": "12178ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/reimbursements",
+    "Method": "GET",
+    "Before (ms)": "4685ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/loans-advances",
+    "Method": "GET",
+    "Before (ms)": "6988ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/loans",
+    "Method": "GET",
+    "Before (ms)": "7167ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/tax-slabs",
+    "Method": "GET",
+    "Before (ms)": "6765ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/analytics",
+    "Method": "GET",
+    "Before (ms)": "4893ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/runs",
+    "Method": "GET",
+    "Before (ms)": "3440ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/slips/my",
+    "Method": "GET",
+    "Before (ms)": "3410ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/slips",
+    "Method": "GET",
+    "Before (ms)": "5099ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/payroll/stats",
+    "Method": "GET",
+    "Before (ms)": "5538ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/overtime/rules",
+    "Method": "GET",
+    "Before (ms)": "5315ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/overtime/my",
+    "Method": "GET",
+    "Before (ms)": "5515ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/overtime/my-records",
+    "Method": "GET",
+    "Before (ms)": "6485ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/overtime/records",
+    "Method": "GET",
+    "Before (ms)": "6981ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/overtime/report",
+    "Method": "GET",
+    "Before (ms)": "3486ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/overtime/stats",
+    "Method": "GET",
+    "Before (ms)": "5778ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/overtime/requests",
+    "Method": "GET",
+    "Before (ms)": "6186ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  }
+]

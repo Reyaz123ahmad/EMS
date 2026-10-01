@@ -1,5 +1,8 @@
 import prisma from '../config/prisma.js';
 
+// In-memory cache for company subscription status (<0.01ms lookup)
+const companySubCache = new Map();
+
 /**
  * Middleware: Enforce Active Tenant Subscription
  */
@@ -18,14 +21,39 @@ export async function requireActiveSubscription(req, res, next) {
       });
     }
 
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      include: {
-        subscription: {
-          include: { plan: true }
+    let company = null;
+    const cached = companySubCache.get(companyId);
+    if (cached && Date.now() < cached.expiresAt) {
+      company = cached.data;
+    } else {
+      company = await prisma.company.findUnique({
+        where: { id: companyId },
+        select: {
+          id: true,
+          status: true,
+          subscription: {
+            select: {
+              status: true,
+              startDate: true,
+              endDate: true,
+              trialEndsAt: true,
+              plan: {
+                select: {
+                  name: true,
+                  features: true,
+                  maxEmployees: true,
+                  maxBranches: true,
+                  maxDevices: true
+                }
+              }
+            }
+          }
         }
+      });
+      if (company) {
+        companySubCache.set(companyId, { data: company, expiresAt: Date.now() + 60000 });
       }
-    });
+    }
 
     if (!company) {
       return res.status(404).json({

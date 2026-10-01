@@ -294,7 +294,10 @@ export const AttendancePage = () => {
               validTill: todayStatus?.validTill || shift?.validTill,
               isRosterOverride: todayStatus?.isRosterOverride ?? (todayStatus?.shiftSource === 'ROSTER'),
               defaultShift: todayStatus?.defaultShift || shift?.defaultShift,
-              defaultShiftStatus: todayStatus?.defaultShiftStatus
+              defaultShiftStatus: todayStatus?.defaultShiftStatus,
+              expectedCheckout: todayStatus?.expectedCheckout,
+              earliestCheckout: todayStatus?.earliestCheckout,
+              requiredHours: todayStatus?.requiredHours
             }}
           />
 
@@ -322,15 +325,26 @@ export const AttendancePage = () => {
                     Open QR Card Scanner Terminal
                   </button>
                 ) : !isCheckedIn ? (
-                  <button
-                    type="button"
-                    disabled={isHoliday || !hasShift}
-                    onClick={() => startPunchFlow('CHECK_IN')}
-                    className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-6 py-4 text-base font-bold text-white shadow-xl shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    <LogIn className="h-5 w-5" />
-                    Initiate Check-In (Multi-Layer Verification)
-                  </button>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      disabled={isHoliday || !hasShift || todayStatus?.canCheckIn === false}
+                      onClick={() => startPunchFlow('CHECK_IN')}
+                      className={`w-full flex items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-bold shadow-xl transition-all ${
+                        todayStatus?.canCheckIn === false
+                          ? 'bg-slate-800 text-slate-400 border border-slate-700/60 cursor-not-allowed opacity-60'
+                          : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+                      }`}
+                    >
+                      <LogIn className="h-5 w-5" />
+                      Initiate Check-In (Multi-Layer Verification)
+                    </button>
+                    {todayStatus?.canCheckIn === false && todayStatus?.checkInBlockReason && (
+                      <p className="text-xs text-amber-400/90 text-center font-medium">
+                        {todayStatus.checkInBlockReason}
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     {/* Live Break Controls with Lunch / Short Quota */}

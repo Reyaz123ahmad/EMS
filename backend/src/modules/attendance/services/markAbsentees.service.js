@@ -2,6 +2,7 @@ import { prisma } from '../../../config/prisma.js';
 import logger from '../../../config/logger.js';
 import attendanceService from '../attendance.service.js';
 import attendanceRepository from '../attendance.repository.js';
+import { resolveShiftForEmployee } from '../../shifts/services/shift-resolver.service.js';
 
 const DAY_NAMES = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
@@ -126,6 +127,7 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   const targetDate = options.date ? new Date(options.date) : new Date();
   const now = options.currentTime ? new Date(options.currentTime) : new Date();
   const force = Boolean(options.forceAllShifts);
+  const currentDayName = DAY_NAMES[targetDate.getDay()];
 
   const startOfDay = new Date(targetDate);
   startOfDay.setUTCHours(0, 0, 0, 0);
@@ -146,147 +148,138 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
     };
   }
 
-  // 2. Fetch all active employees for this company
-  const employees = await prisma.employee.findMany({
-    where: {
-      companyId,
-      status: 'ACTIVE'
-    },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      employeeCode: true,
-      branchId: true,
-      departmentId: true
-    }
-  });
+  // 2. Batch Fetch all required company data in parallel
+  const [employees, defaultWeeklyOff, approvedLeaves, existingLogs, companyDefaultShift] = await Promise.all([
+    prisma.employee.findMany({
+      where: { companyId, status: 'ACTIVE' },
+      select: { id: true, firstName: true, lastName: true, employeeCode: true, branchId: true, departmentId: true }
+    }),
+    prisma.weeklyOffRule.findFirst({
+      where: { companyId, isActive: true },
+      orderBy: { createdAt: 'asc' }
+    }),
+    prisma.leaveRequest.findMany({
+      where: {
+        employee: { companyId },
+        status: 'APPROVED',
+        startDate: { lte: endOfDay },
+        endDate: { gte: startOfDay }
+      },
+      select: { employeeId: true }
+    }),
+    prisma.attendanceLog.findMany({
+      where: {
+        companyId,
+        attendanceDate: startOfDay
+      }
+    }),
+    prisma.shift.findFirst({
+      where: { companyId, isActive: true }
+    })
+  ]);
+
+  if (employees.length === 0) {
+    return { companyId, marked: 0, skipped: 0, total: 0, details: [] };
+  }
+
+  const isCompanyWeeklyOff = defaultWeeklyOff 
+    ? (defaultWeeklyOff.days || []).map(d => d.toUpperCase()).includes(currentDayName)
+    : false;
+
+  const onLeaveEmpIds = new Set(approvedLeaves.map(l => l.employeeId));
+  const logsByEmpId = new Map(existingLogs.map(l => [l.employeeId, l]));
 
   let markedCount = 0;
   let skippedCount = 0;
   const details = [];
+  const recordsToCreate = [];
+  const logsToUpdate = [];
 
   for (const employee of employees) {
     const empId = employee.id;
 
     // A. Weekly Off Check
-    const weeklyOff = await checkWeeklyOff(empId, companyId, targetDate);
-    if (weeklyOff.isWeeklyOff) {
+    if (isCompanyWeeklyOff) {
       skippedCount++;
       details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'WEEKLY_OFF' });
       continue;
     }
 
     // B. Approved Leave Check
-    const leave = await checkApprovedLeave(empId, targetDate);
-    if (leave.isOnLeave) {
+    if (onLeaveEmpIds.has(empId)) {
       skippedCount++;
       details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'ON_APPROVED_LEAVE' });
       continue;
     }
 
-    // C. Shift Assignment Check
-    const shiftInfo = await attendanceService.checkShiftAssignment(empId, targetDate, companyId);
-    if (!shiftInfo.hasShift || !shiftInfo.shift) {
-      skippedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'NO_SHIFT_ASSIGNED' });
-      continue;
-    }
+    // C. Shift Info (Resolve shift: Roster > Assignment > Default)
+    const shiftInfo = await resolveShiftForEmployee({ employeeId: empId, companyId, date: targetDate });
+    const shift = shiftInfo?.shift || companyDefaultShift || { id: 'default', name: 'General', startTime: '09:00', endTime: '18:00', graceMinutes: 15 };
+    const graceMinutes = shift.graceMinutes !== undefined ? shift.graceMinutes : 15;
 
-    const shift = shiftInfo.shift;
-
-    // D. Shift End Time Cutoff Calculation (Mark absent only AFTER shift ends + buffer)
-    const { shiftStart, shiftEnd, absentCutoff } = calculateShiftEndCutoff(targetDate, shift, 15);
-
-    // If current time is before absent cutoff and not forced, shift is still in progress
+    // D. Shift End Time Cutoff
+    const { shiftStart, shiftEnd, absentCutoff } = calculateShiftEndCutoff(targetDate, shift, graceMinutes);
     if (!force && now.getTime() < absentCutoff.getTime()) {
       skippedCount++;
       details.push({
         employeeId: empId,
         employeeCode: employee.employeeCode,
         action: 'SKIPPED',
-        reason: 'SHIFT_IN_PROGRESS',
-        shiftStart: shiftStart.toISOString(),
-        shiftEnd: shiftEnd.toISOString(),
-        absentCutoff: absentCutoff.toISOString()
+        reason: 'SHIFT_IN_PROGRESS'
       });
       continue;
     }
 
-    // E. Attendance Log Check (Idempotency & Punch Check)
-    const existingLog = await prisma.attendanceLog.findFirst({
-      where: {
-        employeeId: empId,
-        attendanceDate: startOfDay
-      }
-    });
-
+    // E. Existing log check
+    const existingLog = logsByEmpId.get(empId);
     if (existingLog) {
       if (existingLog.checkInAt || ['PRESENT', 'LATE', 'HALF_DAY'].includes(existingLog.status)) {
         skippedCount++;
-        details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'ALREADY_PRESENT_OR_LATE' });
         continue;
       }
-
-      if (existingLog.status === 'ABSENT') {
+      if (existingLog.status === 'ABSENT' || ['ON_LEAVE', 'HOLIDAY', 'WEEKLY_OFF'].includes(existingLog.status)) {
         skippedCount++;
-        details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'ALREADY_MARKED_ABSENT' });
         continue;
       }
 
-      if (['ON_LEAVE', 'HOLIDAY', 'WEEKLY_OFF'].includes(existingLog.status)) {
-        skippedCount++;
-        details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: `STATUS_${existingLog.status}` });
-        continue;
-      }
-
-      // If draft or un-punched row exists, update to ABSENT
-      await prisma.attendanceLog.update({
-        where: { id: existingLog.id },
-        data: {
-          status: 'ABSENT',
-          shiftId: shift.id,
-          shiftName: shift.name,
-          shiftStartTime: shift.startTime,
-          shiftEndTime: shift.endTime,
-          shiftSource: shiftInfo.source || 'COMPANY_DEFAULT',
-          expectedStart: shiftStart,
-          expectedEnd: shiftEnd,
-          isRosterOverride: Boolean(shiftInfo.source === 'ROSTER'),
-          remarks: 'Automatically marked absent: No punch-in recorded after shift concluded',
-          attendanceMethod: 'SYSTEM'
-        }
-      });
-
+      logsToUpdate.push(existingLog.id);
       markedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', logId: existingLog.id });
-      continue;
-    }
-
-    // F. Create New Attendance Log with status=ABSENT
-    const createdLog = await prisma.attendanceLog.create({
-      data: {
+      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', updated: true });
+    } else {
+      recordsToCreate.push({
         companyId,
         employeeId: empId,
         attendanceDate: startOfDay,
         status: 'ABSENT',
-        shiftId: shift.id,
+        shiftId: shift.id !== 'default' ? shift.id : null,
         shiftName: shift.name,
         shiftStartTime: shift.startTime,
         shiftEndTime: shift.endTime,
-        shiftSource: shiftInfo.source || 'COMPANY_DEFAULT',
-        expectedStart: shiftStart,
-        expectedEnd: shiftEnd,
-        isRosterOverride: Boolean(shiftInfo.source === 'ROSTER'),
-        remarks: 'Automatically marked absent: No punch-in recorded after shift concluded',
-        attendanceMethod: 'SYSTEM',
+        shiftSource: shiftInfo?.source || 'COMPANY_DEFAULT',
+        isRosterOverride: Boolean(shiftInfo?.source === 'ROSTER'),
         isLate: false,
-        lateMinutes: 0
-      }
-    });
+        isHalfDay: false,
+        isOvertime: false,
+        totalWorkedMinutes: 0
+      });
+      markedCount++;
+      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', created: true });
+    }
+  }
 
-    markedCount++;
-    details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', logId: createdLog.id });
+  // Execute bulk updates / creates in batch
+  if (recordsToCreate.length > 0) {
+    await prisma.attendanceLog.createMany({
+      data: recordsToCreate,
+      skipDuplicates: true
+    });
+  }
+
+  if (logsToUpdate.length > 0) {
+    await prisma.attendanceLog.updateMany({
+      where: { id: { in: logsToUpdate } },
+      data: { status: 'ABSENT' }
+    });
   }
 
   logger.info(

@@ -46,7 +46,7 @@ export const attendanceWorker = new Worker(
   },
   {
     connection,
-    concurrency: 10
+    concurrency: 1
   }
 );
 

@@ -4,6 +4,7 @@ import * as validator from './refunds.validator.js';
 import { validate } from '../../middlewares/validate.middleware.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
 import { requireRole } from '../../middlewares/role.middleware.js';
+import { cacheResponse } from '../../middlewares/cache.middleware.js';
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.get(
   '/',
   authenticate,
   requireRole('COMPANY_ADMIN', 'SUPER_ADMIN'),
+  cacheResponse('cache:refunds:list', 300),
   controller.listRefunds
 );
 
@@ -29,6 +31,7 @@ router.get(
   '/all',
   authenticate,
   requireRole('SUPER_ADMIN'),
+  cacheResponse('cache:refunds:all', 300),
   controller.listAllRefunds
 );
 
@@ -37,6 +40,7 @@ router.get(
   '/stats',
   authenticate,
   requireRole('COMPANY_ADMIN', 'SUPER_ADMIN'),
+  cacheResponse('cache:refunds:stats', 300),
   controller.getStats
 );
 
@@ -54,6 +58,7 @@ router.get(
   '/:id',
   authenticate,
   requireRole('COMPANY_ADMIN', 'SUPER_ADMIN'),
+  cacheResponse('cache:refunds:get', 300),
   controller.getRefund
 );
 

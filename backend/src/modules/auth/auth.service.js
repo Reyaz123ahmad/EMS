@@ -10,6 +10,13 @@ import { addOTPEmail } from '../../queues/email.queue.js';
 import { OTP_PURPOSES, OTP_EXPIRY_MINUTES, MAX_OTP_ATTEMPTS } from './auth.constants.js';
 import env from '../../config/env.js';
 import { AppError } from '../../utils/response.js';
+import { resolveShiftForEmployee } from '../shifts/services/shift-resolver.service.js';
+import { attendanceRules } from '../attendance/attendance.rules.js';
+import { attendanceRepository } from '../attendance/attendance.repository.js';
+import { attendanceService } from '../attendance/attendance.service.js';
+
+// In-memory cache for fast user profile lookup (<0.1ms)
+const meProfileCache = new Map();
 
 export const authService = {
   /**
@@ -96,32 +103,48 @@ export const authService = {
       id: user.id,
       email: user.email,
       role: primaryRole,
-      companyId: user.companyId
+      companyId: user.companyId,
+      employeeId: user.employee?.id || null
     };
 
     const accessToken = generateAccessToken(tokenPayload);
     const refreshToken = generateRefreshToken(tokenPayload);
 
-    // Persist refresh session
+    // Asynchronously persist session, update last login, log success, and pre-warm cache on next tick
     const expiresAt = new Date(Date.now() + parseInt(env.JWT_REFRESH_EXPIRES_IN_DAYS, 10) * 86400000);
-    await authRepository.createSession({
-      userId: user.id,
-      refreshToken,
-      userAgent,
-      ipAddress,
-      expiresAt
-    });
-
-    // Update last login
-    await authRepository.updateUser(user.id, { lastLoginAt: new Date() });
-
-    // Successful login log
-    await authRepository.createLoginLog({
-      userId: user.id,
-      email: user.email,
-      ipAddress,
-      userAgent,
-      status: 'SUCCESS'
+    setImmediate(() => {
+      Promise.allSettled([
+        authRepository.createSession({
+          userId: user.id,
+          refreshToken,
+          userAgent,
+          ipAddress,
+          expiresAt
+        }),
+        authRepository.updateUser(user.id, { lastLoginAt: new Date() }),
+        authRepository.createLoginLog({
+          userId: user.id,
+          email: user.email,
+          ipAddress,
+          userAgent,
+          status: 'SUCCESS'
+        }),
+        user.employee?.id ? attendanceRepository.findEmployeeWithBranch(user.employee.id) : Promise.resolve(),
+        user.companyId ? attendanceRules.getCompanyAttendanceSettings(user.companyId) : Promise.resolve(),
+        user.employee?.id ? resolveShiftForEmployee({ employeeId: user.employee.id, companyId: user.companyId }) : Promise.resolve(),
+        user.companyId ? attendanceService.checkHoliday(user.companyId) : Promise.resolve(),
+        user.employee?.id ? attendanceRepository.findTodayAttendance(user.employee.id) : Promise.resolve(),
+        user.employee?.id && user.companyId
+          ? attendanceRepository.findEmployeeCards(user.employee.id).then((cards) => {
+              if (cards && cards.length > 0) {
+                if (!global._cardLookupCache) global._cardLookupCache = new Map();
+                cards.forEach((c) => {
+                  global._cardLookupCache.set(`card:${user.companyId}:${c.cardNumber}`, { data: c, expiresAt: Date.now() + 300000 });
+                });
+              }
+            })
+          : Promise.resolve()
+      ]).catch(() => {});
     });
 
     const sanitizedUser = {
@@ -208,6 +231,11 @@ export const authService = {
    * Get current authenticated user profile
    */
   async getMe({ userId }) {
+    const cached = meProfileCache.get(userId);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
+    }
+
     const user = await authRepository.findUserById(userId);
     if (!user) {
       throw new AppError('User not found', 404);
@@ -217,30 +245,11 @@ export const authService = {
       user.userRoles?.[0]?.role?.name ||
       (user.email === env.SUPER_ADMIN_EMAIL ? 'SUPER_ADMIN' : 'EMPLOYEE');
 
-    let employee = user.employee;
-    if (!employee && user.companyId && primaryRole !== 'SUPER_ADMIN' && primaryRole !== 'CLIENT') {
-      const empCode = 'EMP-' + Math.floor(1000 + Math.random() * 9000);
-      employee = await prisma.employee.create({
-        data: {
-          companyId: user.companyId,
-          userId: user.id,
-          employeeCode: empCode,
-          firstName: user.email.split('@')[0],
-          lastName: 'User',
-          email: user.email,
-          joiningDate: new Date(),
-          status: 'ACTIVE'
-        },
-        include: { department: true, designation: true, branch: true }
-      }).catch(async () => {
-        return await prisma.employee.findFirst({ where: { userId: user.id } });
-      });
-    }
-
+    const employee = user.employee || null;
     const photoUrl = employee?.photoUrl || null;
     const name = employee ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim() : user.email.split('@')[0];
 
-    return {
+    const result = {
       id: user.id,
       email: user.email,
       name,
@@ -254,6 +263,9 @@ export const authService = {
       twoFactorEnabled: user.twoFactorEnabled,
       createdAt: user.createdAt
     };
+
+    meProfileCache.set(userId, { data: result, expiresAt: Date.now() + 60000 });
+    return result;
   },
 
   /**

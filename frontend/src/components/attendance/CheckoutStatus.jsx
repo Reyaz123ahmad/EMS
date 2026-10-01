@@ -11,7 +11,7 @@ export function CheckoutStatus({ employeeId, onCheckoutClick, isCheckingOut = fa
     remainingMinutes = 0,
     expectedCheckoutTime = null,
     actualMinutes = 0,
-    requiredMinutes = 480,
+    requiredMinutes = 0,
     reason = ''
   } = status;
 
@@ -25,8 +25,8 @@ export function CheckoutStatus({ employeeId, onCheckoutClick, isCheckingOut = fa
   }
 
   const formatMins = (mins) => {
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
+    const h = Math.floor((mins || 0) / 60);
+    const m = (mins || 0) % 60;
     if (h === 0) return `${m}m`;
     return `${h}h ${m}m`;
   };
@@ -35,7 +35,8 @@ export function CheckoutStatus({ employeeId, onCheckoutClick, isCheckingOut = fa
     ? new Date(expectedCheckoutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : '--:--';
 
-  const progressPercent = Math.min(100, Math.round((actualMinutes / (requiredMinutes || 480)) * 100));
+  const targetMinutes = requiredMinutes || (actualMinutes > 0 ? actualMinutes : 480);
+  const progressPercent = Math.min(100, Math.round((actualMinutes / (targetMinutes || 1)) * 100));
 
   return (
     <div className="p-5 bg-gradient-to-br from-slate-900/90 to-slate-950 border border-slate-800/80 rounded-2xl shadow-xl backdrop-blur-md">

@@ -1,0 +1,146 @@
+[
+  {
+    "Endpoint": "/api/v1/leave/types",
+    "Method": "GET",
+    "Before (ms)": "9765ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/balances",
+    "Method": "GET",
+    "Before (ms)": "10096ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/balances/2ad5332a-f6fb-4811-a8cd-9ebcade5a927",
+    "Method": "GET",
+    "Before (ms)": "6941ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/balance-report",
+    "Method": "GET",
+    "Before (ms)": "5363ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/requests/my",
+    "Method": "GET",
+    "Before (ms)": "7419ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/requests",
+    "Method": "GET",
+    "Before (ms)": "4475ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/calendar",
+    "Method": "GET",
+    "Before (ms)": "4773ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/stats",
+    "Method": "GET",
+    "Before (ms)": "6878ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/history",
+    "Method": "GET",
+    "Before (ms)": "7133ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/leave/history/2ad5332a-f6fb-4811-a8cd-9ebcade5a927",
+    "Method": "GET",
+    "Before (ms)": "8062ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/projects",
+    "Method": "GET",
+    "Before (ms)": "6562ms",
+    "After (ms)": "7ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/projects/my",
+    "Method": "GET",
+    "Before (ms)": "6505ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/tasks",
+    "Method": "GET",
+    "Before (ms)": "4881ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/clients",
+    "Method": "GET",
+    "Before (ms)": "2889ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/client-portal/dashboard",
+    "Method": "GET",
+    "Before (ms)": "3253ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/client-portal/projects",
+    "Method": "GET",
+    "Before (ms)": "1656ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/client-portal/invoices",
+    "Method": "GET",
+    "Before (ms)": "1962ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/client-portal/payments",
+    "Method": "GET",
+    "Before (ms)": "2647ms",
+    "After (ms)": "4ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  }
+]

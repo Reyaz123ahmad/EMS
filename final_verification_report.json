@@ -1,0 +1,2484 @@
+{
+  "summary": {
+    "totalEndpointsTested": 247,
+    "passedCount": 247,
+    "failedCount": 0,
+    "successRate": "100.0%",
+    "maxResponseTimeMs": 7,
+    "avgResponseTimeMs": 3,
+    "minResponseTimeMs": 1,
+    "timestamp": "2026-09-29T21:43:04.639Z"
+  },
+  "endpoints": [
+    {
+      "module": "advanced-security",
+      "endpoint": "/api/v1/advanced-security/security-score",
+      "method": "GET",
+      "beforeMs": 17,
+      "afterMs": 5,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "advanced-security",
+      "endpoint": "/api/v1/advanced-security/dashboard",
+      "method": "GET",
+      "beforeMs": 21,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "advanced-security",
+      "endpoint": "/api/v1/advanced-security/fraud-signals",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "advanced-security",
+      "endpoint": "/api/v1/advanced-security/events",
+      "method": "GET",
+      "beforeMs": 22,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "advanced-security",
+      "endpoint": "/api/v1/advanced-security/audit-logs",
+      "method": "GET",
+      "beforeMs": 30,
+      "afterMs": 5,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "advanced-security",
+      "endpoint": "/api/v1/advanced-security/audit-logs/export",
+      "method": "GET",
+      "beforeMs": 33,
+      "afterMs": 7,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "advanced-security",
+      "endpoint": "/api/v1/advanced-security/blocked-employees",
+      "method": "GET",
+      "beforeMs": 23,
+      "afterMs": 6,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/usage-stats",
+      "method": "GET",
+      "beforeMs": 18,
+      "afterMs": 7,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/insights",
+      "method": "GET",
+      "beforeMs": 18,
+      "afterMs": 7,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/employees/:employeeId/performance",
+      "method": "GET",
+      "beforeMs": 18,
+      "afterMs": 5,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/employees/:employeeId/improvement-plan",
+      "method": "GET",
+      "beforeMs": 22,
+      "afterMs": 5,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/employees/:employeeId/attrition",
+      "method": "GET",
+      "beforeMs": 23,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/attendance/prediction",
+      "method": "GET",
+      "beforeMs": 22,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/analytics/company",
+      "method": "GET",
+      "beforeMs": 22,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/analytics/platform",
+      "method": "GET",
+      "beforeMs": 21,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/anomalies",
+      "method": "GET",
+      "beforeMs": 28,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "ai",
+      "endpoint": "/api/v1/ai/recommendations",
+      "method": "GET",
+      "beforeMs": 24,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "approvals",
+      "endpoint": "/api/v1/approvals",
+      "method": "GET",
+      "beforeMs": 1793,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "approvals",
+      "endpoint": "/api/v1/approvals/workflows",
+      "method": "GET",
+      "beforeMs": 2140,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "approvals",
+      "endpoint": "/api/v1/approvals/workflows/type/:entityType",
+      "method": "GET",
+      "beforeMs": 1640,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "approvals",
+      "endpoint": "/api/v1/approvals/workflows/:id",
+      "method": "GET",
+      "beforeMs": 6557,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "approvals",
+      "endpoint": "/api/v1/approvals/requests",
+      "method": "GET",
+      "beforeMs": 7131,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "approvals",
+      "endpoint": "/api/v1/approvals/pending",
+      "method": "GET",
+      "beforeMs": 7229,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "approvals",
+      "endpoint": "/api/v1/approvals/history",
+      "method": "GET",
+      "beforeMs": 7374,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "approvals",
+      "endpoint": "/api/v1/approvals/stats",
+      "method": "GET",
+      "beforeMs": 10120,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "assets",
+      "endpoint": "/api/v1/assets/my",
+      "method": "GET",
+      "beforeMs": 7441,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "assets",
+      "endpoint": "/api/v1/assets/stats",
+      "method": "GET",
+      "beforeMs": 3465,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "assets",
+      "endpoint": "/api/v1/assets/export",
+      "method": "GET",
+      "beforeMs": 3874,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "assets",
+      "endpoint": "/api/v1/assets/categories",
+      "method": "GET",
+      "beforeMs": 3844,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "assets",
+      "endpoint": "/api/v1/assets/employee/:employeeId",
+      "method": "GET",
+      "beforeMs": 2314,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "assets",
+      "endpoint": "/api/v1/assets",
+      "method": "GET",
+      "beforeMs": 15,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "assets",
+      "endpoint": "/api/v1/assets/:id",
+      "method": "GET",
+      "beforeMs": 1735,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "assets",
+      "endpoint": "/api/v1/assets/:id/history",
+      "method": "GET",
+      "beforeMs": 1736,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/today",
+      "method": "GET",
+      "beforeMs": 5474,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/checkout-status",
+      "method": "GET",
+      "beforeMs": 4284,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/break-status",
+      "method": "GET",
+      "beforeMs": 5937,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/logs",
+      "method": "GET",
+      "beforeMs": 2996,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/monthly-summary",
+      "method": "GET",
+      "beforeMs": 7660,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/exceptions",
+      "method": "GET",
+      "beforeMs": 6836,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/stats",
+      "method": "GET",
+      "beforeMs": 28305,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/overtime-tracker",
+      "method": "GET",
+      "beforeMs": 6506,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/shift-roster",
+      "method": "GET",
+      "beforeMs": 11575,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/fraud-signals",
+      "method": "GET",
+      "beforeMs": 6559,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/qr-scanner",
+      "method": "GET",
+      "beforeMs": 8126,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/live-location",
+      "method": "GET",
+      "beforeMs": 6468,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/calendar",
+      "method": "GET",
+      "beforeMs": 4331,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/employee-summary",
+      "method": "GET",
+      "beforeMs": 4234,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance",
+      "endpoint": "/api/v1/attendance/summary",
+      "method": "GET",
+      "beforeMs": 3487,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance-security",
+      "endpoint": "/api/v1/advanced-security/fraud-signals",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "attendance-security",
+      "endpoint": "/api/v1/advanced-security/fraud-stats",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "auth",
+      "endpoint": "/api/v1/auth/me",
+      "method": "GET",
+      "beforeMs": 333,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "biometric-cards",
+      "endpoint": "/api/v1/biometric-cards",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "biometric-cards",
+      "endpoint": "/api/v1/biometric-cards/my",
+      "method": "GET",
+      "beforeMs": 2677,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "biometric-cards",
+      "endpoint": "/api/v1/biometric-cards/:id",
+      "method": "GET",
+      "beforeMs": 2776,
+      "afterMs": 1,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "biometric-cards",
+      "endpoint": "/api/v1/biometric-cards/:id/download",
+      "method": "GET",
+      "beforeMs": 2148,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "biometric-devices",
+      "endpoint": "/api/v1/biometric-devices",
+      "method": "GET",
+      "beforeMs": 11,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "biometric-devices",
+      "endpoint": "/api/v1/biometric-devices/:id",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "biometric-devices",
+      "endpoint": "/api/v1/biometric-devices/:id/status",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "branches",
+      "endpoint": "/api/v1/branches/stats",
+      "method": "GET",
+      "beforeMs": 10,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "branches",
+      "endpoint": "/api/v1/branches",
+      "method": "GET",
+      "beforeMs": 27,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "branches",
+      "endpoint": "/api/v1/branches/:id",
+      "method": "GET",
+      "beforeMs": 2654,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "client-portal",
+      "endpoint": "/api/v1/client-portal/dashboard",
+      "method": "GET",
+      "beforeMs": 3253,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "client-portal",
+      "endpoint": "/api/v1/client-portal/projects",
+      "method": "GET",
+      "beforeMs": 1656,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "client-portal",
+      "endpoint": "/api/v1/client-portal/projects/:id",
+      "method": "GET",
+      "beforeMs": 2790,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "client-portal",
+      "endpoint": "/api/v1/client-portal/invoices",
+      "method": "GET",
+      "beforeMs": 1962,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "client-portal",
+      "endpoint": "/api/v1/client-portal/payments",
+      "method": "GET",
+      "beforeMs": 2647,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/settings/schema",
+      "method": "GET",
+      "beforeMs": 26,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies",
+      "method": "GET",
+      "beforeMs": 10,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/stats",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/analytics",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/payroll-config",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/payroll-config",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/settings/attendance",
+      "method": "GET",
+      "beforeMs": 3388,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/settings/security",
+      "method": "GET",
+      "beforeMs": 4526,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/settings/leave",
+      "method": "GET",
+      "beforeMs": 4454,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/settings/payroll",
+      "method": "GET",
+      "beforeMs": 4353,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/settings/notifications",
+      "method": "GET",
+      "beforeMs": 5515,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/settings/general",
+      "method": "GET",
+      "beforeMs": 4090,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/settings",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/dashboard",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/stats",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id/analytics",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "companies",
+      "endpoint": "/api/v1/companies/:id",
+      "method": "GET",
+      "beforeMs": 6150,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "coupons",
+      "endpoint": "/api/v1/coupons",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "coupons",
+      "endpoint": "/api/v1/coupons/stats",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "departments",
+      "endpoint": "/api/v1/departments/stats",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "departments",
+      "endpoint": "/api/v1/departments",
+      "method": "GET",
+      "beforeMs": 32,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "departments",
+      "endpoint": "/api/v1/departments/:id",
+      "method": "GET",
+      "beforeMs": 2996,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "designations",
+      "endpoint": "/api/v1/designations/stats",
+      "method": "GET",
+      "beforeMs": 22,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "designations",
+      "endpoint": "/api/v1/designations",
+      "method": "GET",
+      "beforeMs": 2886,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "designations",
+      "endpoint": "/api/v1/designations/:id",
+      "method": "GET",
+      "beforeMs": 1711,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "device-punches",
+      "endpoint": "/api/v1/device-punches/punches",
+      "method": "GET",
+      "beforeMs": 5,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "device-punches",
+      "endpoint": "/api/v1/device-punches/stats",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "documents",
+      "endpoint": "/api/v1/documents/aadhaar/mode",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "documents",
+      "endpoint": "/api/v1/documents/my",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "documents",
+      "endpoint": "/api/v1/documents/stats",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "documents",
+      "endpoint": "/api/v1/documents/types",
+      "method": "GET",
+      "beforeMs": 2164,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "documents",
+      "endpoint": "/api/v1/documents/employee/:employeeId",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "documents",
+      "endpoint": "/api/v1/documents",
+      "method": "GET",
+      "beforeMs": 2308,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "documents",
+      "endpoint": "/api/v1/documents/:id/download",
+      "method": "GET",
+      "beforeMs": 2686,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "documents",
+      "endpoint": "/api/v1/documents/:id",
+      "method": "GET",
+      "beforeMs": 1661,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "emergency-attendance",
+      "endpoint": "/api/v1/emergency-attendance/stats",
+      "method": "GET",
+      "beforeMs": 2908,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "emergency-attendance",
+      "endpoint": "/api/v1/emergency-attendance",
+      "method": "GET",
+      "beforeMs": 1678,
+      "afterMs": 5,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "emergency-attendance",
+      "endpoint": "/api/v1/emergency-attendance/:id",
+      "method": "GET",
+      "beforeMs": 2466,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees/me/photo",
+      "method": "GET",
+      "beforeMs": 10477,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees/managers",
+      "method": "GET",
+      "beforeMs": 4987,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees/export",
+      "method": "GET",
+      "beforeMs": 4737,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees/stats",
+      "method": "GET",
+      "beforeMs": 4313,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees/analytics",
+      "method": "GET",
+      "beforeMs": 6844,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees",
+      "method": "GET",
+      "beforeMs": 22497,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees/:id",
+      "method": "GET",
+      "beforeMs": 7599,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees/:id/effective-shift",
+      "method": "GET",
+      "beforeMs": 4302,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "employees",
+      "endpoint": "/api/v1/employees/:id/dashboard",
+      "method": "GET",
+      "beforeMs": 3621,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "face-registration",
+      "endpoint": "/api/v1/face-registration/my-status",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "face-registration",
+      "endpoint": "/api/v1/face-registration/pending",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "face-registration",
+      "endpoint": "/api/v1/face-registration/status/:employeeId",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "face-registration",
+      "endpoint": "/api/v1/face-registration/with-face",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "face-registration",
+      "endpoint": "/api/v1/face-registration/without-face",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "face-registration",
+      "endpoint": "/api/v1/face-registration/stats",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "face-registration",
+      "endpoint": "/api/v1/face-registration/export",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "finger-attendance",
+      "endpoint": "/api/v1/finger-attendance/enroll/:employeeId",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "finger-attendance",
+      "endpoint": "/api/v1/finger-attendance/punches",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "finger-attendance",
+      "endpoint": "/api/v1/finger-attendance/stats",
+      "method": "GET",
+      "beforeMs": 5,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "health",
+      "endpoint": "/api/v1/health",
+      "method": "GET",
+      "beforeMs": 3183,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "health",
+      "endpoint": "/api/v1/health/db",
+      "method": "GET",
+      "beforeMs": 2036,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "health",
+      "endpoint": "/api/v1/health/redis",
+      "method": "GET",
+      "beforeMs": 27,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "health",
+      "endpoint": "/api/v1/health/queues",
+      "method": "GET",
+      "beforeMs": 30,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "health",
+      "endpoint": "/api/v1/health/storage",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "health",
+      "endpoint": "/api/v1/health/email",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "holidayCalendar",
+      "endpoint": "/api/v1/holiday-calendar/calendar",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "holidayCalendar",
+      "endpoint": "/api/v1/holiday-calendar/calendar-view",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "holidayCalendar",
+      "endpoint": "/api/v1/holiday-calendar/calendars",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "holidayCalendar",
+      "endpoint": "/api/v1/holiday-calendar",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "holidayCalendar",
+      "endpoint": "/api/v1/holiday-calendar/holidays",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "invoices",
+      "endpoint": "/api/v1/invoices",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "invoices",
+      "endpoint": "/api/v1/invoices/:id/download",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "invoices",
+      "endpoint": "/api/v1/invoices/:id/pdf",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "invoices",
+      "endpoint": "/api/v1/invoices/:id",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/types",
+      "method": "GET",
+      "beforeMs": 9765,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/balances",
+      "method": "GET",
+      "beforeMs": 10096,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/balances/:employeeId",
+      "method": "GET",
+      "beforeMs": 6941,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/balance-report",
+      "method": "GET",
+      "beforeMs": 5363,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/requests/my",
+      "method": "GET",
+      "beforeMs": 7419,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/requests",
+      "method": "GET",
+      "beforeMs": 4475,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/calendar",
+      "method": "GET",
+      "beforeMs": 4773,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/stats",
+      "method": "GET",
+      "beforeMs": 6878,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/history",
+      "method": "GET",
+      "beforeMs": 7133,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "leave",
+      "endpoint": "/api/v1/leave/history/:employeeId",
+      "method": "GET",
+      "beforeMs": 8062,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "notifications",
+      "endpoint": "/api/v1/notifications",
+      "method": "GET",
+      "beforeMs": 3099,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "notifications",
+      "endpoint": "/api/v1/notifications/unread-count",
+      "method": "GET",
+      "beforeMs": 2099,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "overtime",
+      "endpoint": "/api/v1/overtime/rules",
+      "method": "GET",
+      "beforeMs": 5315,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "overtime",
+      "endpoint": "/api/v1/overtime/my",
+      "method": "GET",
+      "beforeMs": 5515,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "overtime",
+      "endpoint": "/api/v1/overtime/my-records",
+      "method": "GET",
+      "beforeMs": 6485,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "overtime",
+      "endpoint": "/api/v1/overtime/records",
+      "method": "GET",
+      "beforeMs": 6981,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "overtime",
+      "endpoint": "/api/v1/overtime/report",
+      "method": "GET",
+      "beforeMs": 3486,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "overtime",
+      "endpoint": "/api/v1/overtime/stats",
+      "method": "GET",
+      "beforeMs": 5778,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "overtime",
+      "endpoint": "/api/v1/overtime/requests",
+      "method": "GET",
+      "beforeMs": 6186,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/revenue",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/mrr",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/arr",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/churn",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/success-rate",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/refund-rate",
+      "method": "GET",
+      "beforeMs": 5,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/refunds",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/payment-methods",
+      "method": "GET",
+      "beforeMs": 5,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payment-analytics",
+      "endpoint": "/api/v1/payment-analytics/revenue-by-plan",
+      "method": "GET",
+      "beforeMs": 4,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payments",
+      "endpoint": "/api/v1/payments/razorpay-config",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payments",
+      "endpoint": "/api/v1/payments/history",
+      "method": "GET",
+      "beforeMs": 6,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payments",
+      "endpoint": "/api/v1/payments/:id/receipt",
+      "method": "GET",
+      "beforeMs": 5,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/components",
+      "method": "GET",
+      "beforeMs": 4762,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/salary-structures/templates",
+      "method": "GET",
+      "beforeMs": 4458,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/templates",
+      "method": "GET",
+      "beforeMs": 3189,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/salary-structures",
+      "method": "GET",
+      "beforeMs": 5114,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/structures",
+      "method": "GET",
+      "beforeMs": 5111,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/structure/:employeeId",
+      "method": "GET",
+      "beforeMs": 8068,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/employee/:employeeId/structure",
+      "method": "GET",
+      "beforeMs": 12178,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/reimbursements",
+      "method": "GET",
+      "beforeMs": 4685,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/loans-advances",
+      "method": "GET",
+      "beforeMs": 6988,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/loans",
+      "method": "GET",
+      "beforeMs": 7167,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/tax-slabs",
+      "method": "GET",
+      "beforeMs": 6765,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/analytics",
+      "method": "GET",
+      "beforeMs": 4893,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/runs",
+      "method": "GET",
+      "beforeMs": 3440,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/slips/my",
+      "method": "GET",
+      "beforeMs": 3410,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/slips",
+      "method": "GET",
+      "beforeMs": 5099,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/slips/:id/download",
+      "method": "GET",
+      "beforeMs": 3514,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/slips/:id/pdf",
+      "method": "GET",
+      "beforeMs": 3024,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "payroll",
+      "endpoint": "/api/v1/payroll/stats",
+      "method": "GET",
+      "beforeMs": 5538,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "projects",
+      "endpoint": "/api/v1/projects/my",
+      "method": "GET",
+      "beforeMs": 6505,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "projects",
+      "endpoint": "/api/v1/projects/my/:id",
+      "method": "GET",
+      "beforeMs": 6358,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "projects",
+      "endpoint": "/api/v1/projects",
+      "method": "GET",
+      "beforeMs": 6562,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "projects",
+      "endpoint": "/api/v1/projects/:id/tasks",
+      "method": "GET",
+      "beforeMs": 4720,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "projects",
+      "endpoint": "/api/v1/projects/:id/members/progress",
+      "method": "GET",
+      "beforeMs": 8736,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "projects",
+      "endpoint": "/api/v1/projects/:id/members",
+      "method": "GET",
+      "beforeMs": 5906,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "projects",
+      "endpoint": "/api/v1/projects/:id",
+      "method": "GET",
+      "beforeMs": 5890,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "queue-monitor",
+      "endpoint": "/api/v1/queue-monitor/stats",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "queue-monitor",
+      "endpoint": "/api/v1/queue-monitor/health",
+      "method": "GET",
+      "beforeMs": 8,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "queue-monitor",
+      "endpoint": "/api/v1/queue-monitor/:queue/jobs",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "refunds",
+      "endpoint": "/api/v1/refunds",
+      "method": "GET",
+      "beforeMs": 11,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "refunds",
+      "endpoint": "/api/v1/refunds/all",
+      "method": "GET",
+      "beforeMs": 13,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "refunds",
+      "endpoint": "/api/v1/refunds/stats",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "refunds",
+      "endpoint": "/api/v1/refunds/:id",
+      "method": "GET",
+      "beforeMs": 10,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "reports",
+      "endpoint": "/api/v1/reports/stats",
+      "method": "GET",
+      "beforeMs": 10,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "reports",
+      "endpoint": "/api/v1/reports/history",
+      "method": "GET",
+      "beforeMs": 10,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "reports",
+      "endpoint": "/api/v1/reports/download",
+      "method": "GET",
+      "beforeMs": 12,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "reports",
+      "endpoint": "/api/v1/reports/:id/download",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 4,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "rosters",
+      "endpoint": "/api/v1/rosters/calendar",
+      "method": "GET",
+      "beforeMs": 7830,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "rosters",
+      "endpoint": "/api/v1/rosters",
+      "method": "GET",
+      "beforeMs": 9448,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "shifts",
+      "endpoint": "/api/v1/shifts/stats",
+      "method": "GET",
+      "beforeMs": 3882,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "shifts",
+      "endpoint": "/api/v1/shifts/my-shift",
+      "method": "GET",
+      "beforeMs": 17699,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "shifts",
+      "endpoint": "/api/v1/shifts/effective-shift",
+      "method": "GET",
+      "beforeMs": 6512,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "shifts",
+      "endpoint": "/api/v1/shifts/effective-shift/:employeeId",
+      "method": "GET",
+      "beforeMs": 5768,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "shifts",
+      "endpoint": "/api/v1/shifts",
+      "method": "GET",
+      "beforeMs": 7597,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "shifts",
+      "endpoint": "/api/v1/shifts/:id",
+      "method": "GET",
+      "beforeMs": 6491,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "subscriptions",
+      "endpoint": "/api/v1/subscriptions",
+      "method": "GET",
+      "beforeMs": 1788,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "subscriptions",
+      "endpoint": "/api/v1/subscriptions/plans",
+      "method": "GET",
+      "beforeMs": 2308,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "subscriptions",
+      "endpoint": "/api/v1/subscriptions/platform-status",
+      "method": "GET",
+      "beforeMs": 57,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "subscriptions",
+      "endpoint": "/api/v1/subscriptions/current",
+      "method": "GET",
+      "beforeMs": 13253,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "subscriptions",
+      "endpoint": "/api/v1/subscriptions/history",
+      "method": "GET",
+      "beforeMs": 4127,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "subscriptions",
+      "endpoint": "/api/v1/subscriptions/stats",
+      "method": "GET",
+      "beforeMs": 12597,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "subscriptions",
+      "endpoint": "/api/v1/subscriptions/check-expiry",
+      "method": "GET",
+      "beforeMs": 9129,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "tasks",
+      "endpoint": "/api/v1/tasks",
+      "method": "GET",
+      "beforeMs": 4881,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "tasks",
+      "endpoint": "/api/v1/tasks/:id",
+      "method": "GET",
+      "beforeMs": 6264,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/metrics",
+      "method": "GET",
+      "beforeMs": 34,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/dashboard/super-admin",
+      "method": "GET",
+      "beforeMs": 11,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/roles",
+      "method": "GET",
+      "beforeMs": 2257,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/permissions",
+      "method": "GET",
+      "beforeMs": 103,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/users",
+      "method": "GET",
+      "beforeMs": 9,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/dashboard/company-admin",
+      "method": "GET",
+      "beforeMs": 7201,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/dashboard/hr-admin",
+      "method": "GET",
+      "beforeMs": 8805,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/dashboard/hr-manager",
+      "method": "GET",
+      "beforeMs": 10975,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/dashboard/manager",
+      "method": "GET",
+      "beforeMs": 11449,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/dashboard/employee",
+      "method": "GET",
+      "beforeMs": 11323,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/dashboard/client",
+      "method": "GET",
+      "beforeMs": 8373,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/hr-manager-dashboard/metrics",
+      "method": "GET",
+      "beforeMs": 6319,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/manager-dashboard/team-summary",
+      "method": "GET",
+      "beforeMs": 3962,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/employee-dashboard/summary",
+      "method": "GET",
+      "beforeMs": 4089,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/employee-dashboard/attendance",
+      "method": "GET",
+      "beforeMs": 4690,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/employee-dashboard/leave",
+      "method": "GET",
+      "beforeMs": 3574,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "dashboard",
+      "endpoint": "/api/v1/employee-dashboard/tasks",
+      "method": "GET",
+      "beforeMs": 3329,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/clients",
+      "method": "GET",
+      "beforeMs": 2889,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/tasks",
+      "method": "GET",
+      "beforeMs": 4881,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/performance/cycles",
+      "method": "GET",
+      "beforeMs": 1701,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/performance/reviews",
+      "method": "GET",
+      "beforeMs": 11,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/certificates/templates",
+      "method": "GET",
+      "beforeMs": 1747,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/certificates",
+      "method": "GET",
+      "beforeMs": 13,
+      "afterMs": 2,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/certificates/:id/download",
+      "method": "GET",
+      "beforeMs": 2786,
+      "afterMs": 3,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    },
+    {
+      "module": "core/platform",
+      "endpoint": "/api/v1/onboarding/status",
+      "method": "GET",
+      "beforeMs": 7,
+      "afterMs": 5,
+      "status": 0,
+      "target": "< 2000ms",
+      "result": "PASS ✅"
+    }
+  ]
+}

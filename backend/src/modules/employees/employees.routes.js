@@ -19,7 +19,7 @@ router.use(authenticate);
 router.use(requireActiveSubscription);
 
 // Self-service profile & photo routes for ALL authenticated roles
-router.get('/me/photo', employeesController.getMyPhoto);
+router.get('/me/photo', cacheResponse('cache:employees_photo', 60), employeesController.getMyPhoto);
 router.post('/me/photo', upload.any(), employeesController.uploadMyPhoto);
 router.delete('/me/photo', employeesController.deleteMyPhoto);
 router.put('/me/profile', employeesController.updateMyProfile);
@@ -53,6 +53,7 @@ router.post(
 router.get(
   '/managers',
   requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'SUPER_ADMIN'),
+  cacheResponse('cache:employees_managers', 60),
   employeesController.getManagers
 );
 
@@ -66,6 +67,7 @@ router.post(
 router.get(
   '/export',
   requireRole('COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER'),
+  cacheResponse('cache:employees_export', 60),
   employeesController.exportEmployees
 );
 
@@ -87,10 +89,10 @@ router.get(
 router.get('/', cacheResponse('cache:employees_list', 60), employeesController.listEmployees);
 
 // Single employee detail
-router.get('/:id', employeesController.getEmployee);
+router.get('/:id', cacheResponse('cache:employees_detail', 60), employeesController.getEmployee);
 
 // Effective active shift for employee (Roster override > Assignment > Default)
-router.get('/:id/effective-shift', shiftsController.getEffectiveShift);
+router.get('/:id/effective-shift', cacheResponse('cache:employees_eff_shift', 60), shiftsController.getEffectiveShift);
 
 // Update employee
 router.put(
@@ -114,7 +116,7 @@ router.delete(
 );
 
 // Employee dashboard summary
-router.get('/:id/dashboard', employeesController.getDashboard);
+router.get('/:id/dashboard', cacheResponse('cache:employees_dash', 60), employeesController.getDashboard);
 
 // Face biometrics registration
 router.post(

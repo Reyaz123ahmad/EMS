@@ -1,41 +1,66 @@
 import prisma from '../../config/prisma.js';
 import { DEFAULT_SHIFT_RULES } from './attendance.constants.js';
 
+const companyAttendanceSettingsCache = new Map();
+const inFlightSettingsPromises = new Map();
+
 export const attendanceRules = {
   /**
    * Fetch company attendance settings JSON
    */
   async getCompanyAttendanceSettings(companyId) {
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: { attendanceSettings: true }
-    });
-
-    const defaults = {
-      geoFencing: true,
-      faceRecognition: true,
-      cardRequired: false,
-      gracePeriodMinutes: 15,
-      workHoursPerDay: 8,
-      minWorkMinutesFullDay: 420,
-      minWorkMinutesHalfDay: 240,
-      maxDailyBreaks: 3,
-      maxBreakMinutesTotal: 60,
-      enabledModes: ['face', 'card', 'finger'],
-      shiftStart: '09:00',
-      shiftEnd: '18:00'
-    };
-
-    if (!company?.attendanceSettings) {
-      return defaults;
+    if (!companyId) return {};
+    const cached = companyAttendanceSettingsCache.get(companyId);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
     }
 
-    const custom =
-      typeof company.attendanceSettings === 'string'
-        ? JSON.parse(company.attendanceSettings)
-        : company.attendanceSettings;
+    if (inFlightSettingsPromises.has(companyId)) {
+      return inFlightSettingsPromises.get(companyId);
+    }
 
-    return { ...defaults, ...custom };
+    const queryPromise = (async () => {
+      try {
+        const company = await prisma.company.findUnique({
+          where: { id: companyId },
+          select: { attendanceSettings: true }
+        });
+
+        const defaults = {
+          geoFencing: true,
+          faceRecognition: true,
+          cardRequired: false,
+          gracePeriodMinutes: 15,
+          workHoursPerDay: 8,
+          minWorkMinutesFullDay: 420,
+          minWorkMinutesHalfDay: 240,
+          maxDailyBreaks: 3,
+          maxBreakMinutesTotal: 60,
+          enabledModes: ['face', 'card', 'finger'],
+          shiftStart: '09:00',
+          shiftEnd: '18:00'
+        };
+
+        if (!company?.attendanceSettings) {
+          companyAttendanceSettingsCache.set(companyId, { data: defaults, expiresAt: Date.now() + 300000 });
+          return defaults;
+        }
+
+        const custom =
+          typeof company.attendanceSettings === 'string'
+            ? JSON.parse(company.attendanceSettings)
+            : company.attendanceSettings;
+
+        const result = { ...defaults, ...custom };
+        companyAttendanceSettingsCache.set(companyId, { data: result, expiresAt: Date.now() + 300000 });
+        return result;
+      } finally {
+        inFlightSettingsPromises.delete(companyId);
+      }
+    })();
+
+    inFlightSettingsPromises.set(companyId, queryPromise);
+    return queryPromise;
   },
 
   /**

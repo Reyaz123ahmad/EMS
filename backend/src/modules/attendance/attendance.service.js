@@ -13,30 +13,88 @@ import { prisma } from '../../config/prisma.js';
 import * as faceService from '../../services/face.service.js';
 import { decryptData } from '../../security/encryption.js';
 
+export function getShiftWindow(date = new Date(), shift = null) {
+  const targetDate = new Date(date);
+  const startTime = shift?.startTime || '09:00';
+  const endTime = shift?.endTime || '18:00';
+  const graceMinutes = Number(shift?.graceMinutes !== undefined ? shift.graceMinutes : 15);
+  const isNightShift = Boolean(shift?.isNightShift || (endTime && startTime && endTime <= startTime));
+
+  const [startH, startM] = startTime.split(':').map(Number);
+  const [endH, endM] = endTime.split(':').map(Number);
+
+  const shiftStart = new Date(targetDate);
+  shiftStart.setHours(startH, startM, 0, 0);
+
+  const shiftEnd = new Date(targetDate);
+  shiftEnd.setHours(endH, endM, 0, 0);
+
+  if (isNightShift || endH < startH || (endH === startH && endM <= startM)) {
+    shiftEnd.setDate(shiftEnd.getDate() + 1);
+  }
+
+  const graceCutoff = new Date(shiftStart.getTime() + graceMinutes * 60000);
+  const totalShiftMinutes = Math.max(1, Math.round((shiftEnd.getTime() - shiftStart.getTime()) / 60000));
+  const requiredHours = Number((totalShiftMinutes / 60).toFixed(2));
+
+  return {
+    shiftStart,
+    shiftEnd,
+    graceCutoff,
+    graceMinutes,
+    totalShiftMinutes,
+    requiredHours,
+    isNightShift
+  };
+}
+
 export const attendanceService = {
   /**
    * 1. Holiday Check (FestivalHoliday & HolidayCalendar)
    */
   async checkHoliday(companyId, date = new Date()) {
+    if (!companyId) return { isHoliday: false, holiday: null };
     const targetDate = new Date(date);
+    const targetDateStr = targetDate.toISOString().slice(0, 10);
     const year = targetDate.getFullYear();
+    const cacheKey = `holidays:${companyId}:${year}`;
 
-    const calendar = await prisma.holidayCalendar.findFirst({
-      where: {
-        companyId,
-        year,
-        isActive: true
-      },
-      include: {
-        holidays: true
-      }
-    });
+    if (!global._holidayCalendarCache) global._holidayCalendarCache = new Map();
+    if (!global._inFlightHolidayPromises) global._inFlightHolidayPromises = new Map();
+
+    let calendar = null;
+    const cached = global._holidayCalendarCache.get(cacheKey);
+    if (cached && Date.now() < cached.expiresAt) {
+      calendar = cached.data;
+    } else if (global._inFlightHolidayPromises.has(cacheKey)) {
+      calendar = await global._inFlightHolidayPromises.get(cacheKey);
+    } else {
+      const queryPromise = (async () => {
+        try {
+          const data = await prisma.holidayCalendar.findFirst({
+            where: {
+              companyId,
+              year,
+              isActive: true
+            },
+            include: {
+              holidays: true
+            }
+          });
+          global._holidayCalendarCache.set(cacheKey, { data, expiresAt: Date.now() + 300000 });
+          return data;
+        } finally {
+          global._inFlightHolidayPromises.delete(cacheKey);
+        }
+      })();
+      global._inFlightHolidayPromises.set(cacheKey, queryPromise);
+      calendar = await queryPromise;
+    }
 
     if (!calendar || !calendar.holidays || calendar.holidays.length === 0) {
       return { isHoliday: false, holiday: null };
     }
 
-    const targetDateStr = targetDate.toISOString().slice(0, 10);
     const matchedHoliday = calendar.holidays.find((h) => {
       const hDateStr = new Date(h.date).toISOString().slice(0, 10);
       return hDateStr === targetDateStr;
@@ -69,37 +127,28 @@ export const attendanceService = {
    * 3. Shift Timing Calculation (Late / On-time)
    */
   calculateLateMinutes(checkInTime = new Date(), shift, graceMinutes = 15) {
-    const shiftStartTime = shift?.startTime || '09:00';
-    const effectiveGrace = shift?.graceMinutes !== undefined ? shift.graceMinutes : graceMinutes;
-
-    const [startH, startM] = shiftStartTime.split(':').map(Number);
-    const expectedCheckInDate = new Date(checkInTime);
-    expectedCheckInDate.setHours(startH, startM, 0, 0);
-
-    const graceLimitDate = new Date(expectedCheckInDate.getTime() + effectiveGrace * 60000);
+    const window = getShiftWindow(checkInTime, shift);
     const actualCheckIn = new Date(checkInTime);
 
     let lateMinutes = 0;
-    if (actualCheckIn > graceLimitDate) {
-      lateMinutes = Math.max(0, Math.round((actualCheckIn.getTime() - expectedCheckInDate.getTime()) / 60000));
+    if (actualCheckIn.getTime() > window.graceCutoff.getTime()) {
+      lateMinutes = Math.max(0, Math.floor((actualCheckIn.getTime() - window.shiftStart.getTime()) / 60000));
     }
 
     return {
       isLate: lateMinutes > 0,
       lateMinutes,
-      expectedCheckIn: `${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}`
+      expectedCheckIn: shift?.startTime || '09:00',
+      graceCutoff: window.graceCutoff
     };
   },
 
   /**
    * 4. Check Break Limit & Status
    */
-  async checkBreakLimit(employeeId, companyId) {
-    const employee = await attendanceRepository.findEmployeeWithBranch(employeeId);
-    const empId = employee ? employee.id : employeeId;
-    const realCompanyId = companyId || employee?.companyId;
-
-    const settings = await attendanceRules.getCompanyAttendanceSettings(realCompanyId);
+  async checkBreakLimit(employeeId, companyId, preloadedLog = null, preloadedSettings = null) {
+    const realCompanyId = companyId;
+    const settings = preloadedSettings || await attendanceRules.getCompanyAttendanceSettings(realCompanyId);
     const breakRules = settings.breakRules || {};
 
     const maxBreaks = breakRules.maxBreaksPerDay || 3;
@@ -108,7 +157,9 @@ export const attendanceService = {
     const shortDuration = breakRules.shortDurationMinutes || 10;
     const breakTypes = breakRules.breakTypes || ['LUNCH', 'SHORT'];
 
-    const todayLog = await attendanceRepository.findTodayAttendance(empId);
+    const todayLog = preloadedLog !== undefined && preloadedLog !== null
+      ? preloadedLog
+      : await attendanceRepository.findTodayAttendance(employeeId);
     const breaks = todayLog?.breaks || [];
 
     let totalBreakMinutes = 0;
@@ -166,23 +217,22 @@ export const attendanceService = {
   /**
    * 5. Can Checkout Status & Validation
    */
-  async canCheckout(employeeId, companyId) {
-    const employee = await attendanceRepository.findEmployeeWithBranch(employeeId);
-    const empId = employee ? employee.id : employeeId;
-    const realCompanyId = companyId || employee?.companyId;
-
-    const settings = await attendanceRules.getCompanyAttendanceSettings(realCompanyId);
+  async canCheckout(employeeId, companyId, preloadedLog = null, preloadedSettings = null) {
+    const realCompanyId = companyId;
+    const settings = preloadedSettings || await attendanceRules.getCompanyAttendanceSettings(realCompanyId);
     const checkoutRules = settings.checkoutRules || {};
 
-    const todayLog = await attendanceRepository.findTodayAttendance(empId);
+    const todayLog = preloadedLog !== undefined && preloadedLog !== null
+      ? preloadedLog
+      : await attendanceRepository.findTodayAttendance(employeeId);
     if (!todayLog || !todayLog.checkInAt) {
       return {
         canCheckout: false,
         remainingMinutes: 0,
         expectedCheckoutTime: null,
         actualMinutes: 0,
-        requiredMinutes: (checkoutRules.workingHours || 8) * 60,
-        shortfallMinutes: (checkoutRules.workingHours || 8) * 60,
+        requiredMinutes: 0,
+        shortfallMinutes: 0,
         reason: 'You have not checked in today.'
       };
     }
@@ -192,42 +242,41 @@ export const attendanceService = {
         canCheckout: false,
         remainingMinutes: 0,
         expectedCheckoutTime: todayLog.checkOutAt.toISOString(),
-        actualMinutes: todayLog.totalWorkedMinutes || 0,
-        requiredMinutes: todayLog.requiredMinutes || (checkoutRules.workingHours || 8) * 60,
+        actualMinutes: todayLog.totalWorkedMinutes || todayLog.workedMinutes || 0,
+        requiredMinutes: todayLog.requiredMinutes || 0,
         shortfallMinutes: 0,
         reason: 'You have already checked out for today.'
       };
     }
 
-    const requiredMinutes = todayLog.requiredMinutes || (checkoutRules.workingHours || 8) * 60;
-
     const now = new Date();
-    const actualMinutes = attendanceRules.calculateWorkedMinutes(todayLog.checkInAt, now, todayLog.breaks);
-    const shortfallMinutes = Math.max(0, requiredMinutes - actualMinutes);
-
-    let expectedCheckoutTime = todayLog.adjustedCheckOutTime;
-    if (!expectedCheckoutTime) {
-      expectedCheckoutTime = new Date(new Date(todayLog.checkInAt).getTime() + (requiredMinutes + (todayLog.totalBreakMinutes || 0)) * 60000);
+    // Target checkout = shift.endTime + lateMinutes (or adjustedCheckOutTime)
+    let targetCheckout = todayLog.adjustedCheckOutTime;
+    if (!targetCheckout) {
+      const expectedEnd = todayLog.expectedEnd || new Date(new Date(todayLog.checkInAt).getTime() + (todayLog.requiredMinutes || 480) * 60000);
+      targetCheckout = new Date(new Date(expectedEnd).getTime() + (todayLog.lateMinutes || 0) * 60000);
+    } else {
+      targetCheckout = new Date(targetCheckout);
     }
 
-    const isFullHoursMet = actualMinutes >= requiredMinutes;
-    const isPastExpectedTime = now.getTime() >= new Date(expectedCheckoutTime).getTime();
+    const canCheckout = now.getTime() >= targetCheckout.getTime();
+    const remainingMinutes = canCheckout ? 0 : Math.ceil((targetCheckout.getTime() - now.getTime()) / 60000);
+    const actualMinutes = attendanceRules.calculateWorkedMinutes(todayLog.checkInAt, now, todayLog.breaks);
+    const requiredMinutes = todayLog.requiredMinutes || (todayLog.expectedEnd && todayLog.expectedStart ? Math.round((new Date(todayLog.expectedEnd).getTime() - new Date(todayLog.expectedStart).getTime()) / 60000) : 480);
 
-    const requireFull = checkoutRules.requireFullHours !== false && checkoutRules.disableButtonUntilFullTime !== false;
-    const canCheckout = !requireFull || isFullHoursMet || isPastExpectedTime;
-
+    const formattedTargetTime = targetCheckout.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let reason = 'You can check out now.';
     if (!canCheckout) {
-      reason = `You need to work ${shortfallMinutes} more minutes. Checkout will be enabled at ${new Date(expectedCheckoutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`;
+      reason = `You need to work ${remainingMinutes} more minutes. Checkout enabled at ${formattedTargetTime}.`;
     }
 
     return {
       canCheckout,
-      remainingMinutes: shortfallMinutes,
-      expectedCheckoutTime: new Date(expectedCheckoutTime).toISOString(),
+      remainingMinutes,
+      expectedCheckoutTime: targetCheckout.toISOString(),
       actualMinutes,
       requiredMinutes,
-      shortfallMinutes,
+      shortfallMinutes: remainingMinutes,
       reason
     };
   },
@@ -246,24 +295,34 @@ export const attendanceService = {
     remarks,
     livenessScore = 0.95
   }) {
-    // 1. Fetch employee profile & branch
-    const employee = await attendanceRepository.findEmployeeWithBranch(employeeId);
+    // 1. Fetch all verification prerequisites concurrently in a single parallel batch
+    const [todayLog, employee, settings, holidayInfo, shiftInfo, cardRecord] = await Promise.all([
+      attendanceRepository.findTodayAttendance(employeeId),
+      attendanceRepository.findEmployeeWithBranch(employeeId),
+      attendanceRules.getCompanyAttendanceSettings(companyId),
+      this.checkHoliday(companyId, new Date()),
+      this.checkShiftAssignment(employeeId, new Date(), companyId),
+      (mode.toLowerCase() === 'card' && cardNumber)
+        ? attendanceRepository.findCardByNumber(companyId, cardNumber)
+        : Promise.resolve(null)
+    ]);
+
+    if (todayLog && todayLog.checkInAt) {
+      const err = new Error('You have already checked in for today.');
+      err.statusCode = 400;
+      throw err;
+    }
+
     if (!employee) {
       throw new Error('Employee record not found.');
     }
     const empId = employee.id;
 
-    // 2. Fetch company attendance settings & rules
-    const settings = await attendanceRules.getCompanyAttendanceSettings(companyId);
-
     // 3. Rule 1: Holiday Check
-    const holidayInfo = await this.checkHoliday(companyId, new Date());
     if (holidayInfo.isHoliday && settings.holidayCheck?.blockAttendanceOnHoliday !== false) {
       if (settings.holidayCheck?.markHolidayAutomatically !== false) {
-        // Upsert holiday log if not existing
-        const existing = await attendanceRepository.findTodayAttendance(empId);
-        if (!existing) {
-          await attendanceRepository.createAttendanceLog({
+        if (!todayLog) {
+          attendanceRepository.createAttendanceLog({
             companyId,
             employeeId: empId,
             attendanceDate: new Date(),
@@ -272,7 +331,7 @@ export const attendanceService = {
             holidayName: holidayInfo.holiday.name,
             holidayType: holidayInfo.holiday.type,
             remarks: `Official Holiday: ${holidayInfo.holiday.name}`
-          });
+          }).catch(() => {});
         }
       }
       const err = new Error(`Today is a holiday: ${holidayInfo.holiday.name}. Attendance not required.`);
@@ -281,24 +340,33 @@ export const attendanceService = {
     }
 
     // 4. Rule 2: Shift Assignment Check
-    const shiftInfo = await this.checkShiftAssignment(empId, new Date(), companyId);
     if (!shiftInfo.hasShift && settings.shiftCheck?.blockAttendanceWithoutShift !== false) {
       const err = new Error('No shift assigned. Contact HR to assign a shift.');
       err.statusCode = 400;
       throw err;
     }
     const assignedShift = shiftInfo.shift;
+    const now = new Date();
+    const shiftWindow = getShiftWindow(now, assignedShift);
+
+    // BLOCK 1: Check-in before shift.startTime
+    if (now.getTime() < shiftWindow.shiftStart.getTime()) {
+      const err = new Error(`Your shift starts at ${assignedShift?.startTime || '09:00'}. Cannot check in yet.`);
+      err.statusCode = 400;
+      err.code = 'BEFORE_SHIFT_START';
+      throw err;
+    }
+
+    // BLOCK 2: Check-in after shift.endTime
+    if (now.getTime() > shiftWindow.shiftEnd.getTime()) {
+      const err = new Error(`Your shift ended at ${assignedShift?.endTime || '18:00'}. You cannot check in.`);
+      err.statusCode = 400;
+      err.code = 'AFTER_SHIFT_END';
+      throw err;
+    }
 
     // 5. Validate Mode Permission
     attendanceRules.validateModeEnabled(settings, mode);
-
-    // 6. Check for existing check-in today
-    const todayLog = await attendanceRepository.findTodayAttendance(empId);
-    if (todayLog && todayLog.checkInAt) {
-      const err = new Error('You have already checked in for today.');
-      err.statusCode = 400;
-      throw err;
-    }
 
     const verificationLayers = {
       liveness: false,
@@ -386,7 +454,7 @@ export const attendanceService = {
         throw err;
       }
 
-      const card = await attendanceRepository.findCardByNumber(companyId, cardNumber);
+      const card = cardRecord || await attendanceRepository.findCardByNumber(companyId, cardNumber);
       if (!card || card.employeeId !== empId) {
         const err = new Error('Invalid or unassigned NFC/RFID access card.');
         err.statusCode = 400;
@@ -401,38 +469,25 @@ export const attendanceService = {
     }
 
     // 10. Rule 3: Calculate Late Minutes from Shift Timing
-    const graceMinutes = settings.lateRules?.graceMinutes || assignedShift?.graceMinutes || settings.gracePeriodMinutes || 15;
-    const lateCalc = this.calculateLateMinutes(new Date(), assignedShift, graceMinutes);
+    const lateCalc = this.calculateLateMinutes(now, assignedShift, shiftWindow.graceMinutes);
     const isLate = lateCalc.isLate;
     const lateMinutes = lateCalc.lateMinutes;
     const initialStatus = isLate ? 'LATE' : 'PRESENT';
 
     // 11. Rule 4: Expected Shift Start & End Timing Calculations
-    const checkInDate = new Date();
-    const [startH, startM] = (assignedShift?.startTime || '09:00').split(':').map(Number);
-    const expectedStart = new Date(checkInDate);
-    expectedStart.setHours(startH, startM, 0, 0);
-
-    const [endH, endM] = (assignedShift?.endTime || '18:00').split(':').map(Number);
-    const expectedEnd = new Date(checkInDate);
-    expectedEnd.setHours(endH, endM, 0, 0);
-    if (assignedShift?.isNightShift || endH < startH || (endH === startH && endM <= startM)) {
-      expectedEnd.setDate(expectedEnd.getDate() + 1);
-    }
-
+    const expectedStart = shiftWindow.shiftStart;
+    const expectedEnd = shiftWindow.shiftEnd;
     const isRosterOverride = Boolean(shiftInfo.source === 'ROSTER');
 
-    let adjustedCheckOutTime = expectedEnd;
-    if (isLate && settings.lateRules?.autoExtendCheckout !== false) {
-      adjustedCheckOutTime = new Date(expectedEnd.getTime() + lateMinutes * 60000);
-    }
-
-    const requiredMinutes = (assignedShift?.workingHours || settings.checkoutRules?.workingHours || 8) * 60;
+    // Target checkout = shift.endTime + lateMinutes
+    const adjustedCheckOutTime = new Date(expectedEnd.getTime() + lateMinutes * 60000);
+    const requiredMinutes = shiftWindow.totalShiftMinutes;
     const maxBreaks = settings.breakRules?.maxBreaksPerDay || 3;
     const maxBreakMins = settings.breakRules?.maxBreakMinutesPerDay || 60;
 
-    // 12. Persist Attendance Log
-    const log = await attendanceRepository.createAttendanceLog({
+    // 12. Construct Log and update in-memory cache immediately
+    const logData = {
+      id: crypto.randomUUID(),
       companyId,
       employeeId: empId,
       attendanceDate: new Date(),
@@ -473,11 +528,23 @@ export const attendanceService = {
       remainingBreaks: maxBreaks,
       remainingBreakMinutes: maxBreakMins,
       status: initialStatus,
-      remarks
+      remarks,
+      breaks: []
+    };
+
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const cacheKey = `${empId}_${startOfDay.toISOString().split('T')[0]}`;
+    if (!global._todayAttendanceCache) global._todayAttendanceCache = new Map();
+    global._todayAttendanceCache.set(cacheKey, { data: logData, expiresAt: Date.now() + 60000 });
+
+    // Asynchronous background persistence
+    attendanceRepository.createAttendanceLog(logData).catch((err) => {
+      console.error('[ATTENDANCE_PERSIST_ERROR]', err);
     });
 
     return {
-      attendance: log,
+      attendance: logData,
       verificationLayers,
       shift: assignedShift,
       isLate,
@@ -500,13 +567,18 @@ export const attendanceService = {
     cardNumber,
     remarks
   }) {
-    const employee = await attendanceRepository.findEmployeeWithBranch(employeeId);
+    const [employee, todayLog, settings, holidayInfo] = await Promise.all([
+      attendanceRepository.findEmployeeWithBranch(employeeId),
+      attendanceRepository.findTodayAttendance(employeeId),
+      attendanceRules.getCompanyAttendanceSettings(companyId),
+      this.checkHoliday(companyId, new Date())
+    ]);
+
     if (!employee) {
       throw new Error('Employee record not found.');
     }
     const empId = employee.id;
 
-    const todayLog = await attendanceRepository.findTodayAttendance(empId);
     if (!todayLog || !todayLog.checkInAt) {
       const err = new Error('You have not checked in today.');
       err.statusCode = 400;
@@ -519,10 +591,7 @@ export const attendanceService = {
       throw err;
     }
 
-    const settings = await attendanceRules.getCompanyAttendanceSettings(companyId);
-
     // Rule 1: Holiday Check
-    const holidayInfo = await this.checkHoliday(companyId, new Date());
     if (holidayInfo.isHoliday && settings.holidayCheck?.blockAttendanceOnHoliday !== false) {
       const err = new Error(`Today is a holiday: ${holidayInfo.holiday.name}. Attendance operations are locked.`);
       err.statusCode = 400;
@@ -530,7 +599,7 @@ export const attendanceService = {
     }
 
     // Rule 5: Auto Checkout Extension & Working Hours Check
-    const checkoutStatus = await this.canCheckout(empId, companyId);
+    const checkoutStatus = await this.canCheckout(empId, companyId, todayLog, settings);
     if (!checkoutStatus.canCheckout && settings.checkoutRules?.requireFullHours !== false) {
       const err = new Error(checkoutStatus.reason);
       err.statusCode = 400;
@@ -630,13 +699,18 @@ export const attendanceService = {
     remarks,
     livenessScore = 0.95
   }) {
-    const employee = await attendanceRepository.findEmployeeWithBranch(employeeId);
+    const [employee, todayLog, settings, holidayInfo] = await Promise.all([
+      attendanceRepository.findEmployeeWithBranch(employeeId),
+      attendanceRepository.findTodayAttendance(employeeId),
+      attendanceRules.getCompanyAttendanceSettings(companyId),
+      this.checkHoliday(companyId, new Date())
+    ]);
+
     if (!employee) {
       throw new Error('Employee record not found.');
     }
     const empId = employee.id;
 
-    const todayLog = await attendanceRepository.findTodayAttendance(empId);
     if (!todayLog || !todayLog.checkInAt) {
       const err = new Error('You must check in before taking a break.');
       err.statusCode = 400;
@@ -649,10 +723,7 @@ export const attendanceService = {
       throw err;
     }
 
-    const settings = await attendanceRules.getCompanyAttendanceSettings(companyId);
-
     // Rule 1: Holiday Check
-    const holidayInfo = await this.checkHoliday(companyId, new Date());
     if (holidayInfo.isHoliday && settings.holidayCheck?.blockAttendanceOnHoliday !== false) {
       const err = new Error(`Today is a holiday: ${holidayInfo.holiday.name}. Break operations are disabled.`);
       err.statusCode = 400;
@@ -665,7 +736,7 @@ export const attendanceService = {
     }
 
     // Rule 3: Break Limit & Type Validation
-    const limitCheck = await this.checkBreakLimit(empId, companyId);
+    const limitCheck = await this.checkBreakLimit(empId, companyId, todayLog, settings);
     if (!limitCheck.canTakeBreak) {
       const err = new Error(limitCheck.reason);
       err.statusCode = 400;
@@ -753,24 +824,24 @@ export const attendanceService = {
 
     const expectedReturnTime = new Date(Date.now() + allowedDuration * 60000);
 
-    const newBreak = await attendanceRepository.createAttendanceBreak({
-      attendanceLogId: todayLog.id,
-      employeeId: empId,
-      breakStartAt: new Date(),
-      breakType: normType,
-      allowedDurationMinutes: allowedDuration,
-      expectedReturnTime,
-      breakPhotoUrl: photo || null,
-      breakStartPhotoUrl: photo || null,
-      breakLivenessScore: photo ? String(effectiveLivenessScore) : null,
-      breakFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null
-    });
-
-    // Update break counters in AttendanceLog
-    await attendanceRepository.updateAttendanceLog(todayLog.id, {
-      totalBreaks: limitCheck.totalBreaks + 1,
-      remainingBreaks: Math.max(0, limitCheck.remainingBreaks - 1)
-    });
+    const [newBreak] = await Promise.all([
+      attendanceRepository.createAttendanceBreak({
+        attendanceLogId: todayLog.id,
+        employeeId: empId,
+        breakStartAt: new Date(),
+        breakType: normType,
+        allowedDurationMinutes: allowedDuration,
+        expectedReturnTime,
+        breakPhotoUrl: photo || null,
+        breakStartPhotoUrl: photo || null,
+        breakLivenessScore: photo ? String(effectiveLivenessScore) : null,
+        breakFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null
+      }),
+      attendanceRepository.updateAttendanceLog(todayLog.id, {
+        totalBreaks: limitCheck.totalBreaks + 1,
+        remainingBreaks: Math.max(0, limitCheck.remainingBreaks - 1)
+      })
+    ]);
 
     return {
       break: newBreak,
@@ -796,21 +867,23 @@ export const attendanceService = {
     remarks,
     livenessScore = 0.95
   }) {
-    const employee = await attendanceRepository.findEmployeeWithBranch(employeeId);
+    const [employee, todayLog, settings] = await Promise.all([
+      attendanceRepository.findEmployeeWithBranch(employeeId),
+      attendanceRepository.findTodayAttendance(employeeId),
+      attendanceRules.getCompanyAttendanceSettings(companyId)
+    ]);
+
     if (!employee) {
       throw new Error('Employee record not found.');
     }
     const empId = employee.id;
 
-    const activeBreak = await attendanceRepository.findActiveBreak(empId);
+    const activeBreak = todayLog?.breaks?.find((b) => !b.breakEndAt) || null;
     if (!activeBreak) {
       const err = new Error('No active break found to end.');
       err.statusCode = 400;
       throw err;
     }
-
-    const todayLog = await attendanceRepository.findTodayAttendance(empId);
-    const settings = await attendanceRules.getCompanyAttendanceSettings(companyId);
 
     // Security Verification 1: Mock Location Detection
     if (deviceInfo.isMockLocation) {
@@ -897,38 +970,34 @@ export const attendanceService = {
     }
 
     let warningMessage = null;
+    let updatedAdjTime = undefined;
     if (lateReturnMinutes > 0) {
       warningMessage = `You returned ${lateReturnMinutes} minutes late. Your expected checkout time has been extended.`;
-
-      // Extend adjustedCheckOutTime in AttendanceLog
       if (todayLog && settings.breakRules?.extendCheckoutOnLateReturn !== false) {
         let baseAdj = todayLog.adjustedCheckOutTime ? new Date(todayLog.adjustedCheckOutTime) : new Date();
-        const updatedAdjTime = new Date(baseAdj.getTime() + lateReturnMinutes * 60000);
-        await attendanceRepository.updateAttendanceLog(todayLog.id, {
-          adjustedCheckOutTime: updatedAdjTime
-        });
+        updatedAdjTime = new Date(baseAdj.getTime() + lateReturnMinutes * 60000);
       }
     }
 
-    const updatedBreak = await attendanceRepository.updateAttendanceBreak(activeBreak.id, {
-      breakEndAt: actualReturnTime,
-      breakEndPhotoUrl: photo || null,
-      breakEndLivenessScore: photo ? String(effectiveLivenessScore) : null,
-      breakEndFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null,
-      actualReturnTime,
-      lateReturnMinutes,
-      totalBreakMinutes: durationMinutes
-    });
+    const totalBreakMinutes = (todayLog?.totalBreakMinutes || 0) + durationMinutes;
+    const maxAllowed = settings.breakRules?.maxBreakMinutesPerDay || 60;
 
-    // Update cumulative break minutes in AttendanceLog
-    if (todayLog) {
-      const totalBreakMinutes = (todayLog.totalBreakMinutes || 0) + durationMinutes;
-      const maxAllowed = settings.breakRules?.maxBreakMinutesPerDay || 60;
-      await attendanceRepository.updateAttendanceLog(todayLog.id, {
+    const [updatedBreak] = await Promise.all([
+      attendanceRepository.updateAttendanceBreak(activeBreak.id, {
+        breakEndAt: actualReturnTime,
+        breakEndPhotoUrl: photo || null,
+        breakEndLivenessScore: photo ? String(effectiveLivenessScore) : null,
+        breakEndFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null,
+        actualReturnTime,
+        lateReturnMinutes,
+        totalBreakMinutes: durationMinutes
+      }),
+      todayLog ? attendanceRepository.updateAttendanceLog(todayLog.id, {
         totalBreakMinutes,
-        remainingBreakMinutes: Math.max(0, maxAllowed - totalBreakMinutes)
-      });
-    }
+        remainingBreakMinutes: Math.max(0, maxAllowed - totalBreakMinutes),
+        ...(updatedAdjTime ? { adjustedCheckOutTime: updatedAdjTime } : {})
+      }) : Promise.resolve()
+    ]);
 
     return {
       break: updatedBreak,
@@ -947,29 +1016,74 @@ export const attendanceService = {
     const empId = employee ? employee.id : employeeId;
     const realCompanyId = companyId || employee?.companyId;
 
-    const attendance = await attendanceRepository.findTodayAttendance(empId);
-    const breaks = attendance ? await attendanceRepository.findTodayBreaks(attendance.id) : [];
+    const [attendance, holidayInfo, shiftInfo, effectiveOverview, settings] = await Promise.all([
+      attendanceRepository.findTodayAttendance(empId).catch(() => null),
+      attendanceService.checkHoliday(realCompanyId, new Date()).catch(() => ({ isHoliday: false, holiday: null })),
+      attendanceService.checkShiftAssignment(empId, new Date(), realCompanyId).catch(() => ({ shift: null, source: 'DEFAULT' })),
+      getEffectiveShiftOverview({ employeeId: empId, companyId: realCompanyId, date: new Date() }).catch(() => ({ defaultShift: null })),
+      attendanceRules.getCompanyAttendanceSettings(realCompanyId).catch(() => ({}))
+    ]);
 
-    const holidayInfo = await this.checkHoliday(realCompanyId, new Date());
-    const shiftInfo = await this.checkShiftAssignment(empId, new Date(), realCompanyId);
-    const effectiveOverview = await getEffectiveShiftOverview({ employeeId: empId, companyId: realCompanyId, date: new Date() });
-    const checkoutStatus = await this.canCheckout(empId, realCompanyId);
-    const breakStatus = await this.checkBreakLimit(empId, realCompanyId);
+    const assignedShift = shiftInfo?.shift;
+    const shiftWindow = getShiftWindow(new Date(), assignedShift);
+    const now = new Date();
+
+    const isCheckedIn = Boolean(attendance && attendance.checkInAt && !attendance.checkOutAt);
+    const breaks = attendance?.breaks || [];
+    const isOnBreak = Boolean(breaks.some((b) => !b.breakEndAt));
+
+    const checkoutStatus = await attendanceService.canCheckout(empId, realCompanyId, attendance, settings).catch(() => ({ canCheckout: true, expectedCheckoutTime: shiftWindow.shiftEnd.toISOString() }));
+    const breakStatus = await attendanceService.checkBreakLimit(empId, realCompanyId, attendance, settings).catch(() => ({ canTakeBreak: true }));
+
+    // Determine canCheckIn status and block reason
+    let canCheckIn = false;
+    let checkInBlockReason = null;
+
+    if (!attendance || !attendance.checkInAt) {
+      if (now.getTime() < shiftWindow.shiftStart.getTime()) {
+        canCheckIn = false;
+        checkInBlockReason = `Your shift starts at ${assignedShift?.startTime || '09:00'}. Cannot check in yet.`;
+      } else if (now.getTime() > shiftWindow.shiftEnd.getTime()) {
+        canCheckIn = false;
+        checkInBlockReason = `Your shift ended at ${assignedShift?.endTime || '18:00'}. You cannot check in.`;
+      } else {
+        canCheckIn = true;
+      }
+    }
+
+    const expectedCheckout = attendance?.adjustedCheckOutTime 
+      ? new Date(attendance.adjustedCheckOutTime).toISOString()
+      : checkoutStatus.expectedCheckoutTime || shiftWindow.shiftEnd.toISOString();
+
+    const earliestCheckout = attendance?.expectedEnd
+      ? new Date(attendance.expectedEnd).toISOString()
+      : shiftWindow.shiftEnd.toISOString();
+
+    const requiredHours = attendance?.requiredMinutes
+      ? Number((attendance.requiredMinutes / 60).toFixed(2))
+      : shiftWindow.requiredHours;
 
     return {
       attendance,
       breaks,
-      isCheckedIn: Boolean(attendance && attendance.checkInAt && !attendance.checkOutAt),
-      isOnBreak: Boolean(breaks.some((b) => !b.breakEndAt)),
+      isCheckedIn,
+      isOnBreak,
+      canCheckIn,
+      checkInBlockReason,
+      canCheckOut: checkoutStatus.canCheckout,
       date: new Date().toISOString().split('T')[0],
       holiday: holidayInfo,
       shift: shiftInfo,
-      currentShift: shiftInfo.shift,
-      shiftSource: shiftInfo.source,
-      validTill: shiftInfo.validTill || null,
-      isRosterOverride: shiftInfo.source === 'ROSTER',
-      defaultShift: effectiveOverview.defaultShift,
-      defaultShiftStatus: shiftInfo.source === 'ROSTER' ? 'DEACTIVATED_BY_ROSTER' : 'ACTIVE',
+      currentShift: assignedShift || null,
+      shiftSource: shiftInfo?.source || 'DEFAULT',
+      validTill: shiftInfo?.validTill || null,
+      isRosterOverride: shiftInfo?.source === 'ROSTER',
+      defaultShift: effectiveOverview?.defaultShift || null,
+      defaultShiftStatus: shiftInfo?.source === 'ROSTER' ? 'DEACTIVATED_BY_ROSTER' : 'ACTIVE',
+      expectedCheckout,
+      earliestCheckout,
+      requiredHours,
+      lateMinutes: attendance?.lateMinutes || 0,
       checkoutStatus,
       breakStatus
     };

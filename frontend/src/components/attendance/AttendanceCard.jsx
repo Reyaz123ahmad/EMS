@@ -40,12 +40,23 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
   const validTill = shift?.validTill;
   const defaultShift = shift?.defaultShift;
 
-  const assignedShift = shift?.shift || (shift?.name ? shift : null) || {
+  const calculateShiftHours = (start = '09:00', end = '18:00', isNight = false) => {
+    const [sH, sM] = (start || '09:00').split(':').map(Number);
+    const [eH, eM] = (end || '18:00').split(':').map(Number);
+    let sMin = sH * 60 + (sM || 0);
+    let eMin = eH * 60 + (eM || 0);
+    if (isNight || eMin <= sMin) eMin += 1440;
+    return Number(((eMin - sMin) / 60).toFixed(1));
+  };
+
+  const assignedShift = shift?.currentShift || shift?.shift || (shift?.name ? shift : null) || {
     name: attendance?.shiftName || 'Standard Shift',
     startTime: attendance?.shiftStartTime || '09:00',
     endTime: attendance?.shiftEndTime || '18:00',
-    workingHours: 8
+    workingHours: null
   };
+
+  const dynamicRequiredHours = shift?.requiredHours || assignedShift.workingHours || calculateShiftHours(assignedShift.startTime, assignedShift.endTime, assignedShift.isNightShift);
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 p-6 shadow-xl backdrop-blur-xl">
@@ -141,6 +152,8 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
           <div className="mt-1 text-[11px] text-slate-400">
             {attendance?.adjustedCheckOutTime && !attendance?.checkOutAt ? (
               <span className="text-indigo-300">Expected: {formatTime(attendance.adjustedCheckOutTime)}</span>
+            ) : !attendance?.checkOutAt && (shift?.expectedCheckout || shift?.earliestCheckout) ? (
+              <span className="text-indigo-300">Expected: {formatTime(shift.expectedCheckout || shift.earliestCheckout)}</span>
             ) : attendance?.overtimeMinutes > 0 ? (
               <span className="text-indigo-400 font-medium">+{attendance.overtimeMinutes}m Overtime</span>
             ) : (
@@ -159,7 +172,7 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
             {workedHours}
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
-            Target: {assignedShift.workingHours || 8}h
+            Target: {dynamicRequiredHours}h
           </div>
         </div>
 

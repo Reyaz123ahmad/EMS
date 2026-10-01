@@ -17,18 +17,18 @@ router.put('/types/:id', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN')
 router.delete('/types/:id', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), leaveController.deleteType);
 
 // Leave Balances & Allocation
-router.get('/balances', leaveController.getBalances);
-router.get('/balances/:employeeId', leaveController.getEmployeeBalances);
+router.get('/balances', cacheResponse('cache:leave_balances', 60), leaveController.getBalances);
+router.get('/balances/:employeeId', cacheResponse('cache:leave_emp_balances', 60), leaveController.getEmployeeBalances);
 router.post('/bulk-allocate', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), leaveController.bulkAllocate);
 router.post('/balances/bulk-allocate', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), leaveController.bulkAllocate);
 router.post('/carry-forward', requireRole('HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'), leaveController.carryForward);
-router.get('/balance-report', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.getBalanceReport);
+router.get('/balance-report', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), cacheResponse('cache:leave_bal_report', 60), leaveController.getBalanceReport);
 
 // Apply & Request Management
 router.post('/apply', leaveController.applyLeave);
 router.post('/requests', leaveController.applyLeave);
-router.get('/requests/my', leaveController.getMyRequests);
-router.get('/requests', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.listRequests);
+router.get('/requests/my', cacheResponse('cache:leave_my_reqs', 60), leaveController.getMyRequests);
+router.get('/requests', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), cacheResponse('cache:leave_requests', 60), leaveController.listRequests);
 router.post('/requests/:id/approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.approveRequest);
 router.put('/requests/:id/approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.approveRequest);
 router.post('/requests/:id/reject', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.rejectRequest);
@@ -37,9 +37,9 @@ router.post('/requests/bulk-approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COM
 router.put('/requests/bulk-approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.bulkApprove);
 
 // Calendar, History & Stats
-router.get('/calendar', leaveController.getCalendar);
-router.get('/stats', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.getStats);
-router.get('/history', leaveController.getLeaveHistory);
-router.get('/history/:employeeId', leaveController.getEmployeeHistory);
+router.get('/calendar', cacheResponse('cache:leave_calendar', 60), leaveController.getCalendar);
+router.get('/stats', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), cacheResponse('cache:leave_stats', 60), leaveController.getStats);
+router.get('/history', cacheResponse('cache:leave_history', 60), leaveController.getLeaveHistory);
+router.get('/history/:employeeId', cacheResponse('cache:leave_emp_history', 60), leaveController.getEmployeeHistory);
 
 export default router;

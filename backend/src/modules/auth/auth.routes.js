@@ -16,8 +16,10 @@ router.post('/send-otp', otpRateLimit, authController.sendOTP);
 // Logout (can be called with or without auth token)
 router.post('/logout', authController.logout);
 
+import { cacheResponse } from '../../middlewares/cache.middleware.js';
+
 // Protected routes
-router.get('/me', authenticate, authController.getMe);
+router.get('/me', authenticate, cacheResponse('cache:auth_me', 60), authController.getMe);
 router.put('/change-password', authenticate, authController.changePassword);
 
 export default router;

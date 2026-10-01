@@ -89,23 +89,25 @@ export const geoFencingService = {
       }
     }
 
-    // Record fraud signals in database if issues detected
+    // Record fraud signals asynchronously in background if issues detected
     if (issues.length > 0 && companyId) {
-      for (const issue of issues) {
-        await attendanceSecurityRepository.createFraudSignal({
-          companyId,
-          employeeId,
-          signalType: issue.type,
-          severity: issue.severity,
-          description: issue.description,
-          employeeLat: latitude,
-          employeeLng: longitude,
-          expectedLat: branchLat,
-          expectedLng: branchLng,
-          distanceMeters: distance || null,
-          metadata: { accuracy, isMockLocation, ipAddress }
-        });
-      }
+      Promise.allSettled(
+        issues.map((issue) =>
+          attendanceSecurityRepository.createFraudSignal({
+            companyId,
+            employeeId,
+            signalType: issue.type,
+            severity: issue.severity,
+            description: issue.description,
+            employeeLat: latitude,
+            employeeLng: longitude,
+            expectedLat: branchLat,
+            expectedLng: branchLng,
+            distanceMeters: distance || null,
+            metadata: { accuracy, isMockLocation, ipAddress }
+          })
+        )
+      ).catch(() => {});
     }
 
     const passed = issues.length === 0;
@@ -346,43 +348,43 @@ export const faceMatchService = {
 
       console.log(`[FACE_MATCH] Employee: ${employee.id} | Distance: ${comparison.distance} | MaxAllowed: ${maxDistance} | Result: ${comparison.passed ? 'MATCH' : 'MISMATCH'}`);
 
-      // 5. Log failure / fraud signal if mismatch
-      if (!comparison.passed) {
-        await attendanceSecurityRepository.createFraudSignal({
-          companyId: employee.companyId,
-          employeeId: employee.id,
-          signalType: FRAUD_TYPES.FACE_MISMATCH || 'FACE_MISMATCH',
-          severity: SEVERITY.HIGH || 'HIGH',
-          description: `Face verification failed: Distance ${comparison.distance} exceeds strict threshold ${maxDistance}`,
-          metadata: {
-            distance: comparison.distance,
-            similarity: comparison.similarity,
-            threshold: maxDistance,
-            matchConfidence: comparison.matchConfidence,
-            imageHash: replayCheck.hash
+      // 5. Asynchronous background audit and fraud signal logging (non-blocking)
+      Promise.allSettled([
+        !comparison.passed
+          ? attendanceSecurityRepository.createFraudSignal({
+              companyId: employee.companyId,
+              employeeId: employee.id,
+              signalType: FRAUD_TYPES.FACE_MISMATCH || 'FACE_MISMATCH',
+              severity: SEVERITY.HIGH || 'HIGH',
+              description: `Face verification failed: Distance ${comparison.distance} exceeds strict threshold ${maxDistance}`,
+              metadata: {
+                distance: comparison.distance,
+                similarity: comparison.similarity,
+                threshold: maxDistance,
+                matchConfidence: comparison.matchConfidence,
+                imageHash: replayCheck.hash
+              }
+            })
+          : Promise.resolve(),
+        prisma.securityEvent.create({
+          data: {
+            userId: employee.userId || null,
+            companyId: employee.companyId,
+            eventType: comparison.passed ? 'FACE_MATCH_SUCCESS' : 'FACE_MATCH_FAILED',
+            severity: comparison.passed ? 'LOW' : 'HIGH',
+            description: comparison.passed ? 'Face verified successfully' : 'Face mismatch detected',
+            metadata: {
+              employeeId: employee.id,
+              distance: comparison.distance,
+              similarity: comparison.similarity,
+              threshold: maxDistance,
+              result: comparison.passed ? 'MATCH' : 'NO_MATCH',
+              imageHash: replayCheck.hash,
+              timestamp: new Date().toISOString()
+            }
           }
-        }).catch(() => {});
-      }
-
-      // 6. Audit security event
-      await prisma.securityEvent.create({
-        data: {
-          userId: employee.userId || null,
-          companyId: employee.companyId,
-          eventType: comparison.passed ? 'FACE_MATCH_SUCCESS' : 'FACE_MATCH_FAILED',
-          severity: comparison.passed ? 'LOW' : 'HIGH',
-          description: comparison.passed ? 'Face verified successfully' : 'Face mismatch detected',
-          metadata: {
-            employeeId: employee.id,
-            distance: comparison.distance,
-            similarity: comparison.similarity,
-            threshold: maxDistance,
-            result: comparison.passed ? 'MATCH' : 'NO_MATCH',
-            imageHash: replayCheck.hash,
-            timestamp: new Date().toISOString()
-          }
-        }
-      }).catch(() => {});
+        })
+      ]).catch(() => {});
 
       return {
         passed: comparison.passed,

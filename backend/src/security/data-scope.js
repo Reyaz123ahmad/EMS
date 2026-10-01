@@ -8,6 +8,24 @@ export class ForbiddenError extends Error {
   }
 }
 
+// In-memory cache for user -> employee mapping (60s TTL)
+const authEmployeeCache = new Map();
+const managerTeamCache = new Map();
+
+function getCached(map, key) {
+  const item = map.get(key);
+  if (!item) return null;
+  if (Date.now() > item.expiresAt) {
+    map.delete(key);
+    return null;
+  }
+  return item.value;
+}
+
+function setCached(map, key, value, ttlMs = 60000) {
+  map.set(key, { value, expiresAt: Date.now() + ttlMs });
+}
+
 /**
  * Resolve authenticated user's Employee record safely from DB
  */
@@ -19,9 +37,28 @@ export async function getAuthEmployee(req) {
   const userId = req.user?.id || req.user?.userId;
   if (!userId) return null;
 
+  const cachedEmp = getCached(authEmployeeCache, userId);
+  if (cachedEmp) {
+    req.user.employee = cachedEmp;
+    req.user.employeeId = cachedEmp.id;
+    return cachedEmp;
+  }
+
   let employee = await prisma.employee.findFirst({
     where: { userId },
-    include: { department: true, designation: true, branch: true }
+    select: {
+      id: true,
+      companyId: true,
+      departmentId: true,
+      designationId: true,
+      branchId: true,
+      managerId: true,
+      employeeCode: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      status: true
+    }
   });
 
   // If missing but user belongs to a company and is not super admin, auto-link/create
@@ -48,6 +85,7 @@ export async function getAuthEmployee(req) {
   }
 
   if (employee) {
+    setCached(authEmployeeCache, userId, employee);
     req.user.employee = employee;
     req.user.employeeId = employee.id;
   }
@@ -59,6 +97,9 @@ export async function getAuthEmployee(req) {
  * Get authenticated user's employeeId
  */
 export async function getAuthEmployeeId(req) {
+  if (req.user?.employeeId) {
+    return req.user.employeeId;
+  }
   const emp = await getAuthEmployee(req);
   return emp ? emp.id : null;
 }
@@ -104,12 +145,17 @@ export async function getAuthClientId(req) {
  */
 export async function getManagerTeamIds(managerEmployeeId) {
   if (!managerEmployeeId) return [];
+  const cachedTeam = getCached(managerTeamCache, managerEmployeeId);
+  if (cachedTeam) return cachedTeam;
+
   const subordinates = await prisma.employee.findMany({
     where: { managerId: managerEmployeeId },
     select: { id: true }
   });
   const subIds = subordinates.map((s) => s.id);
-  return [managerEmployeeId, ...subIds];
+  const team = [managerEmployeeId, ...subIds];
+  setCached(managerTeamCache, managerEmployeeId, team, 60000);
+  return team;
 }
 
 /**

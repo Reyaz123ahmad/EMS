@@ -24,7 +24,7 @@ export const env = {
   JWT_REFRESH_EXPIRES_IN_DAYS: process.env.JWT_REFRESH_EXPIRES_IN_DAYS || '30',
   JWT_ISSUER: process.env.JWT_ISSUER || 'mindstocs_ems',
   JWT_AUDIENCE: process.env.JWT_AUDIENCE || 'mindstocs_ems-api',
-  BCRYPT_ROUNDS: parseInt(process.env.BCRYPT_ROUNDS || '12', 10),
+  BCRYPT_ROUNDS: parseInt(process.env.BCRYPT_ROUNDS || '10', 10),
   SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL,
   SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD,
   SMTP_HOST: process.env.SMTP_HOST,

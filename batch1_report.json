@@ -1,0 +1,130 @@
+[
+  {
+    "Endpoint": "/api/v1/auth/me",
+    "Method": "GET",
+    "Before (ms)": "333ms",
+    "After (ms)": "54ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/dashboard/company-admin",
+    "Method": "GET",
+    "Before (ms)": "7201ms",
+    "After (ms)": "11ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/dashboard/hr-admin",
+    "Method": "GET",
+    "Before (ms)": "8805ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/dashboard/hr-manager",
+    "Method": "GET",
+    "Before (ms)": "10975ms",
+    "After (ms)": "11ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/dashboard/manager",
+    "Method": "GET",
+    "Before (ms)": "11449ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/dashboard/employee",
+    "Method": "GET",
+    "Before (ms)": "11323ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/dashboard/client",
+    "Method": "GET",
+    "Before (ms)": "8373ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/dashboard/super-admin",
+    "Method": "GET",
+    "Before (ms)": "11ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/employee-dashboard/summary",
+    "Method": "GET",
+    "Before (ms)": "4089ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/employee-dashboard/attendance",
+    "Method": "GET",
+    "Before (ms)": "4690ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/employee-dashboard/leave",
+    "Method": "GET",
+    "Before (ms)": "3574ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/employee-dashboard/tasks",
+    "Method": "GET",
+    "Before (ms)": "3329ms",
+    "After (ms)": "10ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/manager-dashboard/team-summary",
+    "Method": "GET",
+    "Before (ms)": "3962ms",
+    "After (ms)": "11ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/hr-manager-dashboard/metrics",
+    "Method": "GET",
+    "Before (ms)": "6319ms",
+    "After (ms)": "9ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/notifications",
+    "Method": "GET",
+    "Before (ms)": "3099ms",
+    "After (ms)": "5ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  },
+  {
+    "Endpoint": "/api/v1/notifications/unread-count",
+    "Method": "GET",
+    "Before (ms)": "2099ms",
+    "After (ms)": "6ms",
+    "Target": "< 2000ms",
+    "Status": "PASS ✅"
+  }
+]

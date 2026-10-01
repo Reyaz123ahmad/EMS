@@ -42,11 +42,20 @@ export const advancedSecurityRepository = {
   },
 
   findCompanySecuritySettings: async (companyId) => {
+    if (!companyId) return {};
+    if (!global._secSettingsCache) global._secSettingsCache = new Map();
+    const cached = global._secSettingsCache.get(companyId);
+    if (cached && Date.now() < cached.expiresAt) {
+      return cached.data;
+    }
+
     const company = await prisma.company.findUnique({
       where: { id: companyId },
       select: { securitySettings: true }
     });
-    return company?.securitySettings || {};
+    const data = company?.securitySettings || {};
+    global._secSettingsCache.set(companyId, { data, expiresAt: Date.now() + 60000 });
+    return data;
   },
 
   updateCompanySecuritySettings: async (companyId, settings) => {
