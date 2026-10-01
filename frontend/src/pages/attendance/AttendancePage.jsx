@@ -670,22 +670,28 @@ export const AttendancePage = () => {
           <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl">
             <h4 className="text-sm font-bold uppercase tracking-wider text-slate-300 border-b border-slate-800 pb-3 flex items-center justify-between">
               <span>Shift Timing Rules</span>
-              <span className="text-xs font-normal text-indigo-400">{shift?.name || shift?.shift?.name || 'Assigned Shift'}</span>
+              <span className="text-xs font-normal text-indigo-400">
+                {isLoadingStatus ? 'Loading...' : currentShift?.name || 'No Shift Assigned'}
+              </span>
             </h4>
             <div className="mt-4 space-y-2.5 text-xs text-slate-400">
               <div className="flex justify-between py-1 border-b border-slate-800/60">
                 <span>Shift Schedule:</span>
                 <span className="font-semibold text-slate-200">
-                  {shift?.startTime || shift?.shift?.startTime || '09:00'} - {shift?.endTime || shift?.shift?.endTime || '18:00'}
+                  {isLoadingStatus ? 'Loading...' : currentShift ? `${currentShift.startTime} - ${currentShift.endTime}` : 'No schedule'}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800/60">
                 <span>Grace Window:</span>
-                <span className="font-semibold text-emerald-400">{shift?.graceMinutes ?? shift?.shift?.graceMinutes ?? 15} Minutes</span>
+                <span className="font-semibold text-emerald-400">
+                  {currentShift?.graceMinutes !== undefined ? `${currentShift.graceMinutes} Minutes` : '--'}
+                </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-800/60">
                 <span>Working Hours:</span>
-                <span className="font-semibold text-indigo-400">{shift?.workingHours || shift?.shift?.workingHours || 8} Hours (Full Time)</span>
+                <span className="font-semibold text-indigo-400">
+                  {currentShift?.workingHours ? `${currentShift.workingHours} Hours` : '--'}
+                </span>
               </div>
               <div className="flex justify-between py-1">
                 <span>Late Checkout Extension:</span>

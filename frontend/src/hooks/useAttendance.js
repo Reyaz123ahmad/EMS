@@ -13,6 +13,28 @@ export function useTodayStatus(params = {}) {
   });
 }
 
+/**
+ * Canonical single source of truth hook for resolved employee shift
+ */
+export function useResolvedShift(params = {}) {
+  const query = useTodayStatus(params);
+  const data = query.data?.data || query.data;
+  const shift = data?.currentShift || data?.shift?.shift || (data?.shift?.name ? data.shift : null);
+  const source = data?.shiftSource || data?.shift?.source || 'DEFAULT';
+
+  return {
+    shift,
+    source,
+    isRoster: source === 'ROSTER' || Boolean(data?.isRosterOverride),
+    validTill: data?.validTill || data?.shift?.validTill || null,
+    defaultShift: data?.defaultShift || null,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    data,
+    refetch: query.refetch
+  };
+}
+
 export function useCheckoutStatus(params = {}) {
   return useQuery({
     queryKey: ['attendance', 'checkout-status', params],
@@ -206,6 +228,7 @@ export function useUpdateAttendancePolicy() {
 
 export default {
   useTodayStatus,
+  useResolvedShift,
   useCheckIn,
   useCheckOut,
   useStartBreak,

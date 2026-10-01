@@ -264,7 +264,7 @@ export const AttendanceLogsPage = () => {
                     <td className="px-5 py-4">
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-1.5 font-medium text-slate-200">
-                          <span>{log.shiftName || log.currentShift?.name || 'Standard Shift'}</span>
+                          <span>{log.shiftName || log.currentShift?.name || log.shift?.name || 'No Shift'}</span>
                           {(log.isRosterOverride || log.shiftSource === 'ROSTER') && (
                             <span className="inline-flex items-center gap-0.5 rounded bg-cyan-500/20 px-1.5 py-0.5 text-[9px] font-bold text-cyan-300 border border-cyan-500/30">
                               <Sparkles className="h-2.5 w-2.5" />
@@ -277,11 +277,15 @@ export const AttendanceLogsPage = () => {
                             Default: {log.defaultShift.name}
                           </div>
                         )}
-                        {log.expectedStart && log.expectedEnd && (
+                        {log.shiftStartTime && log.shiftEndTime ? (
+                          <div className="text-[10px] text-slate-400 font-mono">
+                            {log.shiftStartTime} - {log.shiftEndTime}
+                          </div>
+                        ) : log.expectedStart && log.expectedEnd ? (
                           <div className="text-[10px] text-slate-400 font-mono">
                             {dayjs(log.expectedStart).format('HH:mm')} - {dayjs(log.expectedEnd).format('HH:mm')}
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     </td>
 
