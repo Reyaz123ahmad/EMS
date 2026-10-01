@@ -48,6 +48,86 @@ export function getShiftWindow(date = new Date(), shift = null) {
   };
 }
 
+export function computeExtraBreakMinutes({ shift, breaks = [] }) {
+  const defaultRules = [
+    { breakType: 'SHORT', allocatedMinutes: 30 },
+    { breakType: 'LUNCH', allocatedMinutes: 30 }
+  ];
+
+  let rules = shift?.breakRules;
+  if (!rules || !Array.isArray(rules) || rules.length === 0) {
+    rules = defaultRules;
+  }
+
+  const usedByType = {};
+  for (const b of (breaks || [])) {
+    const type = String(b.breakType || 'SHORT').toUpperCase();
+    const duration = Number(
+      b.durationMinutes !== undefined && b.durationMinutes !== null
+        ? b.durationMinutes
+        : (b.totalBreakMinutes !== undefined && b.totalBreakMinutes !== null
+            ? b.totalBreakMinutes
+            : (b.breakStartAt && b.breakEndAt
+                ? Math.round((new Date(b.breakEndAt).getTime() - new Date(b.breakStartAt).getTime()) / 60000)
+                : 0))
+    ) || 0;
+    usedByType[type] = (usedByType[type] || 0) + duration;
+  }
+
+  const ruleMap = new Map();
+  for (const r of rules) {
+    const type = String(r.breakType || r.name || '').toUpperCase();
+    if (type) {
+      const allocated = Number(
+        r.allocatedMinutes !== undefined && r.allocatedMinutes !== null
+          ? r.allocatedMinutes
+          : (r.durationMinutes !== undefined && r.durationMinutes !== null ? r.durationMinutes : 30)
+      );
+      ruleMap.set(type, allocated);
+    }
+  }
+
+  for (const def of defaultRules) {
+    if (!ruleMap.has(def.breakType)) {
+      ruleMap.set(def.breakType, def.allocatedMinutes);
+    }
+  }
+
+  let totalExtra = 0;
+  for (const [type, allocated] of ruleMap.entries()) {
+    const used = usedByType[type] || 0;
+    totalExtra += Math.max(0, used - allocated);
+  }
+
+  for (const [usedType, used] of Object.entries(usedByType)) {
+    if (!ruleMap.has(usedType)) {
+      totalExtra += Math.max(0, used - 30);
+    }
+  }
+
+  return totalExtra;
+}
+
+export function computeExpectedCheckout({ shift, lateMinutes = 0, breaks = [], attendanceDate = new Date(), checkInAt = null }) {
+  const targetDate = checkInAt ? new Date(checkInAt) : new Date(attendanceDate);
+  const window = getShiftWindow(targetDate, shift);
+  const shiftEnd = window.shiftEnd;
+  const late = Number(lateMinutes) || 0;
+  const extraBreak = computeExtraBreakMinutes({ shift, breaks });
+  const totalDelay = late + extraBreak;
+  const expectedCheckout = new Date(shiftEnd.getTime() + totalDelay * 60000);
+  return {
+    expectedCheckout: expectedCheckout.toISOString(),
+    expectedCheckoutDate: expectedCheckout,
+    totalDelay,
+    totalDelayMinutes: totalDelay,
+    late,
+    lateMinutes: late,
+    extraBreak,
+    extraBreakMinutes: extraBreak
+  };
+}
+
 export const attendanceService = {
   /**
    * 1. Holiday Check (FestivalHoliday & HolidayCalendar)
@@ -230,6 +310,10 @@ export const attendanceService = {
         canCheckout: false,
         remainingMinutes: 0,
         expectedCheckoutTime: null,
+        expectedCheckout: null,
+        totalDelayMinutes: 0,
+        lateMinutes: 0,
+        extraBreakMinutes: 0,
         actualMinutes: 0,
         requiredMinutes: 0,
         shortfallMinutes: 0,
@@ -242,6 +326,10 @@ export const attendanceService = {
         canCheckout: false,
         remainingMinutes: 0,
         expectedCheckoutTime: todayLog.checkOutAt.toISOString(),
+        expectedCheckout: todayLog.checkOutAt.toISOString(),
+        totalDelayMinutes: 0,
+        lateMinutes: todayLog.lateMinutes || 0,
+        extraBreakMinutes: 0,
         actualMinutes: todayLog.totalWorkedMinutes || todayLog.workedMinutes || 0,
         requiredMinutes: todayLog.requiredMinutes || 0,
         shortfallMinutes: 0,
@@ -250,15 +338,20 @@ export const attendanceService = {
     }
 
     const now = new Date();
-    // Target checkout = shift.endTime + lateMinutes (or adjustedCheckOutTime)
-    let targetCheckout = todayLog.adjustedCheckOutTime;
-    if (!targetCheckout) {
-      const expectedEnd = todayLog.expectedEnd || new Date(new Date(todayLog.checkInAt).getTime() + (todayLog.requiredMinutes || 480) * 60000);
-      targetCheckout = new Date(new Date(expectedEnd).getTime() + (todayLog.lateMinutes || 0) * 60000);
-    } else {
-      targetCheckout = new Date(targetCheckout);
-    }
+    const assignedShift = {
+      startTime: todayLog.shiftStartTime || '09:00',
+      endTime: todayLog.shiftEndTime || '18:00',
+      graceMinutes: 15
+    };
+    const checkoutCalc = computeExpectedCheckout({
+      shift: assignedShift,
+      lateMinutes: todayLog.lateMinutes || 0,
+      breaks: todayLog.breaks || [],
+      attendanceDate: todayLog.attendanceDate,
+      checkInAt: todayLog.checkInAt
+    });
 
+    const targetCheckout = checkoutCalc.expectedCheckoutDate;
     const canCheckout = now.getTime() >= targetCheckout.getTime();
     const remainingMinutes = canCheckout ? 0 : Math.ceil((targetCheckout.getTime() - now.getTime()) / 60000);
     const actualMinutes = attendanceRules.calculateWorkedMinutes(todayLog.checkInAt, now, todayLog.breaks);
@@ -274,6 +367,10 @@ export const attendanceService = {
       canCheckout,
       remainingMinutes,
       expectedCheckoutTime: targetCheckout.toISOString(),
+      expectedCheckout: targetCheckout.toISOString(),
+      totalDelayMinutes: checkoutCalc.totalDelayMinutes,
+      lateMinutes: checkoutCalc.lateMinutes,
+      extraBreakMinutes: checkoutCalc.extraBreakMinutes,
       actualMinutes,
       requiredMinutes,
       shortfallMinutes: remainingMinutes,
@@ -479,8 +576,15 @@ export const attendanceService = {
     const expectedEnd = shiftWindow.shiftEnd;
     const isRosterOverride = Boolean(shiftInfo.source === 'ROSTER');
 
-    // Target checkout = shift.endTime + lateMinutes
-    const adjustedCheckOutTime = new Date(expectedEnd.getTime() + lateMinutes * 60000);
+    // Expected checkout = shift.endTime + lateMinutes
+    const checkoutCalc = computeExpectedCheckout({
+      shift: assignedShift,
+      lateMinutes,
+      breaks: [],
+      attendanceDate: now,
+      checkInAt: now
+    });
+    const adjustedCheckOutTime = checkoutCalc.expectedCheckoutDate;
     const requiredMinutes = shiftWindow.totalShiftMinutes;
     const maxBreaks = settings.breakRules?.maxBreaksPerDay || 3;
     const maxBreakMins = settings.breakRules?.maxBreakMinutesPerDay || 60;
@@ -550,6 +654,9 @@ export const attendanceService = {
       isLate,
       lateMinutes,
       adjustedCheckOutTime: adjustedCheckOutTime.toISOString(),
+      expectedCheckout: adjustedCheckOutTime.toISOString(),
+      totalDelayMinutes: checkoutCalc.totalDelayMinutes,
+      extraBreakMinutes: 0,
       message: `Check-in successful at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (${initialStatus}).`
     };
   },
@@ -969,40 +1076,73 @@ export const attendanceService = {
       lateReturnMinutes = Math.max(0, Math.round((actualReturnTime.getTime() - new Date(activeBreak.expectedReturnTime).getTime()) / 60000));
     }
 
-    let warningMessage = null;
-    let updatedAdjTime = undefined;
-    if (lateReturnMinutes > 0) {
-      warningMessage = `You returned ${lateReturnMinutes} minutes late. Your expected checkout time has been extended.`;
-      if (todayLog && settings.breakRules?.extendCheckoutOnLateReturn !== false) {
-        let baseAdj = todayLog.adjustedCheckOutTime ? new Date(todayLog.adjustedCheckOutTime) : new Date();
-        updatedAdjTime = new Date(baseAdj.getTime() + lateReturnMinutes * 60000);
+    const updatedBreak = await attendanceRepository.updateAttendanceBreak(activeBreak.id, {
+      breakEndAt: actualReturnTime,
+      breakEndPhotoUrl: photo || null,
+      breakEndLivenessScore: photo ? String(effectiveLivenessScore) : null,
+      breakEndFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null,
+      actualReturnTime,
+      lateReturnMinutes,
+      totalBreakMinutes: durationMinutes
+    });
+
+    // Recompute Expected Checkout with ALL breaks for this attendance log
+    const logId = todayLog ? todayLog.id : activeBreak.attendanceLogId;
+    const allBreaks = await attendanceRepository.findTodayBreaks(logId);
+
+    // Resolve Shift
+    const shiftInfo = await this.checkShiftAssignment(empId, todayLog?.attendanceDate || new Date(), companyId);
+    const assignedShift = shiftInfo?.shift || {
+      startTime: todayLog?.shiftStartTime || '09:00',
+      endTime: todayLog?.shiftEndTime || '18:00',
+      graceMinutes: 15
+    };
+
+    const checkoutCalc = computeExpectedCheckout({
+      shift: assignedShift,
+      lateMinutes: todayLog?.lateMinutes || 0,
+      breaks: allBreaks,
+      attendanceDate: todayLog?.attendanceDate || new Date(),
+      checkInAt: todayLog?.checkInAt || null
+    });
+
+    const totalBreakMinutes = allBreaks.reduce((acc, b) => acc + (b.totalBreakMinutes || 0), 0);
+    const maxAllowed = settings.breakRules?.maxBreakMinutesPerDay || 60;
+
+    if (todayLog) {
+      await attendanceRepository.updateAttendanceLog(todayLog.id, {
+        totalBreakMinutes,
+        remainingBreakMinutes: Math.max(0, maxAllowed - totalBreakMinutes),
+        adjustedCheckOutTime: checkoutCalc.expectedCheckoutDate
+      });
+
+      // Update in-memory cache if active
+      const startOfDay = new Date(todayLog.attendanceDate || new Date());
+      startOfDay.setUTCHours(0, 0, 0, 0);
+      const cacheKey = `${empId}_${startOfDay.toISOString().split('T')[0]}`;
+      if (global._todayAttendanceCache && global._todayAttendanceCache.has(cacheKey)) {
+        const cached = global._todayAttendanceCache.get(cacheKey);
+        if (cached && cached.data) {
+          cached.data.totalBreakMinutes = totalBreakMinutes;
+          cached.data.adjustedCheckOutTime = checkoutCalc.expectedCheckoutDate;
+          cached.data.breaks = allBreaks;
+        }
       }
     }
 
-    const totalBreakMinutes = (todayLog?.totalBreakMinutes || 0) + durationMinutes;
-    const maxAllowed = settings.breakRules?.maxBreakMinutesPerDay || 60;
-
-    const [updatedBreak] = await Promise.all([
-      attendanceRepository.updateAttendanceBreak(activeBreak.id, {
-        breakEndAt: actualReturnTime,
-        breakEndPhotoUrl: photo || null,
-        breakEndLivenessScore: photo ? String(effectiveLivenessScore) : null,
-        breakEndFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null,
-        actualReturnTime,
-        lateReturnMinutes,
-        totalBreakMinutes: durationMinutes
-      }),
-      todayLog ? attendanceRepository.updateAttendanceLog(todayLog.id, {
-        totalBreakMinutes,
-        remainingBreakMinutes: Math.max(0, maxAllowed - totalBreakMinutes),
-        ...(updatedAdjTime ? { adjustedCheckOutTime: updatedAdjTime } : {})
-      }) : Promise.resolve()
-    ]);
+    let warningMessage = null;
+    if (checkoutCalc.extraBreakMinutes > 0) {
+      warningMessage = `Extra break of ${checkoutCalc.extraBreakMinutes} min detected. Expected checkout extended to ${checkoutCalc.expectedCheckoutDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`;
+    }
 
     return {
       break: updatedBreak,
       durationMinutes,
       lateReturnMinutes,
+      expectedCheckout: checkoutCalc.expectedCheckout,
+      totalDelayMinutes: checkoutCalc.totalDelayMinutes,
+      lateMinutes: checkoutCalc.lateMinutes,
+      extraBreakMinutes: checkoutCalc.extraBreakMinutes,
       warning: warningMessage,
       message: warningMessage || `Break concluded. Total duration: ${durationMinutes} mins.`
     };
@@ -1032,7 +1172,7 @@ export const attendanceService = {
     const breaks = attendance?.breaks || [];
     const isOnBreak = Boolean(breaks.some((b) => !b.breakEndAt));
 
-    const checkoutStatus = await attendanceService.canCheckout(empId, realCompanyId, attendance, settings).catch(() => ({ canCheckout: true, expectedCheckoutTime: shiftWindow.shiftEnd.toISOString() }));
+    const checkoutStatus = await attendanceService.canCheckout(empId, realCompanyId, attendance, settings).catch(() => ({ canCheckout: true, expectedCheckoutTime: null }));
     const breakStatus = await attendanceService.checkBreakLimit(empId, realCompanyId, attendance, settings).catch(() => ({ canTakeBreak: true }));
 
     // Determine canCheckIn status and block reason
@@ -1051,9 +1191,29 @@ export const attendanceService = {
       }
     }
 
-    const expectedCheckout = attendance?.adjustedCheckOutTime 
-      ? new Date(attendance.adjustedCheckOutTime).toISOString()
-      : checkoutStatus.expectedCheckoutTime || shiftWindow.shiftEnd.toISOString();
+    let expectedCheckout = null;
+    let totalDelayMinutes = 0;
+    let lateMinutes = 0;
+    let extraBreakMinutes = 0;
+
+    if (attendance && attendance.checkInAt) {
+      const checkoutCalc = computeExpectedCheckout({
+        shift: assignedShift,
+        lateMinutes: attendance.lateMinutes || 0,
+        breaks,
+        attendanceDate: attendance.attendanceDate,
+        checkInAt: attendance.checkInAt
+      });
+      expectedCheckout = checkoutCalc.expectedCheckout;
+      totalDelayMinutes = checkoutCalc.totalDelayMinutes;
+      lateMinutes = checkoutCalc.lateMinutes;
+      extraBreakMinutes = checkoutCalc.extraBreakMinutes;
+    } else {
+      expectedCheckout = null;
+      totalDelayMinutes = 0;
+      lateMinutes = 0;
+      extraBreakMinutes = 0;
+    }
 
     const earliestCheckout = attendance?.expectedEnd
       ? new Date(attendance.expectedEnd).toISOString()
@@ -1083,7 +1243,9 @@ export const attendanceService = {
       expectedCheckout,
       earliestCheckout,
       requiredHours,
-      lateMinutes: attendance?.lateMinutes || 0,
+      totalDelayMinutes,
+      lateMinutes,
+      extraBreakMinutes,
       checkoutStatus,
       breakStatus
     };

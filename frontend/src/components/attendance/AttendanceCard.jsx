@@ -57,6 +57,10 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
   };
 
   const dynamicRequiredHours = shift?.requiredHours || assignedShift.workingHours || calculateShiftHours(assignedShift.startTime, assignedShift.endTime, assignedShift.isNightShift);
+  const expectedCheckout = attendance?.checkInAt ? (attendance?.adjustedCheckOutTime || shift?.expectedCheckout || null) : null;
+  const totalDelayMinutes = shift?.totalDelayMinutes ?? attendance?.totalDelayMinutes ?? ((attendance?.lateMinutes || 0) + (attendance?.extraBreakMinutes || 0));
+  const lateMinutes = shift?.lateMinutes ?? attendance?.lateMinutes ?? 0;
+  const extraBreakMinutes = shift?.extraBreakMinutes ?? attendance?.extraBreakMinutes ?? 0;
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 p-6 shadow-xl backdrop-blur-xl">
@@ -150,14 +154,23 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
             {formatTime(attendance?.checkOutAt)}
           </div>
           <div className="mt-1 text-[11px] text-slate-400">
-            {attendance?.adjustedCheckOutTime && !attendance?.checkOutAt ? (
-              <span className="text-indigo-300">Expected: {formatTime(attendance.adjustedCheckOutTime)}</span>
-            ) : !attendance?.checkOutAt && (shift?.expectedCheckout || shift?.earliestCheckout) ? (
-              <span className="text-indigo-300">Expected: {formatTime(shift.expectedCheckout || shift.earliestCheckout)}</span>
-            ) : attendance?.overtimeMinutes > 0 ? (
-              <span className="text-indigo-400 font-medium">+{attendance.overtimeMinutes}m Overtime</span>
+            {attendance?.checkInAt ? (
+              attendance?.checkOutAt ? (
+                'Completed'
+              ) : (
+                <>
+                  <div className="text-indigo-300">Expected: {formatTime(expectedCheckout)}</div>
+                  {totalDelayMinutes > 0 && (
+                    <div className="text-orange-500 text-xs">
+                      +{totalDelayMinutes} min
+                      {lateMinutes > 0 && ` (late ${lateMinutes})`}
+                      {extraBreakMinutes > 0 && ` (extra break ${extraBreakMinutes})`}
+                    </div>
+                  )}
+                </>
+              )
             ) : (
-              attendance?.checkOutAt ? 'Completed' : 'Pending'
+              <div className="text-muted text-slate-400">Not checked in yet</div>
             )}
           </div>
         </div>
