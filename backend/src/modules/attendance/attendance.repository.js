@@ -151,7 +151,7 @@ export const attendanceRepository = {
    * List attendance logs with multi-parameter filtering and pagination
    */
   async findAttendanceLogs(companyId, filters = {}, pagination = { page: 1, limit: 20 }) {
-    const { employeeId, departmentId, branchId, status, startDate, endDate, search } = filters;
+    const { employeeId, departmentId, branchId, status, startDate, endDate, from, to, search } = filters;
     const { page = 1, limit = 20 } = pagination;
     const skip = (page - 1) * limit;
 
@@ -178,15 +178,18 @@ export const attendanceRepository = {
       }
     }
 
-    if (startDate || endDate) {
+    const effectiveStartDate = startDate || from;
+    const effectiveEndDate = endDate || to;
+
+    if (effectiveStartDate || effectiveEndDate) {
       where.attendanceDate = {};
-      if (startDate && !isNaN(new Date(startDate).getTime())) {
-        const sDate = new Date(startDate);
+      if (effectiveStartDate && !isNaN(new Date(effectiveStartDate).getTime())) {
+        const sDate = new Date(effectiveStartDate);
         sDate.setUTCHours(0, 0, 0, 0);
         where.attendanceDate.gte = sDate;
       }
-      if (endDate && !isNaN(new Date(endDate).getTime())) {
-        const eDate = new Date(endDate);
+      if (effectiveEndDate && !isNaN(new Date(effectiveEndDate).getTime())) {
+        const eDate = new Date(effectiveEndDate);
         eDate.setUTCHours(23, 59, 59, 999);
         where.attendanceDate.lte = eDate;
       }

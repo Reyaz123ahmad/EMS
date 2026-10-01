@@ -57,7 +57,6 @@ router.post(
 router.get(
   '/today',
   requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  cacheResponse('cache:attendance_today', 60),
   attendanceController.getTodayStatus
 );
 
@@ -65,14 +64,12 @@ router.get(
 router.get(
   '/checkout-status',
   requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  cacheResponse('cache:attendance_checkout_status', 60),
   attendanceController.getCheckoutStatus
 );
 
 router.get(
   '/break-status',
   requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  cacheResponse('cache:attendance_break_status', 60),
   attendanceController.getBreakStatus
 );
 
@@ -80,38 +77,34 @@ router.get(
 router.get(
   '/logs',
   requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  cacheResponse('cache:attendance_logs', 60),
   attendanceController.listLogs
 );
 
 // Allowed for all authenticated
-router.get('/monthly-summary', authenticate, cacheResponse('cache:attendance_monthly_summary', 60), getMonthlySummary);
-router.get('/exceptions', authenticate, cacheResponse('cache:attendance_exceptions', 60), getExceptions);
-router.get('/stats', authenticate, cacheResponse('cache:attendance_stats', 60), getStats);
-router.get('/overtime-tracker', authenticate, cacheResponse('cache:attendance_overtime_tracker', 60), getOvertimeTracker);
-router.get('/shift-roster', authenticate, cacheResponse('cache:attendance_shift_roster', 60), getShiftRoster);
-router.get('/fraud-signals', authenticate, cacheResponse('cache:attendance_fraud_signals', 60), getFraudSignals);
-router.get('/qr-scanner', authenticate, cacheResponse('cache:attendance_qr_scanner', 60), getQrScanner);
-router.get('/live-location', authenticate, cacheResponse('cache:attendance_live_loc', 60), getLiveLocation);
+router.get('/monthly-summary', authenticate, getMonthlySummary);
+router.get('/exceptions', authenticate, getExceptions);
+router.get('/stats', authenticate, getStats);
+router.get('/overtime-tracker', authenticate, getOvertimeTracker);
+router.get('/shift-roster', authenticate, getShiftRoster);
+router.get('/fraud-signals', authenticate, getFraudSignals);
+router.get('/qr-scanner', authenticate, getQrScanner);
+router.get('/live-location', authenticate, getLiveLocation);
 
 router.get(
   '/calendar',
   requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  cacheResponse('cache:attendance_calendar', 60),
   attendanceController.getCalendar
 );
 
 router.get(
   '/employee-summary',
   requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  cacheResponse('cache:attendance_employee_summary', 60),
   attendanceController.getEmployeeSummary
 );
 
 router.get(
   '/summary',
   requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN'),
-  cacheResponse('cache:attendance_summary', 60),
   attendanceController.getEmployeeSummary
 );
 

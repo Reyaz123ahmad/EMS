@@ -74,6 +74,8 @@ export const attendanceLogsSchema = Joi.object({
   status: Joi.string().optional().allow('', null),
   startDate: Joi.date().iso().optional(),
   endDate: Joi.date().iso().optional(),
+  from: Joi.date().iso().optional(),
+  to: Joi.date().iso().optional(),
   search: Joi.string().optional().allow('', null),
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20)

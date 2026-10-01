@@ -22,6 +22,10 @@ export const DateRangePicker = ({ onApply, initialRange }) => {
     const [start, end] = preset.getRange();
     setStartDate(start);
     setEndDate(end);
+    if (onApply) {
+      onApply({ startDate: start, endDate: end, preset: preset.key });
+    }
+    setIsOpen(false);
   };
 
   const handleApply = () => {

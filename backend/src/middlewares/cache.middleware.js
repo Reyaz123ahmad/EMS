@@ -39,8 +39,8 @@ function timeoutPromise(ms, promise) {
  * @param {string} prefix - Key prefix (e.g. 'cache:plans', 'cache:company:settings')
  * @param {number} ttlSeconds - Time-to-live in seconds
  */
-export function cacheResponse(prefix, ttlSeconds = 86400) {
-  const effectiveTtl = Math.max(ttlSeconds, 86400);
+export function cacheResponse(prefix, ttlSeconds = 60) {
+  const effectiveTtl = ttlSeconds;
   return async (req, res, next) => {
     // Only cache GET requests
     if (req.method !== 'GET') {
