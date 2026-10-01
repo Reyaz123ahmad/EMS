@@ -144,7 +144,21 @@ export const AttendancePage = () => {
     }
   }
 
+  const calculateHours = (start, end, isNight = false) => {
+    if (!start || !end) return null;
+    const [sh, sm] = start.split(':').map(Number);
+    const [eh, em] = end.split(':').map(Number);
+    if (isNaN(sh) || isNaN(eh)) return null;
+    let startMin = sh * 60 + (sm || 0);
+    let endMin = eh * 60 + (em || 0);
+    if (isNight || endMin <= startMin) endMin += 24 * 60;
+    return Number(((endMin - startMin) / 60).toFixed(1));
+  };
+
   const getCheckInMessage = (status, data) => {
+    if (data?.checkInBlockReason) {
+      return data.checkInBlockReason;
+    }
     if (!data) return null;
     const startStr = resolvedStartTime;
     const endStr = resolvedEndTime;
@@ -697,7 +711,7 @@ export const AttendancePage = () => {
               <div className="flex justify-between py-1 border-b border-slate-800/60">
                 <span>Working Hours:</span>
                 <span className="font-semibold text-indigo-400">
-                  {currentShift?.workingHours ? `${currentShift.workingHours} Hours` : '--'}
+                  {currentShift ? `${currentShift.workingHours || calculateHours(currentShift.startTime, currentShift.endTime, isNightShift) || '--'} Hours` : '--'}
                 </span>
               </div>
               <div className="flex justify-between py-1">
