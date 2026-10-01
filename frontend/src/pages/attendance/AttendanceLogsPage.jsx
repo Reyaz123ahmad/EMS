@@ -43,8 +43,21 @@ export const AttendanceLogsPage = () => {
 
   const { data: logsResponse, isLoading, refetch } = useAttendanceLogs(queryParams);
 
-  const logs = logsResponse?.data?.logs || [];
-  const pagination = logsResponse?.data?.pagination || { page: 1, totalPages: 1, total: 0 };
+  const logs = Array.isArray(logsResponse?.data?.logs)
+    ? logsResponse.data.logs
+    : Array.isArray(logsResponse?.logs)
+    ? logsResponse.logs
+    : Array.isArray(logsResponse?.data)
+    ? logsResponse.data
+    : Array.isArray(logsResponse)
+    ? logsResponse
+    : [];
+
+  const pagination = logsResponse?.data?.pagination || logsResponse?.pagination || {
+    page: filters.page || 1,
+    totalPages: Math.ceil((logs.length || 0) / (filters.limit || 10)) || 1,
+    total: logs.length || 0
+  };
 
   const handleExportCSV = () => {
     if (logs.length === 0) {
@@ -58,7 +71,7 @@ export const AttendanceLogsPage = () => {
 
     const rows = logs.map((log) => {
       const baseRow = [
-        dayjs(log.date).format('YYYY-MM-DD'),
+        dayjs(log.attendanceDate || log.date).format('YYYY-MM-DD'),
         log.status,
         log.checkInAt ? dayjs(log.checkInAt).format('HH:mm:ss') : 'N/A',
         log.checkOutAt ? dayjs(log.checkOutAt).format('HH:mm:ss') : 'N/A',

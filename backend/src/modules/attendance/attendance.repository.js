@@ -161,7 +161,9 @@ export const attendanceRepository = {
     } else if (employeeId) {
       where.employeeId = employeeId;
     }
-    if (status) where.status = status;
+    if (status && status !== 'ALL' && String(status).trim() !== '') {
+      where.status = status;
+    }
 
     if (departmentId || branchId || search) {
       where.employee = {};
@@ -178,15 +180,18 @@ export const attendanceRepository = {
 
     if (startDate || endDate) {
       where.attendanceDate = {};
-      if (startDate) {
+      if (startDate && !isNaN(new Date(startDate).getTime())) {
         const sDate = new Date(startDate);
         sDate.setUTCHours(0, 0, 0, 0);
         where.attendanceDate.gte = sDate;
       }
-      if (endDate) {
+      if (endDate && !isNaN(new Date(endDate).getTime())) {
         const eDate = new Date(endDate);
         eDate.setUTCHours(23, 59, 59, 999);
         where.attendanceDate.lte = eDate;
+      }
+      if (Object.keys(where.attendanceDate).length === 0) {
+        delete where.attendanceDate;
       }
     }
 

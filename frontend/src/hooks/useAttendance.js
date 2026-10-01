@@ -93,7 +93,10 @@ export function useAttendanceLogs(params = {}) {
   return useQuery({
     queryKey: ['attendance', 'logs', params],
     queryFn: () => attendanceService.getAttendanceLogs(params),
-    refetchInterval: 30000 // auto-refresh logs every 30s
+    refetchInterval: 15000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true
   });
 }
 
