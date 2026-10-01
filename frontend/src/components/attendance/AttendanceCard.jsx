@@ -49,14 +49,16 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
     return Number(((eMin - sMin) / 60).toFixed(1));
   };
 
-  const assignedShift = shift?.currentShift || shift?.shift || (shift?.name ? shift : null) || {
-    name: attendance?.shiftName || 'Standard Shift',
-    startTime: attendance?.shiftStartTime || '09:00',
-    endTime: attendance?.shiftEndTime || '18:00',
+  const assignedShift = shift?.currentShift || shift?.shift || (shift?.name ? shift : null) || (attendance?.shiftName ? {
+    name: attendance.shiftName,
+    startTime: attendance.shiftStartTime || '09:00',
+    endTime: attendance.shiftEndTime || '18:00',
+    graceMinutes: attendance.shiftGraceMinutes ?? 15,
+    isNightShift: attendance.isNightShift || false,
     workingHours: null
-  };
+  } : null);
 
-  const dynamicRequiredHours = shift?.requiredHours || assignedShift.workingHours || calculateShiftHours(assignedShift.startTime, assignedShift.endTime, assignedShift.isNightShift);
+  const dynamicRequiredHours = shift?.requiredHours || assignedShift?.workingHours || (assignedShift ? calculateShiftHours(assignedShift.startTime, assignedShift.endTime, assignedShift.isNightShift) : 8);
   const expectedCheckout = attendance?.checkInAt ? (attendance?.adjustedCheckOutTime || shift?.expectedCheckout || null) : null;
   const totalDelayMinutes = shift?.totalDelayMinutes ?? attendance?.totalDelayMinutes ?? ((attendance?.lateMinutes || 0) + (attendance?.extraBreakMinutes || 0));
   const lateMinutes = shift?.lateMinutes ?? attendance?.lateMinutes ?? 0;

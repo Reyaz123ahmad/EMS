@@ -83,10 +83,11 @@ export const AttendancePage = () => {
     return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
-  // Consolidated holiday & shift metadata
-  const holiday = statusResponse?.data?.holiday || todayStatus?.holiday;
-  const shiftPayload = statusResponse?.data?.shift || todayStatus?.shift;
-  const currentShift = statusResponse?.data?.currentShift || statusResponse?.data?.shift?.shift || todayStatus?.currentShift || todayStatus?.shift?.shift || shiftPayload;
+  // Consolidated holiday & shift metadata - prioritize fresh server response
+  const effectiveData = statusResponse?.data || todayStatus;
+  const holiday = effectiveData?.holiday;
+  const shiftPayload = effectiveData?.shift;
+  const currentShift = effectiveData?.currentShift || effectiveData?.shift?.shift || shiftPayload?.shift || shiftPayload;
   const shift = currentShift;
   const isHoliday = Boolean(holiday?.isHoliday);
   const hasShift = Boolean(shiftPayload?.hasShift ?? (currentShift ? true : true));
@@ -112,12 +113,12 @@ export const AttendancePage = () => {
 
   const graceCutoffStr = `${String(graceCutoffObj.getHours()).padStart(2, '0')}:${String(graceCutoffObj.getMinutes()).padStart(2, '0')}`;
 
-  let dynamicWindowStatus = todayStatus?.windowStatus || 'BEFORE_WINDOW';
-  let dynamicCanCheckIn = Boolean(todayStatus?.canCheckIn);
-  let dynamicMinutesUntilStart = todayStatus?.minutesUntilStart ?? 0;
-  let dynamicMinutesLeftInGrace = todayStatus?.minutesLeftInGrace ?? 0;
+  let dynamicWindowStatus = effectiveData?.windowStatus || 'BEFORE_WINDOW';
+  let dynamicCanCheckIn = Boolean(effectiveData?.canCheckIn);
+  let dynamicMinutesUntilStart = effectiveData?.minutesUntilStart ?? 0;
+  let dynamicMinutesLeftInGrace = effectiveData?.minutesLeftInGrace ?? 0;
 
-  if (!todayStatus?.attendance?.checkInAt) {
+  if (!effectiveData?.attendance?.checkInAt) {
     const nowMs = now.getTime();
     if (nowMs < fiveMinBeforeObj.getTime()) {
       dynamicWindowStatus = 'BEFORE_WINDOW';
@@ -383,19 +384,20 @@ export const AttendancePage = () => {
         <div className="space-y-6 lg:col-span-2">
           {/* Today Status Card */}
           <AttendanceCard
-            attendance={todayStatus?.attendance}
-            breaks={todayStatus?.breaks || breaks}
+            attendance={effectiveData?.attendance}
+            breaks={effectiveData?.breaks || breaks}
             holiday={holiday}
             shift={{
-              shift: todayStatus?.currentShift || currentShift || shiftPayload?.shift || shiftPayload,
-              source: todayStatus?.shiftSource || shiftPayload?.source,
-              validTill: todayStatus?.validTill || shiftPayload?.validTill,
-              isRosterOverride: todayStatus?.isRosterOverride ?? (todayStatus?.shiftSource === 'ROSTER'),
-              defaultShift: todayStatus?.defaultShift || shiftPayload?.defaultShift,
-              defaultShiftStatus: todayStatus?.defaultShiftStatus,
-              expectedCheckout: todayStatus?.expectedCheckout,
-              earliestCheckout: todayStatus?.earliestCheckout,
-              requiredHours: todayStatus?.requiredHours
+              shift: currentShift,
+              currentShift: currentShift,
+              source: effectiveData?.shiftSource || shiftPayload?.source,
+              validTill: effectiveData?.validTill || shiftPayload?.validTill,
+              isRosterOverride: effectiveData?.isRosterOverride ?? (effectiveData?.shiftSource === 'ROSTER'),
+              defaultShift: effectiveData?.defaultShift || shiftPayload?.defaultShift,
+              defaultShiftStatus: effectiveData?.defaultShiftStatus,
+              expectedCheckout: effectiveData?.expectedCheckout,
+              earliestCheckout: effectiveData?.earliestCheckout,
+              requiredHours: effectiveData?.requiredHours
             }}
           />
 

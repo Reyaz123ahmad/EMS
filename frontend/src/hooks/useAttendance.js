@@ -6,6 +6,9 @@ export function useTodayStatus(params = {}) {
   return useQuery({
     queryKey: ['attendance', 'today', params],
     queryFn: () => attendanceService.getTodayStatus(params),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     refetchInterval: 30000 // auto-refresh status every 30s
   });
 }
@@ -14,6 +17,9 @@ export function useCheckoutStatus(params = {}) {
   return useQuery({
     queryKey: ['attendance', 'checkout-status', params],
     queryFn: () => attendanceService.getCheckoutStatus(params),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     refetchInterval: 30000 // auto-refresh status every 30s
   });
 }
@@ -22,6 +28,9 @@ export function useBreakStatus(params = {}) {
   return useQuery({
     queryKey: ['attendance', 'break-status', params],
     queryFn: () => attendanceService.getBreakStatus(params),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
     refetchInterval: 30000 // auto-refresh status every 30s
   });
 }

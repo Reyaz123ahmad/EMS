@@ -46,6 +46,7 @@ export const useAuthStore = create((set) => ({
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('attendance-storage');
     set({
       user: null,
       accessToken: null,
