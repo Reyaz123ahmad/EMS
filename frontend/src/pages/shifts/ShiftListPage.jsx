@@ -171,7 +171,7 @@ export default function ShiftListPage() {
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="e.g. Morning Shift, General Shift, Night Shift"
+            placeholder="e.g. Morning Shift, Evening Shift, Night Shift"
           />
 
           <Input

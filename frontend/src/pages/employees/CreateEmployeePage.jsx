@@ -337,7 +337,7 @@ export function CreateEmployeePage() {
                     onChange={handleInputChange}
                     className="w-full h-11 px-3 rounded-lg bg-slate-950/60 border border-slate-800 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
                   >
-                    <option value="">-- Default General Shift (Auto-Assign) --</option>
+                    <option value="">-- Select Shift Schedule (Auto-Assign Active Default) --</option>
                     {shifts.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name} ({s.startTime} - {s.endTime})

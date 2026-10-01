@@ -92,33 +92,40 @@ export const AttendancePage = () => {
   const isHoliday = Boolean(holiday?.isHoliday);
   const hasShift = Boolean(shiftPayload?.hasShift ?? (currentShift ? true : true));
 
-  const resolvedStartTime = currentShift?.startTime || '09:00';
-  const resolvedEndTime = currentShift?.endTime || '18:00';
+  const resolvedStartTime = currentShift?.startTime;
+  const resolvedEndTime = currentShift?.endTime;
   const resolvedGraceMinutes = Number(currentShift?.graceMinutes !== undefined && currentShift?.graceMinutes !== null ? currentShift.graceMinutes : 15);
   const isNightShift = Boolean(currentShift?.isNightShift || (resolvedEndTime && resolvedStartTime && resolvedEndTime <= resolvedStartTime));
 
   // Dynamic 30-sec client-side countdown calculations based on resolved shift
   const now = new Date(currentTime);
-  const [sH, sM] = (resolvedStartTime || '09:00').split(':').map(Number);
-  const [eH, eM] = (resolvedEndTime || '18:00').split(':').map(Number);
+  let shiftStartObj = null;
+  let shiftEndObj = null;
+  let fiveMinBeforeObj = null;
+  let graceCutoffObj = null;
+  let graceCutoffStr = '--:--';
 
-  const shiftStartObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH, sM || 0, 0, 0);
-  const shiftEndObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), eH, eM || 0, 0, 0);
-  if (isNightShift || shiftEndObj <= shiftStartObj) {
-    shiftEndObj.setDate(shiftEndObj.getDate() + 1);
+  if (resolvedStartTime && resolvedEndTime) {
+    const [sH, sM] = resolvedStartTime.split(':').map(Number);
+    const [eH, eM] = resolvedEndTime.split(':').map(Number);
+
+    shiftStartObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH, sM || 0, 0, 0);
+    shiftEndObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), eH, eM || 0, 0, 0);
+    if (isNightShift || shiftEndObj <= shiftStartObj) {
+      shiftEndObj.setDate(shiftEndObj.getDate() + 1);
+    }
+
+    fiveMinBeforeObj = new Date(shiftStartObj.getTime() - 5 * 60000);
+    graceCutoffObj = new Date(shiftStartObj.getTime() + resolvedGraceMinutes * 60000);
+    graceCutoffStr = `${String(graceCutoffObj.getHours()).padStart(2, '0')}:${String(graceCutoffObj.getMinutes()).padStart(2, '0')}`;
   }
-
-  const fiveMinBeforeObj = new Date(shiftStartObj.getTime() - 5 * 60000);
-  const graceCutoffObj = new Date(shiftStartObj.getTime() + resolvedGraceMinutes * 60000);
-
-  const graceCutoffStr = `${String(graceCutoffObj.getHours()).padStart(2, '0')}:${String(graceCutoffObj.getMinutes()).padStart(2, '0')}`;
 
   let dynamicWindowStatus = effectiveData?.windowStatus || 'BEFORE_WINDOW';
   let dynamicCanCheckIn = Boolean(effectiveData?.canCheckIn);
   let dynamicMinutesUntilStart = effectiveData?.minutesUntilStart ?? 0;
   let dynamicMinutesLeftInGrace = effectiveData?.minutesLeftInGrace ?? 0;
 
-  if (!effectiveData?.attendance?.checkInAt) {
+  if (!effectiveData?.attendance?.checkInAt && fiveMinBeforeObj && graceCutoffObj && shiftEndObj && shiftStartObj) {
     const nowMs = now.getTime();
     if (nowMs < fiveMinBeforeObj.getTime()) {
       dynamicWindowStatus = 'BEFORE_WINDOW';
@@ -163,9 +170,9 @@ export const AttendancePage = () => {
     canCheckIn: dynamicCanCheckIn,
     minutesUntilStart: dynamicMinutesUntilStart,
     minutesLeftInGrace: dynamicMinutesLeftInGrace,
-    shiftStart: shiftStartObj.toISOString(),
-    shiftEnd: shiftEndObj.toISOString(),
-    graceCutoff: graceCutoffObj.toISOString()
+    shiftStart: shiftStartObj?.toISOString() || null,
+    shiftEnd: shiftEndObj?.toISOString() || null,
+    graceCutoff: graceCutoffObj?.toISOString() || null
   };
 
   const windowStatus = dynamicWindowStatus;

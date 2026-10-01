@@ -90,8 +90,8 @@ export default function ShiftRosterPage() {
           ))
         ) : (
           <Card className="p-5 bg-slate-900 border-slate-800 col-span-full text-center py-6 text-slate-400">
-            <p className="text-sm font-semibold text-slate-300">Standard General Shift Active</p>
-            <p className="text-xs text-slate-500 mt-1">09:00 AM - 06:00 PM (Default Company Policy)</p>
+            <p className="text-sm font-semibold text-slate-300">No shifts configured</p>
+            <p className="text-xs text-slate-500 mt-1">Please configure active company shifts in Shift Management.</p>
           </Card>
         )}
       </div>
@@ -135,7 +135,7 @@ export default function ShiftRosterPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 font-semibold text-indigo-400">
-                      {roster.shift?.name || 'General Shift'}
+                      {roster.shift?.name || 'Unassigned'}
                     </td>
                     <td className="px-4 py-3 font-mono text-xs">
                       {roster.shift?.startTime} - {roster.shift?.endTime}

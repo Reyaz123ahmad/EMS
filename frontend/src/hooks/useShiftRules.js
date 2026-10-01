@@ -15,19 +15,14 @@ export function useShiftRules(employeeId) {
   const adjustedCheckOutTime = todayData?.data?.attendance?.adjustedCheckOutTime || null;
 
   const timingInfo = useMemo(() => {
-    if (!shift) {
-      return {
-        startTime: '09:00',
-        endTime: '18:00',
-        workingHours: 8,
-        graceMinutes: 15
-      };
+    if (!shift || !shift.startTime || !shift.endTime) {
+      return null;
     }
     return {
-      startTime: shift.startTime || '09:00',
-      endTime: shift.endTime || '18:00',
-      workingHours: shift.workingHours || 8,
-      graceMinutes: shift.graceMinutes !== undefined ? shift.graceMinutes : 15
+      startTime: shift.startTime,
+      endTime: shift.endTime,
+      workingHours: shift.workingHours || null,
+      graceMinutes: shift.graceMinutes !== undefined ? shift.graceMinutes : null
     };
   }, [shift]);
 

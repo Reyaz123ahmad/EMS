@@ -214,12 +214,17 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
 
     // C. Shift Info (Resolve shift: Roster > Assignment > Default)
     const shiftInfo = await resolveShiftForEmployee({ employeeId: empId, companyId, date: targetDate });
-    const shift = shiftInfo?.shift || companyDefaultShift || { id: 'default', name: 'General', startTime: '09:00', endTime: '18:00', graceMinutes: 15 };
+    const shift = shiftInfo?.shift;
+    if (!shift || !shift.startTime) {
+      logger.warn({ employeeId: empId }, 'No active shift found for employee, skipping absent marking');
+      skippedCount++;
+      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'NO_SHIFT_ASSIGNED' });
+      continue;
+    }
     const graceMinutes = Number(shift.graceMinutes !== undefined && shift.graceMinutes !== null ? shift.graceMinutes : 15);
 
     // D. Grace Period Cutoff Check (shiftStart + graceMinutes)
-    const startTimeStr = shift.startTime || '09:00';
-    const [startH, startM] = startTimeStr.split(':').map(Number);
+    const [startH, startM] = shift.startTime.split(':').map(Number);
     const shiftStart = new Date(targetDate);
     shiftStart.setHours(startH, startM || 0, 0, 0);
 
@@ -257,7 +262,7 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
         employeeId: empId,
         attendanceDate: startOfDay,
         status: 'ABSENT',
-        shiftId: shift.id !== 'default' ? shift.id : null,
+        shiftId: shift.id,
         shiftName: shift.name,
         shiftStartTime: shift.startTime,
         shiftEndTime: shift.endTime,

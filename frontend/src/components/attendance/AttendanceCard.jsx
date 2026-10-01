@@ -40,9 +40,11 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
   const validTill = shift?.validTill;
   const defaultShift = shift?.defaultShift;
 
-  const calculateShiftHours = (start = '09:00', end = '18:00', isNight = false) => {
-    const [sH, sM] = (start || '09:00').split(':').map(Number);
-    const [eH, eM] = (end || '18:00').split(':').map(Number);
+  const calculateShiftHours = (start, end, isNight = false) => {
+    if (!start || !end) return null;
+    const [sH, sM] = start.split(':').map(Number);
+    const [eH, eM] = end.split(':').map(Number);
+    if (isNaN(sH) || isNaN(eH)) return null;
     let sMin = sH * 60 + (sM || 0);
     let eMin = eH * 60 + (eM || 0);
     if (isNight || eMin <= sMin) eMin += 1440;
@@ -51,14 +53,14 @@ export const AttendanceCard = ({ attendance, breaks = [], holiday = null, shift 
 
   const assignedShift = shift?.currentShift || shift?.shift || (shift?.name ? shift : null) || (attendance?.shiftName ? {
     name: attendance.shiftName,
-    startTime: attendance.shiftStartTime || '09:00',
-    endTime: attendance.shiftEndTime || '18:00',
-    graceMinutes: attendance.shiftGraceMinutes ?? 15,
+    startTime: attendance.shiftStartTime,
+    endTime: attendance.shiftEndTime,
+    graceMinutes: attendance.shiftGraceMinutes,
     isNightShift: attendance.isNightShift || false,
     workingHours: null
   } : null);
 
-  const dynamicRequiredHours = shift?.requiredHours || assignedShift?.workingHours || (assignedShift ? calculateShiftHours(assignedShift.startTime, assignedShift.endTime, assignedShift.isNightShift) : 8);
+  const dynamicRequiredHours = shift?.requiredHours || assignedShift?.workingHours || (assignedShift?.startTime && assignedShift?.endTime ? calculateShiftHours(assignedShift.startTime, assignedShift.endTime, assignedShift.isNightShift) : null);
   const expectedCheckout = attendance?.checkInAt ? (attendance?.adjustedCheckOutTime || shift?.expectedCheckout || null) : null;
   const totalDelayMinutes = shift?.totalDelayMinutes ?? attendance?.totalDelayMinutes ?? ((attendance?.lateMinutes || 0) + (attendance?.extraBreakMinutes || 0));
   const lateMinutes = shift?.lateMinutes ?? attendance?.lateMinutes ?? 0;
