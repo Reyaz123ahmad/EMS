@@ -215,17 +215,23 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
     // C. Shift Info (Resolve shift: Roster > Assignment > Default)
     const shiftInfo = await resolveShiftForEmployee({ employeeId: empId, companyId, date: targetDate });
     const shift = shiftInfo?.shift || companyDefaultShift || { id: 'default', name: 'General', startTime: '09:00', endTime: '18:00', graceMinutes: 15 };
-    const graceMinutes = shift.graceMinutes !== undefined ? shift.graceMinutes : 15;
+    const graceMinutes = Number(shift.graceMinutes !== undefined && shift.graceMinutes !== null ? shift.graceMinutes : 15);
 
-    // D. Shift End Time Cutoff
-    const { shiftStart, shiftEnd, absentCutoff } = calculateShiftEndCutoff(targetDate, shift, graceMinutes);
-    if (!force && now.getTime() < absentCutoff.getTime()) {
+    // D. Grace Period Cutoff Check (shiftStart + graceMinutes)
+    const startTimeStr = shift.startTime || '09:00';
+    const [startH, startM] = startTimeStr.split(':').map(Number);
+    const shiftStart = new Date(targetDate);
+    shiftStart.setHours(startH, startM || 0, 0, 0);
+
+    const graceCutoff = new Date(shiftStart.getTime() + graceMinutes * 60000);
+
+    if (!force && now.getTime() <= graceCutoff.getTime()) {
       skippedCount++;
       details.push({
         employeeId: empId,
         employeeCode: employee.employeeCode,
         action: 'SKIPPED',
-        reason: 'SHIFT_IN_PROGRESS'
+        reason: 'GRACE_PERIOD_ACTIVE'
       });
       continue;
     }
@@ -258,12 +264,15 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
         shiftSource: shiftInfo?.source || 'COMPANY_DEFAULT',
         isRosterOverride: Boolean(shiftInfo?.source === 'ROSTER'),
         isLate: false,
-        isHalfDay: false,
-        isOvertime: false,
+        isHoliday: false,
         totalWorkedMinutes: 0
       });
       markedCount++;
       details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', created: true });
+    }
+    if (global._todayAttendanceCache) {
+      const cacheKey = `${empId}_${startOfDay.toISOString().split('T')[0]}`;
+      global._todayAttendanceCache.delete(cacheKey);
     }
   }
 

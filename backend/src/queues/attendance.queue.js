@@ -1,5 +1,6 @@
 import { Queue } from 'bullmq';
 import { defaultQueueOptions } from '../config/bullmq.js';
+import logger from '../config/logger.js';
 
 export const attendanceQueue = new Queue('attendance-queue', defaultQueueOptions);
 
@@ -15,6 +16,8 @@ export async function addMarkAbsenteesJob({ companyId, forceAllShifts } = {}) {
   return attendanceQueue.add('mark-absentees', { companyId, forceAllShifts });
 }
 
+let fallbackInterval = null;
+
 export async function scheduleAutoAbsentCron() {
   try {
     const repeatableJobs = await attendanceQueue.getRepeatableJobs();
@@ -22,22 +25,32 @@ export async function scheduleAutoAbsentCron() {
       await attendanceQueue.removeRepeatableByKey(job.key);
     }
 
-    if (process.env.NODE_ENV === 'production') {
-      await attendanceQueue.add(
-        'mark-absentees',
-        {},
-        {
-          repeat: {
-            every: 60 * 60 * 1000 // every 60 minutes in production
-          },
-          jobId: 'mark-absentees-cron',
-          removeOnComplete: true,
-          removeOnFail: true
-        }
-      );
-    }
+    await attendanceQueue.add(
+      'mark-absentees',
+      {},
+      {
+        repeat: {
+          every: 5 * 60 * 1000 // every 5 minutes
+        },
+        jobId: 'mark-absentees-cron',
+        removeOnComplete: true,
+        removeOnFail: true
+      }
+    );
+    logger.info('Auto-absent evaluation cron registered in BullMQ (every 5 minutes)');
   } catch (err) {
-    // Ignore scheduling errors
+    logger.warn({ err: err.message }, 'Failed to schedule BullMQ auto-absent cron, activating in-process interval fallback');
+    if (!fallbackInterval) {
+      fallbackInterval = setInterval(async () => {
+        try {
+          const { markAbsenteesAllCompanies } = await import('../modules/attendance/services/markAbsentees.service.js');
+          await markAbsenteesAllCompanies();
+        } catch (intervalErr) {
+          logger.error({ err: intervalErr.message }, 'In-process auto-absent fallback run failed');
+        }
+      }, 5 * 60 * 1000);
+      fallbackInterval.unref();
+    }
   }
 }
 
