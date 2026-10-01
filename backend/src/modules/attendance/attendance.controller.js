@@ -45,7 +45,7 @@ export const attendanceController = {
       if (err.statusCode) {
         return res.status(err.statusCode).json({
           status: 'error',
-          code: err.statusCode === 403 ? 'GEO_VERIFICATION_FAILED' : 'BAD_REQUEST',
+          code: err.code || (err.statusCode === 403 ? 'GEO_VERIFICATION_FAILED' : 'BAD_REQUEST'),
           message: err.message
         });
       }

@@ -67,11 +67,87 @@ export const AttendancePage = () => {
   const [remarks, setRemarks] = useState('');
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // Update countdown every 30 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTimeString = (isoString) => {
+    if (!isoString) return '--:--';
+    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getCheckInMessage = (status, data) => {
+    if (!data) return null;
+    switch (status) {
+      case 'BEFORE_WINDOW':
+        return `Your shift starts in ${data.minutesUntilStart} minutes (at ${formatTimeString(data.shiftStart)}). Cannot check in yet.`;
+      case 'WINDOW_OPEN':
+        return `Check-in window open. Grace ends in ${data.minutesLeftInGrace} minutes.`;
+      case 'GRACE_PASSED':
+        return `Check-in time has passed. Grace period ended at ${formatTimeString(data.graceCutoff)}. You will be marked ABSENT.`;
+      case 'SHIFT_ENDED':
+        return `Your shift ended at ${formatTimeString(data.shiftEnd)}. Check-in not allowed.`;
+      default:
+        return data.checkInBlockReason || 'Check-in window is not currently open.';
+    }
+  };
+
   // Consolidated holiday & shift metadata
   const holiday = statusResponse?.data?.holiday || todayStatus?.holiday;
   const shift = statusResponse?.data?.shift || todayStatus?.shift;
   const isHoliday = Boolean(holiday?.isHoliday);
   const hasShift = Boolean(shift?.hasShift ?? true);
+
+  // Dynamic 30-sec client-side countdown calculations
+  const shiftStartObj = todayStatus?.shiftStart ? new Date(todayStatus.shiftStart) : null;
+  const graceCutoffObj = todayStatus?.graceCutoff ? new Date(todayStatus.graceCutoff) : null;
+  const shiftEndObj = todayStatus?.shiftEnd ? new Date(todayStatus.shiftEnd) : null;
+  const fiveMinBeforeObj = todayStatus?.fiveMinBefore ? new Date(todayStatus.fiveMinBefore) : (shiftStartObj ? new Date(shiftStartObj.getTime() - 5 * 60000) : null);
+
+  let dynamicWindowStatus = todayStatus?.windowStatus || 'BEFORE_WINDOW';
+  let dynamicCanCheckIn = Boolean(todayStatus?.canCheckIn);
+  let dynamicMinutesUntilStart = todayStatus?.minutesUntilStart ?? 0;
+  let dynamicMinutesLeftInGrace = todayStatus?.minutesLeftInGrace ?? 0;
+
+  if (shiftStartObj && graceCutoffObj && shiftEndObj && fiveMinBeforeObj && !todayStatus?.attendance?.checkInAt) {
+    const nowMs = currentTime;
+    if (nowMs < fiveMinBeforeObj.getTime()) {
+      dynamicWindowStatus = 'BEFORE_WINDOW';
+      dynamicCanCheckIn = false;
+      dynamicMinutesUntilStart = Math.max(1, Math.ceil((shiftStartObj.getTime() - nowMs) / 60000));
+    } else if (nowMs <= graceCutoffObj.getTime()) {
+      dynamicWindowStatus = 'WINDOW_OPEN';
+      dynamicCanCheckIn = true;
+      dynamicMinutesLeftInGrace = Math.max(0, Math.ceil((graceCutoffObj.getTime() - nowMs) / 60000));
+    } else if (nowMs <= shiftEndObj.getTime()) {
+      dynamicWindowStatus = 'GRACE_PASSED';
+      dynamicCanCheckIn = false;
+    } else {
+      dynamicWindowStatus = 'SHIFT_ENDED';
+      dynamicCanCheckIn = false;
+    }
+  }
+
+  const effectiveStatusData = {
+    ...todayStatus,
+    windowStatus: dynamicWindowStatus,
+    canCheckIn: dynamicCanCheckIn,
+    minutesUntilStart: dynamicMinutesUntilStart,
+    minutesLeftInGrace: dynamicMinutesLeftInGrace,
+    shiftStart: todayStatus?.shiftStart,
+    shiftEnd: todayStatus?.shiftEnd,
+    graceCutoff: todayStatus?.graceCutoff
+  };
+
+  const windowStatus = dynamicWindowStatus;
+  const canCheckIn = dynamicCanCheckIn && !isHoliday && hasShift && !isCheckedIn;
+  const checkInMessage = getCheckInMessage(windowStatus, effectiveStatusData);
 
   // Sync today's status from backend
   useEffect(() => {
@@ -328,20 +404,37 @@ export const AttendancePage = () => {
                   <div className="space-y-2">
                     <button
                       type="button"
-                      disabled={isHoliday || !hasShift || todayStatus?.canCheckIn === false}
-                      onClick={() => startPunchFlow('CHECK_IN')}
+                      onClick={() => {
+                        if (isHoliday) {
+                          alert(`Today is a public holiday: ${holiday?.holiday?.name || 'Holiday'}. Attendance not required.`);
+                          return;
+                        }
+                        if (!hasShift) {
+                          alert('No shift assigned. Contact HR to assign a shift.');
+                          return;
+                        }
+                        if (!canCheckIn) {
+                          alert(getCheckInMessage(windowStatus, effectiveStatusData));
+                          return;
+                        }
+                        startPunchFlow('CHECK_IN');
+                      }}
                       className={`w-full flex items-center justify-center gap-2 rounded-2xl px-6 py-4 text-base font-bold shadow-xl transition-all ${
-                        todayStatus?.canCheckIn === false
-                          ? 'bg-slate-800 text-slate-400 border border-slate-700/60 cursor-not-allowed opacity-60'
-                          : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+                        canCheckIn
+                          ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white shadow-emerald-500/20 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+                          : 'bg-gray-700/90 text-gray-300 border border-slate-700/60 cursor-not-allowed opacity-80'
                       }`}
                     >
                       <LogIn className="h-5 w-5" />
                       Initiate Check-In (Multi-Layer Verification)
                     </button>
-                    {todayStatus?.canCheckIn === false && todayStatus?.checkInBlockReason && (
-                      <p className="text-xs text-amber-400/90 text-center font-medium">
-                        {todayStatus.checkInBlockReason}
+                    {checkInMessage && (
+                      <p className={`text-xs text-center font-medium ${
+                        windowStatus === 'WINDOW_OPEN' ? 'text-emerald-400' :
+                        windowStatus === 'GRACE_PASSED' ? 'text-rose-400' :
+                        'text-amber-400/90'
+                      }`}>
+                        {checkInMessage}
                       </p>
                     )}
                   </div>

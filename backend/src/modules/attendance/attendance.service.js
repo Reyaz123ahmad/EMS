@@ -48,6 +48,60 @@ export function getShiftWindow(date = new Date(), shift = null) {
   };
 }
 
+export function getCheckInWindow({ shift, now = new Date(), date = new Date() }) {
+  const window = getShiftWindow(date || now, shift);
+  const shiftStart = window.shiftStart;
+  const shiftEnd = window.shiftEnd;
+  const graceMinutes = window.graceMinutes;
+  const fiveMinBefore = new Date(shiftStart.getTime() - 5 * 60000);
+  const graceCutoff = window.graceCutoff;
+
+  let windowStatus;
+  let canCheckIn;
+  let checkInBlockReason = null;
+
+  const nowTime = (now instanceof Date ? now : new Date(now)).getTime();
+
+  if (nowTime < fiveMinBefore.getTime()) {
+    windowStatus = 'BEFORE_WINDOW';
+    canCheckIn = false;
+    const minsUntil = Math.max(1, Math.ceil((shiftStart.getTime() - nowTime) / 60000));
+    const startStr = shift?.startTime || shiftStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    checkInBlockReason = `Your shift starts in ${minsUntil} minutes (at ${startStr}). Cannot check in yet.`;
+  } else if (nowTime <= graceCutoff.getTime()) {
+    windowStatus = 'WINDOW_OPEN';
+    canCheckIn = true;
+    checkInBlockReason = null;
+  } else if (nowTime <= shiftEnd.getTime()) {
+    windowStatus = 'GRACE_PASSED';
+    canCheckIn = false;
+    const graceTimeStr = graceCutoff.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    checkInBlockReason = `Check-in time has passed. Grace period ended at ${graceTimeStr}. You will be marked ABSENT.`;
+  } else {
+    windowStatus = 'SHIFT_ENDED';
+    canCheckIn = false;
+    const endStr = shift?.endTime || shiftEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    checkInBlockReason = `Your shift ended at ${endStr}. Check-in not allowed.`;
+  }
+
+  const minutesUntilStart = Math.max(0, Math.ceil((shiftStart.getTime() - nowTime) / 60000));
+  const minutesLeftInGrace = windowStatus === 'WINDOW_OPEN'
+    ? Math.max(0, Math.ceil((graceCutoff.getTime() - nowTime) / 60000))
+    : 0;
+
+  return {
+    shiftStart,
+    shiftEnd,
+    fiveMinBefore,
+    graceCutoff,
+    windowStatus,
+    canCheckIn,
+    checkInBlockReason,
+    minutesUntilStart,
+    minutesLeftInGrace
+  };
+}
+
 export function computeExtraBreakMinutes({ shift, breaks = [] }) {
   const defaultRules = [
     { breakType: 'SHORT', allocatedMinutes: 30 },
@@ -445,9 +499,10 @@ export const attendanceService = {
     const assignedShift = shiftInfo.shift;
     const now = new Date();
     const shiftWindow = getShiftWindow(now, assignedShift);
+    const checkInWindow = getCheckInWindow({ shift: assignedShift, now, date: now });
 
-    // BLOCK 1: Check-in before shift.startTime
-    if (now.getTime() < shiftWindow.shiftStart.getTime()) {
+    // BLOCK 1: Check-in before 5 minutes prior to shift.startTime
+    if (now.getTime() < checkInWindow.fiveMinBefore.getTime()) {
       const err = new Error(`Your shift starts at ${assignedShift?.startTime || '09:00'}. Cannot check in yet.`);
       err.statusCode = 400;
       err.code = 'BEFORE_SHIFT_START';
@@ -455,10 +510,19 @@ export const attendanceService = {
     }
 
     // BLOCK 2: Check-in after shift.endTime
-    if (now.getTime() > shiftWindow.shiftEnd.getTime()) {
-      const err = new Error(`Your shift ended at ${assignedShift?.endTime || '18:00'}. You cannot check in.`);
+    if (now.getTime() > checkInWindow.shiftEnd.getTime()) {
+      const err = new Error(`Your shift ended at ${assignedShift?.endTime || '18:00'}. Check-in not allowed.`);
       err.statusCode = 400;
       err.code = 'AFTER_SHIFT_END';
+      throw err;
+    }
+
+    // BLOCK 3: Check-in after grace period expired
+    if (now.getTime() > checkInWindow.graceCutoff.getTime()) {
+      const graceStr = checkInWindow.graceCutoff.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const err = new Error(`Check-in time has passed. Grace period ended at ${graceStr}. You will be marked ABSENT.`);
+      err.statusCode = 400;
+      err.code = 'GRACE_PERIOD_EXPIRED';
       throw err;
     }
 
@@ -1167,6 +1231,7 @@ export const attendanceService = {
     const assignedShift = shiftInfo?.shift;
     const shiftWindow = getShiftWindow(new Date(), assignedShift);
     const now = new Date();
+    const checkInWindow = getCheckInWindow({ shift: assignedShift, now, date: now });
 
     const isCheckedIn = Boolean(attendance && attendance.checkInAt && !attendance.checkOutAt);
     const breaks = attendance?.breaks || [];
@@ -1175,20 +1240,19 @@ export const attendanceService = {
     const checkoutStatus = await attendanceService.canCheckout(empId, realCompanyId, attendance, settings).catch(() => ({ canCheckout: true, expectedCheckoutTime: null }));
     const breakStatus = await attendanceService.checkBreakLimit(empId, realCompanyId, attendance, settings).catch(() => ({ canTakeBreak: true }));
 
-    // Determine canCheckIn status and block reason
+    // Determine canCheckIn status, block reason and window metadata
     let canCheckIn = false;
     let checkInBlockReason = null;
+    let windowStatus = checkInWindow.windowStatus;
+    let minutesUntilStart = checkInWindow.minutesUntilStart;
+    let minutesLeftInGrace = checkInWindow.minutesLeftInGrace;
 
     if (!attendance || !attendance.checkInAt) {
-      if (now.getTime() < shiftWindow.shiftStart.getTime()) {
-        canCheckIn = false;
-        checkInBlockReason = `Your shift starts at ${assignedShift?.startTime || '09:00'}. Cannot check in yet.`;
-      } else if (now.getTime() > shiftWindow.shiftEnd.getTime()) {
-        canCheckIn = false;
-        checkInBlockReason = `Your shift ended at ${assignedShift?.endTime || '18:00'}. You cannot check in.`;
-      } else {
-        canCheckIn = true;
-      }
+      canCheckIn = checkInWindow.canCheckIn;
+      checkInBlockReason = checkInWindow.checkInBlockReason;
+    } else {
+      canCheckIn = false;
+      checkInBlockReason = 'Already checked in today.';
     }
 
     let expectedCheckout = null;
@@ -1230,6 +1294,13 @@ export const attendanceService = {
       isOnBreak,
       canCheckIn,
       checkInBlockReason,
+      windowStatus,
+      minutesUntilStart,
+      minutesLeftInGrace,
+      shiftStart: checkInWindow.shiftStart.toISOString(),
+      shiftEnd: checkInWindow.shiftEnd.toISOString(),
+      graceCutoff: checkInWindow.graceCutoff.toISOString(),
+      fiveMinBefore: checkInWindow.fiveMinBefore.toISOString(),
       canCheckOut: checkoutStatus.canCheckout,
       date: new Date().toISOString().split('T')[0],
       holiday: holidayInfo,
