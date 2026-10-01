@@ -13,27 +13,32 @@ import { prisma } from '../../config/prisma.js';
 import * as faceService from '../../services/face.service.js';
 import { decryptData } from '../../security/encryption.js';
 
+export function combineDateWithTime(date = new Date(), timeStr = '09:00') {
+  const d = new Date(date);
+  const [hours, minutes] = (timeStr || '09:00').split(':').map(Number);
+  d.setHours(hours, minutes || 0, 0, 0);
+  return d;
+}
+
+export function addMinutes(date, minutes) {
+  return new Date(new Date(date).getTime() + minutes * 60000);
+}
+
 export function getShiftWindow(date = new Date(), shift = null) {
   const targetDate = new Date(date);
   const startTime = shift?.startTime || '09:00';
   const endTime = shift?.endTime || '18:00';
-  const graceMinutes = Number(shift?.graceMinutes !== undefined ? shift.graceMinutes : 15);
+  const graceMinutes = Number(shift?.graceMinutes !== undefined && shift?.graceMinutes !== null ? shift.graceMinutes : 15);
   const isNightShift = Boolean(shift?.isNightShift || (endTime && startTime && endTime <= startTime));
 
-  const [startH, startM] = startTime.split(':').map(Number);
-  const [endH, endM] = endTime.split(':').map(Number);
+  const shiftStart = combineDateWithTime(targetDate, startTime);
+  const shiftEnd = combineDateWithTime(targetDate, endTime);
 
-  const shiftStart = new Date(targetDate);
-  shiftStart.setHours(startH, startM, 0, 0);
-
-  const shiftEnd = new Date(targetDate);
-  shiftEnd.setHours(endH, endM, 0, 0);
-
-  if (isNightShift || endH < startH || (endH === startH && endM <= startM)) {
+  if (isNightShift || shiftEnd <= shiftStart) {
     shiftEnd.setDate(shiftEnd.getDate() + 1);
   }
 
-  const graceCutoff = new Date(shiftStart.getTime() + graceMinutes * 60000);
+  const graceCutoff = addMinutes(shiftStart, graceMinutes);
   const totalShiftMinutes = Math.max(1, Math.round((shiftEnd.getTime() - shiftStart.getTime()) / 60000));
   const requiredHours = Number((totalShiftMinutes / 60).toFixed(2));
 
@@ -53,21 +58,27 @@ export function getCheckInWindow({ shift, now = new Date(), date = new Date() })
   const shiftStart = window.shiftStart;
   const shiftEnd = window.shiftEnd;
   const graceMinutes = window.graceMinutes;
-  const fiveMinBefore = new Date(shiftStart.getTime() - 5 * 60000);
+  const fiveMinBefore = addMinutes(shiftStart, -5);
   const graceCutoff = window.graceCutoff;
+
+  const nowObj = now instanceof Date ? now : new Date(now);
+  const nowTime = nowObj.getTime();
 
   let windowStatus;
   let canCheckIn;
   let checkInBlockReason = null;
 
-  const nowTime = (now instanceof Date ? now : new Date(now)).getTime();
+  const startTimeStr = shift?.startTime || '09:00';
+  const endTimeStr = shift?.endTime || '18:00';
+  const graceH = String(graceCutoff.getHours()).padStart(2, '0');
+  const graceM = String(graceCutoff.getMinutes()).padStart(2, '0');
+  const graceTimeStr = `${graceH}:${graceM}`;
 
   if (nowTime < fiveMinBefore.getTime()) {
     windowStatus = 'BEFORE_WINDOW';
     canCheckIn = false;
-    const minsUntil = Math.max(1, Math.ceil((shiftStart.getTime() - nowTime) / 60000));
-    const startStr = shift?.startTime || shiftStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    checkInBlockReason = `Your shift starts in ${minsUntil} minutes (at ${startStr}). Cannot check in yet.`;
+    const minsUntil = Math.max(0, Math.floor((shiftStart.getTime() - nowTime) / 60000));
+    checkInBlockReason = `Your shift starts in ${minsUntil} minutes (at ${startTimeStr}). Cannot check in yet.`;
   } else if (nowTime <= graceCutoff.getTime()) {
     windowStatus = 'WINDOW_OPEN';
     canCheckIn = true;
@@ -75,18 +86,19 @@ export function getCheckInWindow({ shift, now = new Date(), date = new Date() })
   } else if (nowTime <= shiftEnd.getTime()) {
     windowStatus = 'GRACE_PASSED';
     canCheckIn = false;
-    const graceTimeStr = graceCutoff.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     checkInBlockReason = `Check-in time has passed. Grace period ended at ${graceTimeStr}. You will be marked ABSENT.`;
   } else {
     windowStatus = 'SHIFT_ENDED';
     canCheckIn = false;
-    const endStr = shift?.endTime || shiftEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    checkInBlockReason = `Your shift ended at ${endStr}. Check-in not allowed.`;
+    checkInBlockReason = `Your shift ended at ${endTimeStr}. Check-in not allowed.`;
   }
 
-  const minutesUntilStart = Math.max(0, Math.ceil((shiftStart.getTime() - nowTime) / 60000));
+  const minutesUntilStart = nowObj < shiftStart
+    ? Math.floor((shiftStart.getTime() - nowTime) / 60000)
+    : 0;
+
   const minutesLeftInGrace = windowStatus === 'WINDOW_OPEN'
-    ? Math.max(0, Math.ceil((graceCutoff.getTime() - nowTime) / 60000))
+    ? Math.floor((graceCutoff.getTime() - nowTime) / 60000)
     : 0;
 
   return {

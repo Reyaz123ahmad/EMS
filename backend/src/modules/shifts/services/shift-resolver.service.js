@@ -53,29 +53,74 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
 
   const queryPromise = (async () => {
     try {
-      // 1. Direct indexed ShiftAssignment lookup
-      const assignment = await prisma.shiftAssignment.findFirst({
+      const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0);
+      const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999);
+
+      // 1. Daily Roster (Published discrete day shift override)
+      const roster = await prisma.roster.findFirst({
         where: {
           employeeId,
-          effectiveFrom: { lte: targetDate },
-          OR: [
-            { effectiveTo: null },
-            { effectiveTo: { gte: targetDate } }
-          ]
+          date: {
+            gte: startOfDay,
+            lte: endOfDay
+          },
+          isPublished: true
         },
         include: { shift: true }
       });
 
-      let s = assignment?.shift;
-      let source = 'ASSIGNMENT';
+      let s = null;
+      let source = 'NONE';
+      let validTill = null;
 
-      // 2. Fallback Company Default Shift
-      if (!s && companyId) {
-        s = await prisma.shift.findFirst({
-          where: { companyId, isActive: true },
-          orderBy: { createdAt: 'asc' }
+      if (roster && roster.shift && roster.shift.isActive !== false) {
+        s = roster.shift;
+        source = 'ROSTER';
+        validTill = localDateStr;
+      }
+
+      // 2. Direct indexed ShiftAssignment lookup
+      if (!s) {
+        const assignment = await prisma.shiftAssignment.findFirst({
+          where: {
+            employeeId,
+            effectiveFrom: { lte: targetDate },
+            OR: [
+              { effectiveTo: null },
+              { effectiveTo: { gte: targetDate } }
+            ]
+          },
+          include: { shift: true },
+          orderBy: { effectiveFrom: 'desc' }
         });
-        source = 'COMPANY_DEFAULT';
+
+        if (assignment && assignment.shift && assignment.shift.isActive !== false) {
+          s = assignment.shift;
+          source = 'ASSIGNMENT';
+          validTill = assignment.effectiveTo ? assignment.effectiveTo.toISOString().slice(0, 10) : null;
+        }
+      }
+
+      // 3. Fallback Company Default Shift
+      if (!s) {
+        let resolvedCompanyId = companyId;
+        if (!resolvedCompanyId && employeeId) {
+          const emp = await prisma.employee.findUnique({
+            where: { id: employeeId },
+            select: { companyId: true }
+          });
+          resolvedCompanyId = emp?.companyId;
+        }
+
+        if (resolvedCompanyId) {
+          s = await prisma.shift.findFirst({
+            where: { companyId: resolvedCompanyId, isActive: true },
+            orderBy: { createdAt: 'asc' }
+          });
+          if (s) {
+            source = 'COMPANY_DEFAULT';
+          }
+        }
       }
 
       if (s) {
@@ -94,7 +139,7 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
             isNightShift: isNight,
             breakRules: []
           },
-          validTill: assignment?.effectiveTo ? assignment.effectiveTo.toISOString().slice(0, 10) : null
+          validTill
         };
         shiftResolverCache.set(cacheKey, { data: res, expiresAt: Date.now() + 300000 });
         return res;

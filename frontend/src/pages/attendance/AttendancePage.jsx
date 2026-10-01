@@ -77,54 +77,55 @@ export const AttendancePage = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const formatTimeString = (isoString) => {
+  const formatTimeString = (isoString, fallbackTime = null) => {
+    if (fallbackTime) return fallbackTime;
     if (!isoString) return '--:--';
-    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const getCheckInMessage = (status, data) => {
-    if (!data) return null;
-    switch (status) {
-      case 'BEFORE_WINDOW':
-        return `Your shift starts in ${data.minutesUntilStart} minutes (at ${formatTimeString(data.shiftStart)}). Cannot check in yet.`;
-      case 'WINDOW_OPEN':
-        return `Check-in window open. Grace ends in ${data.minutesLeftInGrace} minutes.`;
-      case 'GRACE_PASSED':
-        return `Check-in time has passed. Grace period ended at ${formatTimeString(data.graceCutoff)}. You will be marked ABSENT.`;
-      case 'SHIFT_ENDED':
-        return `Your shift ended at ${formatTimeString(data.shiftEnd)}. Check-in not allowed.`;
-      default:
-        return data.checkInBlockReason || 'Check-in window is not currently open.';
-    }
+    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
   // Consolidated holiday & shift metadata
   const holiday = statusResponse?.data?.holiday || todayStatus?.holiday;
-  const shift = statusResponse?.data?.shift || todayStatus?.shift;
+  const shiftPayload = statusResponse?.data?.shift || todayStatus?.shift;
+  const currentShift = statusResponse?.data?.currentShift || statusResponse?.data?.shift?.shift || todayStatus?.currentShift || todayStatus?.shift?.shift || shiftPayload;
   const isHoliday = Boolean(holiday?.isHoliday);
-  const hasShift = Boolean(shift?.hasShift ?? true);
+  const hasShift = Boolean(shiftPayload?.hasShift ?? (currentShift ? true : true));
 
-  // Dynamic 30-sec client-side countdown calculations
-  const shiftStartObj = todayStatus?.shiftStart ? new Date(todayStatus.shiftStart) : null;
-  const graceCutoffObj = todayStatus?.graceCutoff ? new Date(todayStatus.graceCutoff) : null;
-  const shiftEndObj = todayStatus?.shiftEnd ? new Date(todayStatus.shiftEnd) : null;
-  const fiveMinBeforeObj = todayStatus?.fiveMinBefore ? new Date(todayStatus.fiveMinBefore) : (shiftStartObj ? new Date(shiftStartObj.getTime() - 5 * 60000) : null);
+  const resolvedStartTime = currentShift?.startTime || '09:00';
+  const resolvedEndTime = currentShift?.endTime || '18:00';
+  const resolvedGraceMinutes = Number(currentShift?.graceMinutes !== undefined && currentShift?.graceMinutes !== null ? currentShift.graceMinutes : 15);
+  const isNightShift = Boolean(currentShift?.isNightShift || (resolvedEndTime && resolvedStartTime && resolvedEndTime <= resolvedStartTime));
+
+  // Dynamic 30-sec client-side countdown calculations based on resolved shift
+  const now = new Date(currentTime);
+  const [sH, sM] = (resolvedStartTime || '09:00').split(':').map(Number);
+  const [eH, eM] = (resolvedEndTime || '18:00').split(':').map(Number);
+
+  const shiftStartObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sH, sM || 0, 0, 0);
+  const shiftEndObj = new Date(now.getFullYear(), now.getMonth(), now.getDate(), eH, eM || 0, 0, 0);
+  if (isNightShift || shiftEndObj <= shiftStartObj) {
+    shiftEndObj.setDate(shiftEndObj.getDate() + 1);
+  }
+
+  const fiveMinBeforeObj = new Date(shiftStartObj.getTime() - 5 * 60000);
+  const graceCutoffObj = new Date(shiftStartObj.getTime() + resolvedGraceMinutes * 60000);
+
+  const graceCutoffStr = `${String(graceCutoffObj.getHours()).padStart(2, '0')}:${String(graceCutoffObj.getMinutes()).padStart(2, '0')}`;
 
   let dynamicWindowStatus = todayStatus?.windowStatus || 'BEFORE_WINDOW';
   let dynamicCanCheckIn = Boolean(todayStatus?.canCheckIn);
   let dynamicMinutesUntilStart = todayStatus?.minutesUntilStart ?? 0;
   let dynamicMinutesLeftInGrace = todayStatus?.minutesLeftInGrace ?? 0;
 
-  if (shiftStartObj && graceCutoffObj && shiftEndObj && fiveMinBeforeObj && !todayStatus?.attendance?.checkInAt) {
-    const nowMs = currentTime;
+  if (!todayStatus?.attendance?.checkInAt) {
+    const nowMs = now.getTime();
     if (nowMs < fiveMinBeforeObj.getTime()) {
       dynamicWindowStatus = 'BEFORE_WINDOW';
       dynamicCanCheckIn = false;
-      dynamicMinutesUntilStart = Math.max(1, Math.ceil((shiftStartObj.getTime() - nowMs) / 60000));
+      dynamicMinutesUntilStart = Math.max(0, Math.floor((shiftStartObj.getTime() - nowMs) / 60000));
     } else if (nowMs <= graceCutoffObj.getTime()) {
       dynamicWindowStatus = 'WINDOW_OPEN';
       dynamicCanCheckIn = true;
-      dynamicMinutesLeftInGrace = Math.max(0, Math.ceil((graceCutoffObj.getTime() - nowMs) / 60000));
+      dynamicMinutesLeftInGrace = Math.max(0, Math.floor((graceCutoffObj.getTime() - nowMs) / 60000));
     } else if (nowMs <= shiftEndObj.getTime()) {
       dynamicWindowStatus = 'GRACE_PASSED';
       dynamicCanCheckIn = false;
@@ -134,15 +135,35 @@ export const AttendancePage = () => {
     }
   }
 
+  const getCheckInMessage = (status, data) => {
+    if (!data) return null;
+    const startStr = resolvedStartTime;
+    const endStr = resolvedEndTime;
+    const graceStr = graceCutoffStr;
+
+    switch (status) {
+      case 'BEFORE_WINDOW':
+        return `Your shift starts in ${data.minutesUntilStart} minutes (at ${startStr}). Cannot check in yet.`;
+      case 'WINDOW_OPEN':
+        return `Check-in window open. Grace ends in ${data.minutesLeftInGrace} minutes.`;
+      case 'GRACE_PASSED':
+        return `Check-in time has passed. Grace period ended at ${graceStr}. You will be marked ABSENT.`;
+      case 'SHIFT_ENDED':
+        return `Your shift ended at ${endStr}. Check-in not allowed.`;
+      default:
+        return data.checkInBlockReason || 'Check-in window is not currently open.';
+    }
+  };
+
   const effectiveStatusData = {
     ...todayStatus,
     windowStatus: dynamicWindowStatus,
     canCheckIn: dynamicCanCheckIn,
     minutesUntilStart: dynamicMinutesUntilStart,
     minutesLeftInGrace: dynamicMinutesLeftInGrace,
-    shiftStart: todayStatus?.shiftStart,
-    shiftEnd: todayStatus?.shiftEnd,
-    graceCutoff: todayStatus?.graceCutoff
+    shiftStart: shiftStartObj.toISOString(),
+    shiftEnd: shiftEndObj.toISOString(),
+    graceCutoff: graceCutoffObj.toISOString()
   };
 
   const windowStatus = dynamicWindowStatus;
@@ -365,11 +386,11 @@ export const AttendancePage = () => {
             breaks={todayStatus?.breaks || breaks}
             holiday={holiday}
             shift={{
-              shift: todayStatus?.currentShift || shift?.shift || shift,
-              source: todayStatus?.shiftSource || shift?.source,
-              validTill: todayStatus?.validTill || shift?.validTill,
+              shift: todayStatus?.currentShift || currentShift || shiftPayload?.shift || shiftPayload,
+              source: todayStatus?.shiftSource || shiftPayload?.source,
+              validTill: todayStatus?.validTill || shiftPayload?.validTill,
               isRosterOverride: todayStatus?.isRosterOverride ?? (todayStatus?.shiftSource === 'ROSTER'),
-              defaultShift: todayStatus?.defaultShift || shift?.defaultShift,
+              defaultShift: todayStatus?.defaultShift || shiftPayload?.defaultShift,
               defaultShiftStatus: todayStatus?.defaultShiftStatus,
               expectedCheckout: todayStatus?.expectedCheckout,
               earliestCheckout: todayStatus?.earliestCheckout,
