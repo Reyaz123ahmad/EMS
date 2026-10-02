@@ -33,10 +33,23 @@ export const ModeSelector = ({
   enabledModes = { face: true, card: true, finger: true },
   onSelect,
   isHoliday = false,
+  isWeeklyOff = false,
+  isOnLeave = false,
   noShiftAssigned = false,
-  holidayName = ''
+  holidayName = '',
+  leaveTypeName = '',
+  blockedReason = null
 }) => {
-  const isBlocked = isHoliday || noShiftAssigned;
+  const isBlocked = isHoliday || isWeeklyOff || isOnLeave || noShiftAssigned || Boolean(blockedReason);
+
+  const getBlockedText = () => {
+    if (blockedReason) return blockedReason;
+    if (isHoliday) return `Biometric check-in is disabled today due to ${holidayName || 'Public Holiday'}.`;
+    if (isWeeklyOff) return 'Biometric check-in is disabled because today is your weekly off.';
+    if (isOnLeave) return `Biometric check-in is disabled because you are on approved leave today${leaveTypeName ? ` (${leaveTypeName})` : ''}.`;
+    if (noShiftAssigned) return 'Biometric check-in is disabled because no active shift is assigned. Please contact HR.';
+    return 'Biometric check-in is currently unavailable.';
+  };
 
   return (
     <div className="w-full space-y-3">
@@ -52,11 +65,7 @@ export const ModeSelector = ({
       {isBlocked && (
         <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-2 text-xs text-amber-300">
           <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
-          <span>
-            {isHoliday
-              ? `Biometric check-in is disabled today due to ${holidayName || 'Holiday'}.`
-              : 'Biometric check-in is disabled because no active shift is assigned. Please contact HR.'}
-          </span>
+          <span className="leading-relaxed">{getBlockText()}</span>
         </div>
       )}
 

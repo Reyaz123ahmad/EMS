@@ -86,10 +86,14 @@ export const AttendancePage = () => {
   // Consolidated holiday & shift metadata - prioritize fresh server response
   const effectiveData = statusResponse?.data || todayStatus;
   const holiday = effectiveData?.holiday;
+  const weeklyOff = effectiveData?.weeklyOff;
+  const leave = effectiveData?.leave;
   const shiftPayload = effectiveData?.shift;
   const currentShift = effectiveData?.currentShift || effectiveData?.shift?.shift || shiftPayload?.shift || shiftPayload;
   const shift = currentShift;
   const isHoliday = Boolean(holiday?.isHoliday);
+  const isWeeklyOff = Boolean(weeklyOff?.isWeeklyOff);
+  const isOnLeave = Boolean(leave?.isOnLeave);
   const hasShift = Boolean(shiftPayload?.hasShift ?? (currentShift ? true : true));
 
   const resolvedStartTime = currentShift?.startTime;
@@ -125,7 +129,7 @@ export const AttendancePage = () => {
   let dynamicMinutesUntilStart = effectiveData?.minutesUntilStart ?? 0;
   let dynamicMinutesLeftInGrace = effectiveData?.minutesLeftInGrace ?? 0;
 
-  if (!effectiveData?.attendance?.checkInAt && fiveMinBeforeObj && graceCutoffObj && shiftEndObj && shiftStartObj) {
+  if (!isHoliday && !isWeeklyOff && !isOnLeave && !effectiveData?.attendance?.checkInAt && fiveMinBeforeObj && graceCutoffObj && shiftEndObj && shiftStartObj) {
     const nowMs = now.getTime();
     if (nowMs < fiveMinBeforeObj.getTime()) {
       dynamicWindowStatus = 'BEFORE_WINDOW';
@@ -155,43 +159,56 @@ export const AttendancePage = () => {
     return Number(((endMin - startMin) / 60).toFixed(1));
   };
 
-  const getCheckInMessage = (status, data) => {
-    if (data?.checkInBlockReason) {
-      return data.checkInBlockReason;
+  // 7 Strict Mutually Exclusive States:
+  let attendanceState = 'BEFORE_WINDOW';
+  let canCheckIn = false;
+  let checkInMessage = null;
+
+  if (isHoliday) {
+    attendanceState = 'HOLIDAY';
+    canCheckIn = false;
+    checkInMessage = effectiveData?.checkInBlockReason || `Today is a holiday: ${holiday?.holiday?.name || 'Public Holiday'}.`;
+  } else if (isWeeklyOff) {
+    attendanceState = 'WEEKLY_OFF';
+    canCheckIn = false;
+    checkInMessage = effectiveData?.checkInBlockReason || 'Today is your weekly off.';
+  } else if (isOnLeave) {
+    attendanceState = 'ON_LEAVE';
+    canCheckIn = false;
+    checkInMessage = effectiveData?.checkInBlockReason || `You are on approved leave today${leave?.leave?.leaveTypeName ? ` (${leave.leave.leaveTypeName})` : ''}.`;
+  } else if (!hasShift) {
+    attendanceState = 'NO_SHIFT';
+    canCheckIn = false;
+    checkInMessage = 'No shift assigned to you. Please contact HR.';
+  } else if (isCheckedIn) {
+    attendanceState = 'CHECKED_IN';
+    canCheckIn = false;
+    checkInMessage = 'Already checked in today.';
+  } else {
+    if (dynamicWindowStatus === 'BEFORE_WINDOW') {
+      attendanceState = 'BEFORE_WINDOW';
+      canCheckIn = false;
+      checkInMessage = effectiveData?.checkInBlockReason || `Your shift starts in ${dynamicMinutesUntilStart} minutes (at ${resolvedStartTime}). Cannot check in yet.`;
+    } else if (dynamicWindowStatus === 'WINDOW_OPEN') {
+      attendanceState = 'WINDOW_OPEN';
+      canCheckIn = true;
+      checkInMessage = `Check-in window open. Grace ends in ${dynamicMinutesLeftInGrace} minutes.`;
+    } else if (dynamicWindowStatus === 'GRACE_PASSED') {
+      attendanceState = 'GRACE_PASSED';
+      canCheckIn = false;
+      checkInMessage = effectiveData?.checkInBlockReason || `Grace ended at ${graceCutoffStr}. You will be marked ABSENT.`;
+    } else if (dynamicWindowStatus === 'SHIFT_ENDED') {
+      attendanceState = 'SHIFT_ENDED';
+      canCheckIn = false;
+      checkInMessage = effectiveData?.checkInBlockReason || `Your shift ended at ${resolvedEndTime}. Check-in not allowed.`;
+    } else {
+      attendanceState = dynamicWindowStatus;
+      canCheckIn = dynamicCanCheckIn;
+      checkInMessage = effectiveData?.checkInBlockReason || 'Check-in window is not currently open.';
     }
-    if (!data) return null;
-    const startStr = resolvedStartTime;
-    const endStr = resolvedEndTime;
-    const graceStr = graceCutoffStr;
+  }
 
-    switch (status) {
-      case 'BEFORE_WINDOW':
-        return `Your shift starts in ${data.minutesUntilStart} minutes (at ${startStr}). Cannot check in yet.`;
-      case 'WINDOW_OPEN':
-        return `Check-in window open. Grace ends in ${data.minutesLeftInGrace} minutes.`;
-      case 'GRACE_PASSED':
-        return `Check-in time has passed. Grace period ended at ${graceStr}. You will be marked ABSENT.`;
-      case 'SHIFT_ENDED':
-        return `Your shift ended at ${endStr}. Check-in not allowed.`;
-      default:
-        return data.checkInBlockReason || 'Check-in window is not currently open.';
-    }
-  };
-
-  const effectiveStatusData = {
-    ...todayStatus,
-    windowStatus: dynamicWindowStatus,
-    canCheckIn: dynamicCanCheckIn,
-    minutesUntilStart: dynamicMinutesUntilStart,
-    minutesLeftInGrace: dynamicMinutesLeftInGrace,
-    shiftStart: shiftStartObj?.toISOString() || null,
-    shiftEnd: shiftEndObj?.toISOString() || null,
-    graceCutoff: graceCutoffObj?.toISOString() || null
-  };
-
-  const windowStatus = dynamicWindowStatus;
-  const canCheckIn = dynamicCanCheckIn && !isHoliday && hasShift && !isCheckedIn;
-  const checkInMessage = getCheckInMessage(windowStatus, effectiveStatusData);
+  const windowStatus = attendanceState;
 
   // Sync today's status from backend
   useEffect(() => {
@@ -429,8 +446,11 @@ export const AttendancePage = () => {
                 selectedMode={activeMode}
                 onSelect={(mode) => setActiveMode(mode)}
                 isHoliday={isHoliday}
+                isWeeklyOff={isWeeklyOff}
+                isOnLeave={isOnLeave}
                 noShiftAssigned={!hasShift}
                 holidayName={holiday?.holiday?.name}
+                leaveTypeName={leave?.leave?.leaveTypeName}
               />
 
               {/* Action Buttons based on status */}
@@ -438,7 +458,7 @@ export const AttendancePage = () => {
                 {activeMode === 'card' ? (
                   <button
                     type="button"
-                    disabled={isHoliday || !hasShift}
+                    disabled={isHoliday || isWeeklyOff || isOnLeave || !hasShift}
                     onClick={() => setIsQRModalOpen(true)}
                     className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 px-6 py-4 text-base font-bold text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
@@ -450,16 +470,8 @@ export const AttendancePage = () => {
                     <button
                       type="button"
                       onClick={() => {
-                        if (isHoliday) {
-                          alert(`Today is a public holiday: ${holiday?.holiday?.name || 'Holiday'}. Attendance not required.`);
-                          return;
-                        }
-                        if (!hasShift) {
-                          alert('No shift assigned. Contact HR to assign a shift.');
-                          return;
-                        }
                         if (!canCheckIn) {
-                          alert(getCheckInMessage(windowStatus, effectiveStatusData));
+                          alert(checkInMessage || 'Check-in is currently unavailable.');
                           return;
                         }
                         startPunchFlow('CHECK_IN');

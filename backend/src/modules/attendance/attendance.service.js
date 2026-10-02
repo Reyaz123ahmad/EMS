@@ -13,26 +13,58 @@ import { prisma } from '../../config/prisma.js';
 import * as faceService from '../../services/face.service.js';
 import { decryptData } from '../../security/encryption.js';
 
-export function combineDateWithTime(date = new Date(), timeStr = '09:00') {
-  const d = new Date(date);
-  const [hours, minutes] = (timeStr || '09:00').split(':').map(Number);
-  d.setHours(hours, minutes || 0, 0, 0);
-  return d;
+export function getZonedDateParts(date = new Date(), timeZone = 'Asia/Kolkata') {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timeZone || 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  const parts = formatter.formatToParts(date instanceof Date ? date : new Date(date));
+  const map = {};
+  for (const p of parts) {
+    if (p.type !== 'literal') map[p.type] = p.value;
+  }
+  return {
+    year: parseInt(map.year, 10),
+    month: parseInt(map.month, 10),
+    day: parseInt(map.day, 10),
+    hour: parseInt(map.hour === '24' ? '00' : map.hour, 10),
+    minute: parseInt(map.minute, 10),
+    second: parseInt(map.second, 10)
+  };
+}
+
+export function combineDateWithTime(date = new Date(), timeStr = '09:00', timeZone = 'Asia/Kolkata') {
+  const parts = getZonedDateParts(date, timeZone);
+  const [hoursStr, minutesStr] = (timeStr || '09:00').split(':');
+  const h = parseInt(hoursStr, 10) || 0;
+  const m = parseInt(minutesStr, 10) || 0;
+
+  const isoLocal = `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
+  const tempUtc = new Date(`${isoLocal}Z`);
+  const utcParts = getZonedDateParts(tempUtc, timeZone);
+  const offsetMs = tempUtc.getTime() - new Date(Date.UTC(utcParts.year, utcParts.month - 1, utcParts.day, utcParts.hour, utcParts.minute, utcParts.second)).getTime();
+  return new Date(tempUtc.getTime() + offsetMs);
 }
 
 export function addMinutes(date, minutes) {
   return new Date(new Date(date).getTime() + minutes * 60000);
 }
 
-export function getShiftWindow(date = new Date(), shift = null) {
+export function getShiftWindow(date = new Date(), shift = null, timeZone = 'Asia/Kolkata') {
   const targetDate = new Date(date);
   const startTime = shift?.startTime || '09:00';
   const endTime = shift?.endTime || '18:00';
   const graceMinutes = Number(shift?.graceMinutes !== undefined && shift?.graceMinutes !== null ? shift.graceMinutes : 15);
   const isNightShift = Boolean(shift?.isNightShift || (endTime && startTime && endTime <= startTime));
 
-  const shiftStart = combineDateWithTime(targetDate, startTime);
-  const shiftEnd = combineDateWithTime(targetDate, endTime);
+  const shiftStart = combineDateWithTime(targetDate, startTime, timeZone);
+  const shiftEnd = combineDateWithTime(targetDate, endTime, timeZone);
 
   if (isNightShift || shiftEnd <= shiftStart) {
     shiftEnd.setDate(shiftEnd.getDate() + 1);
@@ -53,8 +85,8 @@ export function getShiftWindow(date = new Date(), shift = null) {
   };
 }
 
-export function getCheckInWindow({ shift, now = new Date(), date = new Date() }) {
-  const window = getShiftWindow(date || now, shift);
+export function getCheckInWindow({ shift, now = new Date(), date = new Date(), timeZone = 'Asia/Kolkata' }) {
+  const window = getShiftWindow(date || now, shift, timeZone);
   const shiftStart = window.shiftStart;
   const shiftEnd = window.shiftEnd;
   const graceMinutes = window.graceMinutes;
@@ -70,9 +102,8 @@ export function getCheckInWindow({ shift, now = new Date(), date = new Date() })
 
   const startTimeStr = shift?.startTime || '09:00';
   const endTimeStr = shift?.endTime || '18:00';
-  const graceH = String(graceCutoff.getHours()).padStart(2, '0');
-  const graceM = String(graceCutoff.getMinutes()).padStart(2, '0');
-  const graceTimeStr = `${graceH}:${graceM}`;
+  const graceZoned = getZonedDateParts(graceCutoff, timeZone);
+  const graceTimeStr = `${String(graceZoned.hour).padStart(2, '0')}:${String(graceZoned.minute).padStart(2, '0')}`;
 
   if (nowTime < fiveMinBefore.getTime()) {
     windowStatus = 'BEFORE_WINDOW';
@@ -86,7 +117,7 @@ export function getCheckInWindow({ shift, now = new Date(), date = new Date() })
   } else if (nowTime <= shiftEnd.getTime()) {
     windowStatus = 'GRACE_PASSED';
     canCheckIn = false;
-    checkInBlockReason = `Check-in time has passed. Grace period ended at ${graceTimeStr}. You will be marked ABSENT.`;
+    checkInBlockReason = `Grace ended at ${graceTimeStr}. You will be marked ABSENT.`;
   } else {
     windowStatus = 'SHIFT_ENDED';
     canCheckIn = false;
@@ -263,7 +294,71 @@ export const attendanceService = {
   },
 
   /**
-   * 2. Shift Assignment Check (Delegates to Canonical Shift Resolver)
+   * 2. Weekly Off Check
+   */
+  async checkWeeklyOff(companyId, employeeId, date = new Date(), settings = null) {
+    if (!companyId) return { isWeeklyOff: false, dayName: null };
+    const targetDate = new Date(date);
+    const dayOfWeek = targetDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const currentDayName = dayNames[dayOfWeek];
+
+    const rule = await prisma.weeklyOffRule.findFirst({
+      where: {
+        companyId,
+        isActive: true
+      }
+    }).catch(() => null);
+
+    let offDays = [0]; // default Sunday
+    if (rule && Array.isArray(rule.days)) {
+      offDays = rule.days;
+    } else if (settings?.weeklyOff && Array.isArray(settings.weeklyOff)) {
+      offDays = settings.weeklyOff;
+    }
+
+    const isWeeklyOff = offDays.includes(dayOfWeek) || offDays.includes(currentDayName.toUpperCase()) || offDays.includes(currentDayName);
+    return {
+      isWeeklyOff,
+      dayName: isWeeklyOff ? currentDayName : null
+    };
+  },
+
+  /**
+   * 3. Approved Leave Check
+   */
+  async checkApprovedLeave(employeeId, date = new Date()) {
+    if (!employeeId) return { isOnLeave: false, leave: null };
+    const targetDate = new Date(date);
+    const startOfDay = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0));
+    const endOfDay = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999));
+
+    const leave = await prisma.leaveRequest.findFirst({
+      where: {
+        employeeId,
+        status: 'APPROVED',
+        startDate: { lte: endOfDay },
+        endDate: { gte: startOfDay }
+      },
+      include: { leaveType: true }
+    }).catch(() => null);
+
+    if (leave) {
+      return {
+        isOnLeave: true,
+        leave: {
+          id: leave.id,
+          leaveTypeName: leave.leaveType?.name || 'Approved Leave',
+          reason: leave.reason
+        }
+      };
+    }
+
+    return { isOnLeave: false, leave: null };
+  },
+
+  /**
+   * 4. Shift Assignment Check (Delegates to Canonical Shift Resolver)
    */
   async checkShiftAssignment(employeeId, date = new Date(), companyId = null) {
     return resolveShiftForEmployee({ employeeId, companyId, date });
@@ -1232,18 +1327,21 @@ export const attendanceService = {
     const empId = employee ? employee.id : employeeId;
     const realCompanyId = companyId || employee?.companyId;
 
-    const [attendance, holidayInfo, shiftInfo, effectiveOverview, settings] = await Promise.all([
+    const [attendance, holidayInfo, weeklyOffInfo, leaveInfo, shiftInfo, effectiveOverview, settings] = await Promise.all([
       attendanceRepository.findTodayAttendance(empId).catch(() => null),
       attendanceService.checkHoliday(realCompanyId, new Date()).catch(() => ({ isHoliday: false, holiday: null })),
+      attendanceService.checkWeeklyOff(realCompanyId, empId, new Date()).catch(() => ({ isWeeklyOff: false, dayName: null })),
+      attendanceService.checkApprovedLeave(empId, new Date()).catch(() => ({ isOnLeave: false, leave: null })),
       attendanceService.checkShiftAssignment(empId, new Date(), realCompanyId).catch(() => ({ shift: null, source: 'DEFAULT' })),
       getEffectiveShiftOverview({ employeeId: empId, companyId: realCompanyId, date: new Date() }).catch(() => ({ defaultShift: null })),
       attendanceRules.getCompanyAttendanceSettings(realCompanyId).catch(() => ({}))
     ]);
 
+    const companyTimezone = settings?.timezone || 'Asia/Kolkata';
     const assignedShift = shiftInfo?.shift;
-    const shiftWindow = getShiftWindow(new Date(), assignedShift);
+    const shiftWindow = getShiftWindow(new Date(), assignedShift, companyTimezone);
     const now = new Date();
-    const checkInWindow = getCheckInWindow({ shift: assignedShift, now, date: now });
+    const checkInWindow = getCheckInWindow({ shift: assignedShift, now, date: now, timeZone: companyTimezone });
 
     const isCheckedIn = Boolean(attendance && attendance.checkInAt && !attendance.checkOutAt);
     const breaks = attendance?.breaks || [];
@@ -1252,18 +1350,80 @@ export const attendanceService = {
     const checkoutStatus = await attendanceService.canCheckout(empId, realCompanyId, attendance, settings).catch(() => ({ canCheckout: true, expectedCheckoutTime: null }));
     const breakStatus = await attendanceService.checkBreakLimit(empId, realCompanyId, attendance, settings).catch(() => ({ canTakeBreak: true }));
 
-    // Determine canCheckIn status, block reason and window metadata
+    // Determine strict 7-state metadata
+    let attendanceState = 'BEFORE_WINDOW';
     let canCheckIn = false;
     let checkInBlockReason = null;
     let windowStatus = checkInWindow.windowStatus;
-    let minutesUntilStart = checkInWindow.minutesUntilStart;
-    let minutesLeftInGrace = checkInWindow.minutesLeftInGrace;
+    let minutesUntilStart = 0;
+    let minutesLeftInGrace = 0;
 
-    if (!attendance || !attendance.checkInAt) {
-      canCheckIn = checkInWindow.canCheckIn;
-      checkInBlockReason = checkInWindow.checkInBlockReason;
-    } else {
+    // STATE 1: Public / Festival Holiday
+    if (holidayInfo?.isHoliday) {
+      attendanceState = 'HOLIDAY';
+      windowStatus = 'HOLIDAY';
       canCheckIn = false;
+      minutesUntilStart = 0;
+      minutesLeftInGrace = 0;
+      checkInBlockReason = `Today is a holiday: ${holidayInfo.holiday?.name || 'Public Holiday'}.`;
+    }
+    // STATE 2: Weekly Off
+    else if (weeklyOffInfo?.isWeeklyOff) {
+      attendanceState = 'WEEKLY_OFF';
+      windowStatus = 'WEEKLY_OFF';
+      canCheckIn = false;
+      minutesUntilStart = 0;
+      minutesLeftInGrace = 0;
+      checkInBlockReason = 'Today is your weekly off.';
+    }
+    // STATE 3: Approved Leave
+    else if (leaveInfo?.isOnLeave) {
+      attendanceState = 'ON_LEAVE';
+      windowStatus = 'ON_LEAVE';
+      canCheckIn = false;
+      minutesUntilStart = 0;
+      minutesLeftInGrace = 0;
+      checkInBlockReason = `You are on approved leave today${leaveInfo.leave?.leaveTypeName ? ` (${leaveInfo.leave.leaveTypeName})` : ''}.`;
+    }
+    // STATE 4 - 7: Normal shift flow
+    else if (!attendance || !attendance.checkInAt) {
+      if (!assignedShift) {
+        attendanceState = 'NO_SHIFT';
+        windowStatus = 'NO_SHIFT';
+        canCheckIn = false;
+        minutesUntilStart = 0;
+        minutesLeftInGrace = 0;
+        checkInBlockReason = 'No shift assigned to you. Please contact HR.';
+      } else if (windowStatus === 'BEFORE_WINDOW') {
+        attendanceState = 'BEFORE_WINDOW';
+        canCheckIn = false;
+        minutesUntilStart = checkInWindow.minutesUntilStart;
+        minutesLeftInGrace = 0;
+        checkInBlockReason = checkInWindow.checkInBlockReason;
+      } else if (windowStatus === 'WINDOW_OPEN') {
+        attendanceState = 'WINDOW_OPEN';
+        canCheckIn = true;
+        minutesUntilStart = 0;
+        minutesLeftInGrace = checkInWindow.minutesLeftInGrace;
+        checkInBlockReason = `Check-in window open. Grace ends in ${minutesLeftInGrace} minutes.`;
+      } else if (windowStatus === 'GRACE_PASSED') {
+        attendanceState = 'GRACE_PASSED';
+        canCheckIn = false;
+        minutesUntilStart = 0;
+        minutesLeftInGrace = 0;
+        checkInBlockReason = checkInWindow.checkInBlockReason;
+      } else {
+        attendanceState = 'SHIFT_ENDED';
+        canCheckIn = false;
+        minutesUntilStart = 0;
+        minutesLeftInGrace = 0;
+        checkInBlockReason = checkInWindow.checkInBlockReason;
+      }
+    } else {
+      attendanceState = 'CHECKED_IN';
+      canCheckIn = false;
+      minutesUntilStart = 0;
+      minutesLeftInGrace = 0;
       checkInBlockReason = 'Already checked in today.';
     }
 
@@ -1304,6 +1464,7 @@ export const attendanceService = {
       breaks,
       isCheckedIn,
       isOnBreak,
+      attendanceState,
       canCheckIn,
       checkInBlockReason,
       windowStatus,
@@ -1315,7 +1476,10 @@ export const attendanceService = {
       fiveMinBefore: checkInWindow.fiveMinBefore.toISOString(),
       canCheckOut: checkoutStatus.canCheckout,
       date: new Date().toISOString().split('T')[0],
+      timezone: companyTimezone,
       holiday: holidayInfo,
+      weeklyOff: weeklyOffInfo,
+      leave: leaveInfo,
       shift: shiftInfo,
       currentShift: assignedShift || null,
       shiftSource: shiftInfo?.source || 'DEFAULT',
