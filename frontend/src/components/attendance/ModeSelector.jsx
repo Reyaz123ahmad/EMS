@@ -65,7 +65,7 @@ export const ModeSelector = ({
       {isBlocked && (
         <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-2 text-xs text-amber-300">
           <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
-          <span className="leading-relaxed">{getBlockText()}</span>
+          <span className="leading-relaxed">{getBlockedText()}</span>
         </div>
       )}
 
