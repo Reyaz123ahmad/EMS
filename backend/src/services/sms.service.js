@@ -41,20 +41,24 @@ export async function sendOtpSms(phone, otp) {
   const baseUrl = env.APIHOME_BASE_URL || env.SMS_API_URL || 'https://apihome.in/panel/api/bulksms/';
   const senderId = env.APIHOME_SENDER_ID || env.SMS_SENDER_ID || 'SMSIND';
   const templateId = env.APIHOME_OTP_TEMPLATE_ID || '1207161730000000000';
-  const message = `Your verification OTP is ${otp}. Please do not share it with anyone.`;
-
-  logger.info({ phone: cleanPhone, senderId, baseUrl }, 'Initiating OTP SMS delivery via Apihome');
+  const message = `Dear Customer Your Login otp is ${otp}`;
 
   try {
     const params = new URLSearchParams({
       key: apiKey,
-      sender: senderId,
       mobile: cleanPhone,
-      message,
-      template_id: templateId
+      otp: String(otp),
+      sender: senderId,
+      template_id: templateId,
+      message
     });
 
     const requestUrl = `${baseUrl.replace(/\/+$/, '')}/?${params.toString()}`;
+    console.log('[SMS] Dispatching OTP SMS via Apihome to:', cleanPhone);
+    console.log('[SMS] OTP:', otp);
+    console.log('[SMS] Request URL:', requestUrl);
+    logger.info({ phone: cleanPhone, senderId, baseUrl, requestUrl }, 'Initiating OTP SMS delivery via Apihome');
+
     const response = await fetch(requestUrl, {
       method: 'GET',
       headers: {

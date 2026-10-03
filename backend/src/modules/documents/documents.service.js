@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { sendDocumentApprovalEmail, sendDocumentRejectionEmail } from '../../integrations/email/email.service.js';
 
 export const documentsService = {
   async getMyDocuments({ employeeId, filters = {}, pagination = { page: 1, limit: 20 } }) {
@@ -140,27 +141,84 @@ export const documentsService = {
   },
 
   async verifyDocument(id, verifiedBy) {
-    return prisma.employeeDocument.update({
+    const updated = await prisma.employeeDocument.update({
       where: { id },
       data: {
         status: 'VERIFIED',
         verifiedBy: verifiedBy || 'HR_ADMIN',
         verifiedAt: new Date(),
         rejectionReason: null
+      },
+      include: {
+        documentType: true,
+        employee: {
+          include: {
+            user: true,
+            company: true
+          }
+        }
       }
     });
+
+    // Send email notification asynchronously
+    if (updated?.employee?.user?.email || updated?.employee?.email) {
+      const recipientEmail = updated.employee.user?.email || updated.employee.email;
+      const employeeName = `${updated.employee.firstName || ''} ${updated.employee.lastName || ''}`.trim();
+      const documentName = updated.documentType?.name || 'Submitted Document';
+      const companyName = updated.employee.company?.name || 'Mindstocs';
+
+      sendDocumentApprovalEmail({
+        to: recipientEmail,
+        name: employeeName,
+        documentName,
+        companyName
+      }).catch((err) => {
+        console.error('[EMAIL] Failed to send document approval email:', err.message);
+      });
+    }
+
+    return updated;
   },
 
   async rejectDocument(id, rejectionReason, verifiedBy) {
-    return prisma.employeeDocument.update({
+    const updated = await prisma.employeeDocument.update({
       where: { id },
       data: {
         status: 'REJECTED',
         rejectionReason,
         verifiedBy: verifiedBy || 'HR_ADMIN',
         verifiedAt: new Date()
+      },
+      include: {
+        documentType: true,
+        employee: {
+          include: {
+            user: true,
+            company: true
+          }
+        }
       }
     });
+
+    // Send email notification asynchronously with rejection reason
+    if (updated?.employee?.user?.email || updated?.employee?.email) {
+      const recipientEmail = updated.employee.user?.email || updated.employee.email;
+      const employeeName = `${updated.employee.firstName || ''} ${updated.employee.lastName || ''}`.trim();
+      const documentName = updated.documentType?.name || 'Submitted Document';
+      const companyName = updated.employee.company?.name || 'Mindstocs';
+
+      sendDocumentRejectionEmail({
+        to: recipientEmail,
+        name: employeeName,
+        documentName,
+        rejectionReason,
+        companyName
+      }).catch((err) => {
+        console.error('[EMAIL] Failed to send document rejection email:', err.message);
+      });
+    }
+
+    return updated;
   },
 
   async deleteDocument(id) {

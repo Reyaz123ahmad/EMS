@@ -85,13 +85,20 @@ export function CreateEmployeePage() {
   const verifyOTPMutation = useVerifyEmployeeOTP();
   const createEmployeeMutation = useCreateEmployee();
 
+  const [emailCooldown, setEmailCooldown] = useState(60);
+  const [phoneCooldown, setPhoneCooldown] = useState(60);
+
   useEffect(() => {
     let timer;
-    if (currentStep === 2 && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+    if (currentStep === 2) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+        setEmailCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+        setPhoneCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
     }
     return () => clearInterval(timer);
-  }, [currentStep, timeLeft]);
+  }, [currentStep]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -120,6 +127,8 @@ export function CreateEmployeePage() {
       setSessionId(data.sessionId);
       setCurrentStep(2);
       setTimeLeft(600);
+      setEmailCooldown(60);
+      setPhoneCooldown(60);
       setEmailOtp('');
       setPhoneOtp('');
       const msg = data.message || (formData.phone
@@ -131,15 +140,37 @@ export function CreateEmployeePage() {
     }
   };
 
+  const handleResendEmailOtp = async () => {
+    setErrorMsg('');
+    try {
+      await handleSendOTP();
+      setEmailCooldown(60);
+      setSuccessMsg(`New verification code sent to ${formData.email}`);
+    } catch (err) {
+      setErrorMsg('Failed to resend Email OTP.');
+    }
+  };
+
+  const handleResendPhoneOtp = async () => {
+    setErrorMsg('');
+    try {
+      await handleSendOTP();
+      setPhoneCooldown(60);
+      setSuccessMsg(`New verification code sent to ${formData.phone}`);
+    } catch (err) {
+      setErrorMsg('Failed to resend Phone OTP.');
+    }
+  };
+
   const handleVerifyAndCreate = async () => {
     setErrorMsg('');
     try {
       if (emailOtp.length !== 6) {
-        setErrorMsg('Please enter the 6-digit email verification OTP.');
+        setErrorMsg('Please enter the 6-digit Email OTP.');
         return;
       }
       if (formData.phone && phoneOtp.length !== 6) {
-        setErrorMsg('Please enter the 6-digit phone verification OTP.');
+        setErrorMsg('Please enter the 6-digit Phone OTP.');
         return;
       }
 
@@ -279,7 +310,7 @@ export function CreateEmployeePage() {
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">Phone Number</label>
                   <Input
                     name="phone"
-                    placeholder="+1 (555) 987-6543"
+                    placeholder="9661440544"
                     value={formData.phone}
                     onChange={handleInputChange}
                   />
@@ -375,9 +406,9 @@ export function CreateEmployeePage() {
         )}
 
         {currentStep === 2 && (
-          <div className="flex flex-col items-center justify-center space-y-6 py-6">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-col items-center justify-center space-y-6 py-4">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
@@ -385,63 +416,107 @@ export function CreateEmployeePage() {
             <div className="text-center max-w-md">
               <h2 className="text-xl font-bold text-white">Enter Verification Codes</h2>
               <p className="text-sm text-slate-400 mt-1">
-                Security passcodes have been dispatched to verify employee details.
+                OTP sent to email and phone
               </p>
             </div>
 
-            {/* Email OTP Section */}
-            <div className="w-full max-w-sm space-y-2 p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-200 flex items-center gap-1.5">
-                  <span>✉</span> Email OTP (sent to <span className="text-indigo-400 font-mono">{formData.email}</span>)
-                </span>
-                {emailOtp.length === 6 && <span className="text-emerald-400 font-bold text-[10px]">READY</span>}
-              </div>
-              <OTPInput
-                length={6}
-                value={emailOtp}
-                onChange={setEmailOtp}
-              />
-            </div>
-
-            {/* Phone OTP Section */}
-            {formData.phone ? (
-              <div className="w-full max-w-sm space-y-2 p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-200 flex items-center gap-1.5">
-                    <span>📱</span> Phone OTP (sent to <span className="text-emerald-400 font-mono">{formData.phone}</span>)
+            {/* Email OTP Field */}
+            <div className="w-full max-w-md space-y-3 p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-semibold text-slate-100 flex items-center gap-1.5">
+                    <span>✉</span> Email OTP
                   </span>
-                  {phoneOtp.length === 6 && <span className="text-emerald-400 font-bold text-[10px]">READY</span>}
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Sent to: <span className="text-indigo-400 font-medium">{formData.email}</span>
+                  </p>
                 </div>
+                {emailOtp.length === 6 && (
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    FILLED
+                  </span>
+                )}
+              </div>
+
+              <div className="flex justify-center py-1">
                 <OTPInput
                   length={6}
-                  value={phoneOtp}
-                  onChange={setPhoneOtp}
+                  value={emailOtp}
+                  onChange={setEmailOtp}
                 />
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
+                <span className="text-slate-400">
+                  Resend in: <span className="font-mono text-amber-400 font-semibold">{formatTimer(emailCooldown)}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleResendEmailOtp}
+                  disabled={emailCooldown > 0 || sendOTPMutation.isPending}
+                  className="font-medium text-blue-400 hover:text-blue-300 hover:underline disabled:opacity-40 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
+                >
+                  Resend Email OTP
+                </button>
+              </div>
+            </div>
+
+            {/* Phone OTP Field */}
+            {formData.phone ? (
+              <div className="w-full max-w-md space-y-3 p-5 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-semibold text-slate-100 flex items-center gap-1.5">
+                      <span>📱</span> Phone OTP
+                    </span>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Sent to: <span className="text-emerald-400 font-medium">
+                        {formData.phone.startsWith('+91') ? formData.phone : `+91 ${formData.phone}`}
+                      </span>
+                    </p>
+                  </div>
+                  {phoneOtp.length === 6 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      FILLED
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex justify-center py-1">
+                  <OTPInput
+                    length={6}
+                    value={phoneOtp}
+                    onChange={setPhoneOtp}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
+                  <span className="text-slate-400">
+                    Resend in: <span className="font-mono text-amber-400 font-semibold">{formatTimer(phoneCooldown)}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleResendPhoneOtp}
+                    disabled={phoneCooldown > 0 || sendOTPMutation.isPending}
+                    className="font-medium text-blue-400 hover:text-blue-300 hover:underline disabled:opacity-40 disabled:no-underline cursor-pointer disabled:cursor-not-allowed"
+                  >
+                    Resend Phone OTP
+                  </button>
+                </div>
               </div>
             ) : null}
 
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <span>Code expires in:</span>
+            <div className="text-xs text-slate-400 flex items-center gap-2">
+              <span>Session valid for:</span>
               <span className="font-mono font-bold text-amber-400">{formatTimer(timeLeft)}</span>
-              {timeLeft <= 540 && (
-                <button
-                  type="button"
-                  onClick={handleSendOTP}
-                  disabled={sendOTPMutation.isPending}
-                  className="ml-2 text-blue-400 hover:underline font-semibold"
-                >
-                  Resend OTPs
-                </button>
-              )}
             </div>
 
             {/* Toggle live email preview */}
-            <div className="pt-4 border-t border-slate-800 w-full text-center">
+            <div className="pt-2 border-t border-slate-800 w-full text-center">
               <button
                 type="button"
                 onClick={() => setShowEmailPreview(!showEmailPreview)}
-                className="text-xs text-slate-400 hover:text-slate-200 underline"
+                className="text-xs text-slate-400 hover:text-slate-200 underline cursor-pointer"
               >
                 {showEmailPreview ? 'Hide Email Preview' : 'Show Sent Email Template Preview'}
               </button>
