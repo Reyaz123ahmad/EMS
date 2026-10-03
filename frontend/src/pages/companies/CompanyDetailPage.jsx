@@ -92,7 +92,7 @@ export function CompanyDetailPage() {
         <Card className="p-5 bg-slate-900/60 border-slate-800">
           <span className="text-xs text-slate-400 uppercase font-semibold">Team Size</span>
           <div className="text-xl font-bold text-white mt-1">
-            {company.users?.length || company._count?.users || 0} / {plan.maxEmployees || 50}
+            {company.users?.length || company._count?.users || 0} / {plan.maxEmployees === -1 ? 'Unlimited' : (plan.maxEmployees || 50)}
           </div>
           <div className="text-xs text-slate-400 mt-2">Employees Quota</div>
         </Card>
@@ -100,7 +100,7 @@ export function CompanyDetailPage() {
         <Card className="p-5 bg-slate-900/60 border-slate-800">
           <span className="text-xs text-slate-400 uppercase font-semibold">Physical Locations</span>
           <div className="text-xl font-bold text-white mt-1">
-            {company.branches?.length || 1} / {plan.maxBranches || 1}
+            {company.branches?.length || 1} / {plan.maxBranches === -1 ? 'Unlimited' : (plan.maxBranches || 1)}
           </div>
           <div className="text-xs text-slate-400 mt-2">Active Branches</div>
         </Card>

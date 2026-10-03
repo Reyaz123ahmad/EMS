@@ -1,4 +1,5 @@
 import prisma from '../config/prisma.js';
+import { checkQuota, isUnlimited } from '../utils/quota.helper.js';
 
 // In-memory cache for company subscription status (<0.01ms lookup)
 const companySubCache = new Map();
@@ -96,13 +97,14 @@ export async function requireActiveSubscription(req, res, next) {
 }
 
 /**
- * Middleware: Check Subscription Quota Limit (e.g. maxEmployees, maxBranches)
+ * Middleware: Check Subscription Quota Limit (e.g. maxEmployees, maxBranches, maxDevices)
  * @param {'maxEmployees' | 'maxBranches' | 'maxDevices'} limitKey
  */
 export function checkSubscriptionLimit(limitKey) {
   return async (req, res, next) => {
     try {
-      if (req.user?.role === 'SUPER_ADMIN') {
+      // Super Admins bypass subscription limits
+      if (req.user?.role === 'SUPER_ADMIN' || req.user?.roles?.includes('SUPER_ADMIN')) {
         return next();
       }
 
@@ -110,33 +112,38 @@ export function checkSubscriptionLimit(limitKey) {
       if (!companyId) return next();
 
       const plan = req.subscription?.plan;
-      if (!plan || !plan[limitKey]) {
+      if (!plan || plan[limitKey] === undefined) {
         return next();
       }
 
-      const maxAllowed = plan[limitKey];
-      if (maxAllowed !== undefined && maxAllowed !== null && maxAllowed > 0) {
-        if (limitKey === 'maxEmployees') {
-          const count = await prisma.employee.count({
-            where: { companyId, status: { not: 'TERMINATED' } }
-          });
-          if (count >= maxAllowed) {
-            return res.status(403).json({
-              status: 'error',
-              code: 'PLAN_LIMIT_REACHED',
-              message: `Employee quota limit reached (${count}/${maxAllowed}). Please upgrade your plan to onboard more employees.`
-            });
-          }
-        } else if (limitKey === 'maxBranches') {
-          const count = await prisma.branch.count({ where: { companyId } });
-          if (count >= maxAllowed) {
-            return res.status(403).json({
-              status: 'error',
-              code: 'PLAN_LIMIT_REACHED',
-              message: `Branch quota limit reached (${count}/${maxAllowed}). Please upgrade your plan to add more branches.`
-            });
-          }
-        }
+      const limit = plan[limitKey];
+      let currentCount = 0;
+      let resourceName = 'Resource';
+
+      if (limitKey === 'maxEmployees') {
+        resourceName = 'Employee';
+        currentCount = await prisma.employee.count({
+          where: { companyId, status: { not: 'TERMINATED' } }
+        });
+      } else if (limitKey === 'maxBranches') {
+        resourceName = 'Branch';
+        currentCount = await prisma.branch.count({
+          where: { companyId }
+        });
+      } else if (limitKey === 'maxDevices') {
+        resourceName = 'Device';
+        currentCount = await prisma.biometricDevice.count({
+          where: { companyId }
+        });
+      }
+
+      const quota = checkQuota(currentCount, limit);
+      if (!quota.allowed) {
+        return res.status(403).json({
+          status: 'error',
+          code: 'PLAN_LIMIT_REACHED',
+          message: `${resourceName} quota limit reached (${quota.current}/${quota.limit}). Please upgrade your plan for more.`
+        });
       }
 
       next();
