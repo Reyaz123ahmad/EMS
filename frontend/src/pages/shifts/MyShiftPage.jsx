@@ -8,6 +8,18 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/auth.store';
 import { toast } from 'sonner';
 
+function calculateHours(start, end, isNight = false) {
+  if (!start || !end) return null;
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  if (isNaN(sh) || isNaN(eh)) return null;
+  let startMin = sh * 60 + (sm || 0);
+  let endMin = eh * 60 + (em || 0);
+  if (isNight || endMin <= startMin) endMin += 24 * 60;
+  const hrs = (endMin - startMin) / 60;
+  return Number.isInteger(hrs) ? hrs : Number(hrs.toFixed(1));
+}
+
 export default function MyShiftPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -151,7 +163,9 @@ export default function MyShiftPage() {
             </div>
             <div>
               <span className="text-[11px] text-slate-400 block font-medium">Working Hours</span>
-              <span className="text-base font-bold text-emerald-400 font-mono mt-0.5 block">{shift.workingHours}h</span>
+              <span className="text-base font-bold text-emerald-400 font-mono mt-0.5 block">
+                {calculateHours(shift.startTime, shift.endTime, shift.isNightShift) ?? shift.workingHours}h
+              </span>
             </div>
             <div>
               <span className="text-[11px] text-slate-400 block font-medium">Grace Period</span>

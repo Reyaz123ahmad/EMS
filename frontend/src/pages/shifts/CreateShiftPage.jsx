@@ -8,6 +8,18 @@ import { useAuthStore } from '../../store/authStore';
 import { Clock, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+function calculateHours(start, end, isNight = false) {
+  if (!start || !end) return 9;
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  if (isNaN(sh) || isNaN(eh)) return 9;
+  let startMin = sh * 60 + (sm || 0);
+  let endMin = eh * 60 + (em || 0);
+  if (isNight || endMin <= startMin) endMin += 24 * 60;
+  const hrs = (endMin - startMin) / 60;
+  return Number.isInteger(hrs) ? hrs : Number(hrs.toFixed(1));
+}
+
 export default function CreateShiftPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -19,10 +31,21 @@ export default function CreateShiftPage() {
     startTime: '09:00',
     endTime: '18:00',
     graceMinutes: 15,
-    workingHours: 8,
+    workingHours: 9,
     isNightShift: false,
     isActive: true
   });
+
+  const handleTimeChange = (field, val) => {
+    const updated = { ...formData, [field]: val };
+    const isNight = Boolean(updated.isNightShift || (updated.endTime && updated.startTime && updated.endTime <= updated.startTime));
+    const computed = calculateHours(updated.startTime, updated.endTime, isNight);
+    setFormData({
+      ...updated,
+      isNightShift: isNight,
+      workingHours: computed
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,6 +54,9 @@ export default function CreateShiftPage() {
       return;
     }
 
+    const isNight = Boolean(formData.isNightShift || (formData.endTime && formData.startTime && formData.endTime <= formData.startTime));
+    const computedWorkingHours = Number(formData.workingHours) || calculateHours(formData.startTime, formData.endTime, isNight);
+
     try {
       await createShift.mutateAsync({
         companyId,
@@ -38,8 +64,8 @@ export default function CreateShiftPage() {
         startTime: formData.startTime,
         endTime: formData.endTime,
         graceMinutes: Number(formData.graceMinutes) || 15,
-        workingHours: Number(formData.workingHours) || 8,
-        isNightShift: Boolean(formData.isNightShift),
+        workingHours: computedWorkingHours,
+        isNightShift: isNight,
         isActive: Boolean(formData.isActive)
       });
       toast.success('Shift created successfully!');
@@ -92,7 +118,7 @@ export default function CreateShiftPage() {
               <Input
                 type="time"
                 value={formData.startTime}
-                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                onChange={(e) => handleTimeChange('startTime', e.target.value)}
                 required
               />
             </div>
@@ -103,7 +129,7 @@ export default function CreateShiftPage() {
               <Input
                 type="time"
                 value={formData.endTime}
-                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                onChange={(e) => handleTimeChange('endTime', e.target.value)}
                 required
               />
             </div>

@@ -12,12 +12,13 @@ export function clearShiftResolutionCache() {
 export function calculateShiftDurationHours(startTime = '09:00', endTime = '18:00', isNightShift = false) {
   const [startH, startM] = (startTime || '09:00').split(':').map(Number);
   const [endH, endM] = (endTime || '18:00').split(':').map(Number);
-  let startMinutes = startH * 60 + (startM || 0);
-  let endMinutes = endH * 60 + (endM || 0);
+  let startMinutes = (isNaN(startH) ? 9 : startH) * 60 + (startM || 0);
+  let endMinutes = (isNaN(endH) ? 18 : endH) * 60 + (endM || 0);
   if (isNightShift || endMinutes <= startMinutes) {
     endMinutes += 24 * 60;
   }
-  return Number(((endMinutes - startMinutes) / 60).toFixed(2));
+  const hours = (endMinutes - startMinutes) / 60;
+  return Number.isInteger(hours) ? hours : Number(hours.toFixed(2));
 }
 
 /**
@@ -135,7 +136,7 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
             startTime: s.startTime || '09:00',
             endTime: s.endTime || '18:00',
             graceMinutes: s.graceMinutes !== undefined && s.graceMinutes !== null ? s.graceMinutes : 15,
-            workingHours: s.workingHours || calculatedHours,
+            workingHours: calculatedHours,
             isNightShift: isNight,
             breakRules: []
           },
@@ -212,7 +213,13 @@ export async function getEffectiveShiftOverview({ employeeId, companyId, date = 
       name: defaultShift.name,
       startTime: defaultShift.startTime,
       endTime: defaultShift.endTime,
-      graceMinutes: defaultShift.graceMinutes
+      graceMinutes: defaultShift.graceMinutes,
+      workingHours: calculateShiftDurationHours(
+        defaultShift.startTime,
+        defaultShift.endTime,
+        Boolean(defaultShift.isNightShift || (defaultShift.endTime && defaultShift.startTime && defaultShift.endTime <= defaultShift.startTime))
+      ),
+      isNightShift: Boolean(defaultShift.isNightShift || (defaultShift.endTime && defaultShift.startTime && defaultShift.endTime <= defaultShift.startTime))
     } : null,
     defaultShiftStatus: isRoster ? 'DEACTIVATED_BY_ROSTER' : 'ACTIVE'
   };

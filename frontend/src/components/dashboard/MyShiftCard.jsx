@@ -3,6 +3,18 @@ import { useMyShift } from '../../hooks/useShifts';
 import { Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+function calculateHours(start, end, isNight = false) {
+  if (!start || !end) return null;
+  const [sh, sm] = start.split(':').map(Number);
+  const [eh, em] = end.split(':').map(Number);
+  if (isNaN(sh) || isNaN(eh)) return null;
+  let startMin = sh * 60 + (sm || 0);
+  let endMin = eh * 60 + (em || 0);
+  if (isNight || endMin <= startMin) endMin += 24 * 60;
+  const hrs = (endMin - startMin) / 60;
+  return Number.isInteger(hrs) ? hrs : Number(hrs.toFixed(1));
+}
+
 export function MyShiftCard() {
   const { data: myShiftData, isLoading } = useMyShift();
   const shift = myShiftData?.shift;
@@ -49,7 +61,9 @@ export function MyShiftCard() {
 
           <div className="grid grid-cols-2 gap-2 pt-1 text-xs text-slate-500 dark:text-slate-400">
             <div>
-              Working: <span className="font-semibold text-slate-700 dark:text-slate-200">{shift.workingHours}h</span>
+              Working: <span className="font-semibold text-slate-700 dark:text-slate-200">
+                {calculateHours(shift.startTime, shift.endTime, shift.isNightShift) ?? shift.workingHours}h
+              </span>
             </div>
             <div>
               Grace: <span className="font-semibold text-slate-700 dark:text-slate-200">{shift.graceMinutes} min</span>

@@ -1,5 +1,5 @@
 import { prisma } from '../../config/prisma.js';
-import { resolveShiftForEmployee, getEffectiveShiftOverview } from './services/shift-resolver.service.js';
+import { resolveShiftForEmployee, getEffectiveShiftOverview, calculateShiftDurationHours } from './services/shift-resolver.service.js';
 
 export const shiftsService = {
   async listShifts(arg1, arg2) {
@@ -48,15 +48,18 @@ export const shiftsService = {
   async createShift(companyIdOrData, maybeData) {
     const companyId = typeof companyIdOrData === 'object' ? companyIdOrData.companyId : companyIdOrData;
     const data = typeof companyIdOrData === 'object' ? companyIdOrData : (maybeData || {});
+    const isNight = Boolean(data.isNightShift || (data.endTime && data.startTime && data.endTime <= data.startTime));
+    const computedHours = calculateShiftDurationHours(data.startTime, data.endTime, isNight);
+
     return prisma.shift.create({
       data: {
         companyId,
         name: data.name,
         startTime: data.startTime,
         endTime: data.endTime,
-        graceMinutes: data.graceMinutes || 15,
-        isNightShift: data.isNightShift || false,
-        workingHours: data.workingHours || 8,
+        graceMinutes: data.graceMinutes !== undefined && data.graceMinutes !== null ? Number(data.graceMinutes) : 15,
+        isNightShift: isNight,
+        workingHours: data.workingHours !== undefined && data.workingHours !== null ? Number(data.workingHours) : computedHours,
         isActive: data.isActive !== undefined ? data.isActive : true
       }
     });

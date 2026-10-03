@@ -156,7 +156,8 @@ export const AttendancePage = () => {
     let startMin = sh * 60 + (sm || 0);
     let endMin = eh * 60 + (em || 0);
     if (isNight || endMin <= startMin) endMin += 24 * 60;
-    return Number(((endMin - startMin) / 60).toFixed(1));
+    const hrs = (endMin - startMin) / 60;
+    return Number.isInteger(hrs) ? hrs : Number(hrs.toFixed(1));
   };
 
   // 7 Strict Mutually Exclusive States:
@@ -723,7 +724,7 @@ export const AttendancePage = () => {
               <div className="flex justify-between py-1 border-b border-slate-800/60">
                 <span>Working Hours:</span>
                 <span className="font-semibold text-indigo-400">
-                  {currentShift ? `${currentShift.workingHours || calculateHours(currentShift.startTime, currentShift.endTime, isNightShift) || '--'} Hours` : '--'}
+                  {currentShift ? `${calculateHours(currentShift.startTime, currentShift.endTime, isNightShift) ?? currentShift.workingHours ?? '--'} Hours` : '--'}
                 </span>
               </div>
               <div className="flex justify-between py-1">
