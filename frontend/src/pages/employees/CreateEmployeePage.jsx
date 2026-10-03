@@ -16,7 +16,8 @@ export function CreateEmployeePage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [sessionId, setSessionId] = useState('');
-  const [otp, setOtp] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [phoneOtp, setPhoneOtp] = useState('');
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
 
@@ -119,7 +120,12 @@ export function CreateEmployeePage() {
       setSessionId(data.sessionId);
       setCurrentStep(2);
       setTimeLeft(600);
-      setSuccessMsg(`Verification code sent to ${formData.email}`);
+      setEmailOtp('');
+      setPhoneOtp('');
+      const msg = data.message || (formData.phone
+        ? `Verification codes sent to ${formData.email} and ${formData.phone}`
+        : `Verification code sent to ${formData.email}`);
+      setSuccessMsg(msg);
     } catch (err) {
       setErrorMsg(err.response?.data?.message || err.message || 'Failed to send OTP.');
     }
@@ -128,15 +134,21 @@ export function CreateEmployeePage() {
   const handleVerifyAndCreate = async () => {
     setErrorMsg('');
     try {
-      if (otp.length !== 6) {
-        setErrorMsg('Please enter the 6-digit verification code.');
+      if (emailOtp.length !== 6) {
+        setErrorMsg('Please enter the 6-digit email verification OTP.');
+        return;
+      }
+      if (formData.phone && phoneOtp.length !== 6) {
+        setErrorMsg('Please enter the 6-digit phone verification OTP.');
         return;
       }
 
-      // 1. Verify OTP
+      // 1. Verify OTPs
       await verifyOTPMutation.mutateAsync({
         email: formData.email.toLowerCase(),
-        otp,
+        emailOtp,
+        phoneOtp,
+        otp: emailOtp,
         sessionId
       });
 
@@ -179,8 +191,8 @@ export function CreateEmployeePage() {
     },
     {
       id: 'verify',
-      title: 'Email OTP Verification',
-      description: 'Validate candidate work email'
+      title: 'OTP Verification',
+      description: 'Validate candidate email & phone'
     }
   ];
 
@@ -219,7 +231,9 @@ export function CreateEmployeePage() {
         canGoNext={
           currentStep === 1
             ? Boolean(formData.firstName && formData.lastName && formData.email)
-            : otp.length === 6
+            : formData.phone
+            ? (emailOtp.length === 6 && phoneOtp.length === 6)
+            : (emailOtp.length === 6)
         }
       >
         {currentStep === 1 && (
@@ -364,36 +378,60 @@ export function CreateEmployeePage() {
           <div className="flex flex-col items-center justify-center space-y-6 py-6">
             <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
 
             <div className="text-center max-w-md">
-              <h2 className="text-xl font-bold text-white">Enter Employee Verification Code</h2>
+              <h2 className="text-xl font-bold text-white">Enter Verification Codes</h2>
               <p className="text-sm text-slate-400 mt-1">
-                A 6-digit OTP passcode has been dispatched to{' '}
-                <span className="font-semibold text-indigo-400">{formData.email}</span>.
+                Security passcodes have been dispatched to verify employee details.
               </p>
             </div>
 
-            <div className="w-full max-w-sm">
+            {/* Email OTP Section */}
+            <div className="w-full max-w-sm space-y-2 p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                  <span>✉</span> Email OTP (sent to <span className="text-indigo-400 font-mono">{formData.email}</span>)
+                </span>
+                {emailOtp.length === 6 && <span className="text-emerald-400 font-bold text-[10px]">READY</span>}
+              </div>
               <OTPInput
                 length={6}
-                value={otp}
-                onChange={setOtp}
+                value={emailOtp}
+                onChange={setEmailOtp}
               />
             </div>
+
+            {/* Phone OTP Section */}
+            {formData.phone ? (
+              <div className="w-full max-w-sm space-y-2 p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-slate-200 flex items-center gap-1.5">
+                    <span>📱</span> Phone OTP (sent to <span className="text-emerald-400 font-mono">{formData.phone}</span>)
+                  </span>
+                  {phoneOtp.length === 6 && <span className="text-emerald-400 font-bold text-[10px]">READY</span>}
+                </div>
+                <OTPInput
+                  length={6}
+                  value={phoneOtp}
+                  onChange={setPhoneOtp}
+                />
+              </div>
+            ) : null}
 
             <div className="flex items-center gap-2 text-xs text-slate-400">
               <span>Code expires in:</span>
               <span className="font-mono font-bold text-amber-400">{formatTimer(timeLeft)}</span>
-              {timeLeft === 0 && (
+              {timeLeft <= 540 && (
                 <button
                   type="button"
                   onClick={handleSendOTP}
+                  disabled={sendOTPMutation.isPending}
                   className="ml-2 text-blue-400 hover:underline font-semibold"
                 >
-                  Resend OTP
+                  Resend OTPs
                 </button>
               )}
             </div>
@@ -415,7 +453,7 @@ export function CreateEmployeePage() {
                     recipientName={`${formData.firstName} ${formData.lastName}`}
                     recipientEmail={formData.email}
                     companyName="Your Organization"
-                    otp="654321"
+                    otp={emailOtp || '654321'}
                   />
                 </div>
               )}

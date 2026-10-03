@@ -26,7 +26,9 @@ export const sendEmployeeOTPSchema = Joi.object({
 
 export const verifyEmployeeOTPSchema = Joi.object({
   email: Joi.string().email().required(),
-  otp: Joi.string().length(6).required(),
+  emailOtp: Joi.string().length(6).optional(),
+  phoneOtp: Joi.string().length(6).optional(),
+  otp: Joi.string().length(6).optional(),
   sessionId: Joi.string().required()
 });
 

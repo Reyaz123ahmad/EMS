@@ -115,26 +115,27 @@ export function checkSubscriptionLimit(limitKey) {
       }
 
       const maxAllowed = plan[limitKey];
-
-      if (limitKey === 'maxEmployees') {
-        const count = await prisma.employee.count({
-          where: { companyId, status: { not: 'TERMINATED' } }
-        });
-        if (count >= maxAllowed) {
-          return res.status(403).json({
-            status: 'error',
-            code: 'PLAN_LIMIT_REACHED',
-            message: `Employee quota limit reached (${count}/${maxAllowed}). Please upgrade your plan to onboard more employees.`
+      if (maxAllowed !== undefined && maxAllowed !== null && maxAllowed > 0) {
+        if (limitKey === 'maxEmployees') {
+          const count = await prisma.employee.count({
+            where: { companyId, status: { not: 'TERMINATED' } }
           });
-        }
-      } else if (limitKey === 'maxBranches') {
-        const count = await prisma.branch.count({ where: { companyId } });
-        if (count >= maxAllowed) {
-          return res.status(403).json({
-            status: 'error',
-            code: 'PLAN_LIMIT_REACHED',
-            message: `Branch quota limit reached (${count}/${maxAllowed}). Please upgrade your plan to add more branches.`
-          });
+          if (count >= maxAllowed) {
+            return res.status(403).json({
+              status: 'error',
+              code: 'PLAN_LIMIT_REACHED',
+              message: `Employee quota limit reached (${count}/${maxAllowed}). Please upgrade your plan to onboard more employees.`
+            });
+          }
+        } else if (limitKey === 'maxBranches') {
+          const count = await prisma.branch.count({ where: { companyId } });
+          if (count >= maxAllowed) {
+            return res.status(403).json({
+              status: 'error',
+              code: 'PLAN_LIMIT_REACHED',
+              message: `Branch quota limit reached (${count}/${maxAllowed}). Please upgrade your plan to add more branches.`
+            });
+          }
         }
       }
 

@@ -4,6 +4,7 @@ import authRepository from '../auth/auth.repository.js';
 import companiesRepository from '../companies/companies.repository.js';
 import { hashPassword } from '../../security/password.js';
 import { addOTPEmail, addCredentialsEmail } from '../../queues/email.queue.js';
+import { sendOtpSms } from '../../services/sms.service.js';
 import { DEFAULT_LEAVE_QUOTAS } from './employees.constants.js';
 import { prisma } from '../../config/prisma.js';
 
@@ -95,12 +96,17 @@ export const employeesService = {
     }
 
     const sessionId = crypto.randomUUID();
-    const otp = crypto.randomInt(100000, 999999).toString();
+    const emailOtp = crypto.randomInt(100000, 999999).toString();
+    const phoneOtp = crypto.randomInt(100000, 999999).toString();
 
     const sessionPayload = {
       sessionId,
-      otp,
+      emailOtp,
+      phoneOtp,
+      otp: emailOtp, // backward compatibility
       attempts: 0,
+      emailVerified: false,
+      phoneVerified: false,
       verified: false,
       employeeData,
       companyId,
@@ -108,7 +114,7 @@ export const employeesService = {
       createdAt: Date.now()
     };
 
-    // Store in Redis for 15 minutes
+    // Store in Redis/memory for 15 minutes
     await authRepository.storeOTP(
       `session:${sessionId}`,
       JSON.stringify(sessionPayload),
@@ -116,26 +122,37 @@ export const employeesService = {
       15
     );
 
-    // Queue OTP email via BullMQ
+    // 1. Queue OTP email via BullMQ
     await addOTPEmail({
       to: employeeData.email,
       name: `${employeeData.firstName} ${employeeData.lastName}`,
-      otp,
+      otp: emailOtp,
       purpose: 'EMPLOYEE_CREATE',
       expiryMinutes: 15,
       companyName: company.name
     });
 
+    // 2. Dispatch OTP SMS via Apihome
+    let phoneSent = false;
+    if (employeeData.phone) {
+      const smsResult = await sendOtpSms(employeeData.phone, phoneOtp);
+      phoneSent = Boolean(smsResult?.success);
+    }
+
     return {
       sessionId,
-      message: `Verification code sent to ${employeeData.email}`
+      emailSent: true,
+      phoneSent,
+      message: employeeData.phone
+        ? `Verification codes sent to ${employeeData.email} and ${employeeData.phone}`
+        : `Verification code sent to ${employeeData.email}`
     };
   },
 
   /**
-   * Step 2: Verify Employee OTP
+   * Step 2: Verify Employee OTP (Email and Phone)
    */
-  async verifyEmployeeOTP({ email, otp, sessionId }) {
+  async verifyEmployeeOTP({ email, emailOtp, phoneOtp, otp, sessionId }) {
     const rawData = await authRepository.getOTP(`session:${sessionId}`, 'EMPLOYEE_CREATE');
     if (!rawData) {
       throw new Error('Verification session has expired or does not exist. Please request a new code.');
@@ -154,7 +171,13 @@ export const employeesService = {
       throw new Error('Maximum verification attempts exceeded.');
     }
 
-    if (session.otp !== String(otp).trim()) {
+    const expectedEmailOtp = session.emailOtp || session.otp;
+    const expectedPhoneOtp = session.phoneOtp;
+    const submittedEmailOtp = String(emailOtp || otp || '').trim();
+    const submittedPhoneOtp = String(phoneOtp || '').trim();
+
+    // Verify email OTP
+    if (!submittedEmailOtp || submittedEmailOtp !== expectedEmailOtp) {
       session.attempts += 1;
       await authRepository.storeOTP(
         `session:${sessionId}`,
@@ -162,10 +185,24 @@ export const employeesService = {
         'EMPLOYEE_CREATE',
         15
       );
-      throw new Error(`Invalid verification code. ${5 - session.attempts} attempts remaining.`);
+      throw new Error(`Invalid email OTP. ${5 - session.attempts} attempts remaining.`);
+    }
+
+    // Verify phone OTP if phone was provided for employee
+    if (expectedPhoneOtp && (!submittedPhoneOtp || submittedPhoneOtp !== expectedPhoneOtp)) {
+      session.attempts += 1;
+      await authRepository.storeOTP(
+        `session:${sessionId}`,
+        JSON.stringify(session),
+        'EMPLOYEE_CREATE',
+        15
+      );
+      throw new Error(`Invalid phone OTP. ${5 - session.attempts} attempts remaining.`);
     }
 
     session.verified = true;
+    session.emailVerified = true;
+    session.phoneVerified = true;
     await authRepository.storeOTP(
       `session:${sessionId}`,
       JSON.stringify(session),
@@ -176,7 +213,7 @@ export const employeesService = {
     return {
       verified: true,
       sessionId,
-      message: 'Email successfully verified. You may now complete employee onboarding.'
+      message: 'Email and phone verified successfully. You may now complete employee onboarding.'
     };
   },
 
@@ -191,7 +228,7 @@ export const employeesService = {
 
     const session = parseSessionData(rawData);
     if (!session || !session.verified) {
-      throw new Error('Please verify OTP code before creating employee record.');
+      throw new Error('Please verify both email and phone OTP codes before creating employee record.');
     }
 
     const company = await companiesRepository.findCompanyById(companyId);

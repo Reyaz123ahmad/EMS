@@ -2,6 +2,8 @@ import prisma from '../../config/prisma.js';
 import redis from '../../config/redis.js';
 import { OTP_EXPIRY_MINUTES } from './auth.constants.js';
 
+const memoryOTPStore = new Map();
+
 export const authRepository = {
   /**
    * Find user by unique email with company, employee and roles
@@ -239,7 +241,7 @@ export const authRepository = {
   },
 
   /**
-   * Store OTP in Redis with expiration
+   * Store OTP in Redis with expiration and memory fallback
    * @param {string} email 
    * @param {string} otp 
    * @param {string} purpose 
@@ -247,38 +249,74 @@ export const authRepository = {
    */
   async storeOTP(email, otp, purpose = 'DEFAULT', expiryMinutes = OTP_EXPIRY_MINUTES) {
     const key = `otp:${purpose}:${email.toLowerCase()}`;
-    const payload = JSON.stringify({
-      otp,
-      attempts: 0,
-      createdAt: Date.now()
-    });
+    let payload;
+    if (typeof otp === 'object' && otp !== null) {
+      payload = JSON.stringify(otp);
+    } else if (typeof otp === 'string' && (otp.trim().startsWith('{') || otp.trim().startsWith('['))) {
+      payload = otp.trim();
+    } else {
+      payload = JSON.stringify({
+        otp: String(otp),
+        attempts: 0,
+        createdAt: Date.now()
+      });
+    }
+
+    memoryOTPStore.set(key, { payload, expiresAt: Date.now() + expiryMinutes * 60 * 1000 });
     if (redis) {
-      await redis.set(key, payload, 'EX', expiryMinutes * 60);
+      try {
+        await redis.set(key, payload, 'EX', expiryMinutes * 60);
+      } catch (err) {
+        // Fallback stored in memoryOTPStore
+      }
     }
     return { email, otp, purpose };
   },
 
   /**
-   * Get OTP record from Redis
+   * Get OTP record from Redis or memory fallback
    * @param {string} email 
    * @param {string} purpose 
    */
   async getOTP(email, purpose = 'DEFAULT') {
     const key = `otp:${purpose}:${email.toLowerCase()}`;
-    if (!redis) return null;
-    const raw = await redis.get(key);
-    return raw ? JSON.parse(raw) : null;
+    if (redis) {
+      try {
+        const raw = await redis.get(key);
+        if (raw) {
+          try {
+            return JSON.parse(raw);
+          } catch {
+            return raw;
+          }
+        }
+      } catch (err) {
+        // Fallback to memory
+      }
+    }
+    const mem = memoryOTPStore.get(key);
+    if (mem && Date.now() <= mem.expiresAt) {
+      try {
+        return JSON.parse(mem.payload);
+      } catch {
+        return mem.payload;
+      }
+    }
+    return null;
   },
 
   /**
-   * Delete OTP from Redis
+   * Delete OTP from Redis and memory
    * @param {string} email 
    * @param {string} purpose 
    */
   async deleteOTP(email, purpose = 'DEFAULT') {
     const key = `otp:${purpose}:${email.toLowerCase()}`;
+    memoryOTPStore.delete(key);
     if (redis) {
-      await redis.del(key);
+      try {
+        await redis.del(key);
+      } catch (err) {}
     }
   }
 };
