@@ -7,6 +7,7 @@ import { addOTPEmail, addCredentialsEmail } from '../../queues/email.queue.js';
 import { sendOtpSms, sendSms } from '../../services/sms.service.js';
 import { DEFAULT_LEAVE_QUOTAS } from './employees.constants.js';
 import { prisma } from '../../config/prisma.js';
+import logger from '../../config/logger.js';
 
 function parseSessionData(rawData) {
   if (!rawData) return null;
@@ -49,6 +50,9 @@ export const employeesService = {
    * Step 1: Send Employee Verification OTP
    */
   async sendEmployeeOTP({ employeeData, companyId, reqUser }) {
+    console.log('[sendEmployeeOTP] Called with:', employeeData?.email);
+    logger.info({ email: employeeData?.email, companyId }, '[sendEmployeeOTP] Function invoked');
+
     const existingUser = await authRepository.findUserByEmail(employeeData.email);
     if (existingUser) {
       throw new Error(`An account with email ${employeeData.email} already exists.`);
@@ -128,6 +132,7 @@ export const employeesService = {
     console.log('Email:', employeeData.email);
     console.log('Email OTP:', emailOtp);
     console.log('===============================');
+    logger.info({ sessionId, email: employeeData.email, emailOtp }, '========== EMAIL OTP ==========');
 
     // 4. Fire-and-forget email + SMS (do NOT await)
     Promise.resolve().then(() => {
@@ -164,6 +169,9 @@ export const employeesService = {
    * Step 2: Verify Employee OTP (Email and Phone)
    */
   async verifyEmployeeOTP({ email, emailOtp, phoneOtp, otp, sessionId }) {
+    console.log('[verifyEmployeeOTP] Called with session:', sessionId, 'email:', email);
+    logger.info({ sessionId, email }, '[verifyEmployeeOTP] Function invoked');
+
     const rawData = await authRepository.getOTP(`session:${sessionId}`, 'EMPLOYEE_CREATE');
     if (!rawData) {
       throw new Error('Verification session has expired or does not exist. Please request a new code.');
@@ -232,6 +240,9 @@ export const employeesService = {
    * Step 3: Create Employee, User account, and initial allocations
    */
   async createEmployeeWithUser({ sessionId, employeeData, companyId, createdBy, reqUser }) {
+    console.log('[createEmployeeWithUser] Called with session:', sessionId, 'email:', employeeData?.email);
+    logger.info({ sessionId, email: employeeData?.email, companyId }, '[createEmployeeWithUser] Function invoked');
+
     const rawData = await authRepository.getOTP(`session:${sessionId}`, 'EMPLOYEE_CREATE');
     if (!rawData) {
       throw new Error('Verification session expired. Please verify OTP again.');
@@ -449,6 +460,14 @@ export const employeesService = {
     console.log('Temporary Password:', temporaryPassword);
     console.log('Login URL:', loginUrl);
     console.log('==========================================');
+    logger.info({
+      sessionId,
+      employee: `${employeeData.firstName} ${employeeData.lastName}`,
+      email: employeeData.email,
+      phone: employeeData.phone || 'N/A',
+      temporaryPassword,
+      loginUrl
+    }, '========== EMPLOYEE CREDENTIALS ==========');
 
     // Fire-and-forget Credentials Email
     Promise.resolve().then(() => {
