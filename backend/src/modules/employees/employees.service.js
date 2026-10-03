@@ -4,7 +4,7 @@ import authRepository from '../auth/auth.repository.js';
 import companiesRepository from '../companies/companies.repository.js';
 import { hashPassword } from '../../security/password.js';
 import { addOTPEmail, addCredentialsEmail } from '../../queues/email.queue.js';
-import { sendOtpSms } from '../../services/sms.service.js';
+import { sendOtpSms, sendSms } from '../../services/sms.service.js';
 import { DEFAULT_LEAVE_QUOTAS } from './employees.constants.js';
 import { prisma } from '../../config/prisma.js';
 
@@ -293,6 +293,53 @@ export const employeesService = {
     const temporaryPassword = `Emp@${crypto.randomBytes(4).toString('hex')}!`;
     const passwordHash = await hashPassword(temporaryPassword);
 
+    // Pre-fetch default branch, department, and shift outside transaction
+    let branchId = employeeData.branchId;
+    if (!branchId) {
+      const defaultBranch = await prisma.branch.findFirst({ where: { companyId } });
+      branchId = defaultBranch?.id;
+    }
+
+    let departmentId = employeeData.departmentId;
+    if (!departmentId) {
+      const defaultDept = await prisma.department.findFirst({ where: { companyId } });
+      departmentId = defaultDept?.id;
+    }
+
+    let finalShiftId = employeeData.shiftId;
+    if (!finalShiftId) {
+      const defaultShift = await prisma.shift.findFirst({
+        where: { companyId, isActive: true },
+        orderBy: { createdAt: 'asc' }
+      });
+      finalShiftId = defaultShift?.id;
+    }
+
+    // Pre-fetch / initialize leave types
+    const currentYear = new Date().getFullYear();
+    const existingLeaveTypes = await prisma.leaveType.findMany({ where: { companyId } });
+    const leaveTypeMap = new Map(existingLeaveTypes.map(lt => [lt.name, lt.id]));
+
+    for (const quota of DEFAULT_LEAVE_QUOTAS) {
+      if (!leaveTypeMap.has(quota.name)) {
+        try {
+          const createdLt = await prisma.leaveType.create({
+            data: {
+              companyId,
+              name: quota.name,
+              code: quota.code,
+              maxDaysPerYear: quota.days,
+              isPaid: quota.isPaid
+            }
+          });
+          leaveTypeMap.set(quota.name, createdLt.id);
+        } catch {
+          const found = await prisma.leaveType.findFirst({ where: { companyId, name: quota.name } });
+          if (found) leaveTypeMap.set(quota.name, found.id);
+        }
+      }
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       // 1. Create User
       const user = await tx.user.create({
@@ -314,20 +361,7 @@ export const employeesService = {
         }
       });
 
-      // 3. Fallback branch/department if not supplied
-      let branchId = employeeData.branchId;
-      if (!branchId) {
-        const defaultBranch = await tx.branch.findFirst({ where: { companyId } });
-        branchId = defaultBranch?.id;
-      }
-
-      let departmentId = employeeData.departmentId;
-      if (!departmentId) {
-        const defaultDept = await tx.department.findFirst({ where: { companyId } });
-        departmentId = defaultDept?.id;
-      }
-
-      // 4. Create Employee Record
+      // 3. Create Employee Record
       const employee = await tx.employee.create({
         data: {
           companyId,
@@ -346,16 +380,7 @@ export const employeesService = {
         }
       });
 
-      // 5. Assign Shift
-      let finalShiftId = employeeData.shiftId;
-      if (!finalShiftId) {
-        const defaultShift = await tx.shift.findFirst({
-          where: { companyId, isActive: true },
-          orderBy: { createdAt: 'asc' }
-        });
-        finalShiftId = defaultShift?.id;
-      }
-
+      // 4. Assign Shift
       if (finalShiftId) {
         await tx.shiftAssignment.create({
           data: {
@@ -366,38 +391,23 @@ export const employeesService = {
         });
       }
 
-      // 6. Initialize Leave Balances
-      const currentYear = new Date().getFullYear();
-      for (const quota of DEFAULT_LEAVE_QUOTAS) {
-        let leaveType = await tx.leaveType.findFirst({
-          where: { companyId, name: quota.name }
-        });
+      // 5. Initialize Leave Balances in batch
+      const leaveBalanceRecords = DEFAULT_LEAVE_QUOTAS.map(quota => ({
+        employeeId: employee.id,
+        leaveTypeId: leaveTypeMap.get(quota.name),
+        year: currentYear,
+        totalDays: quota.days,
+        usedDays: 0,
+        remainingDays: quota.days
+      })).filter(r => r.leaveTypeId);
 
-        if (!leaveType) {
-          leaveType = await tx.leaveType.create({
-            data: {
-              companyId,
-              name: quota.name,
-              code: quota.code,
-              maxDaysPerYear: quota.days,
-              isPaid: quota.isPaid
-            }
-          });
-        }
-
-        await tx.leaveBalance.create({
-          data: {
-            employeeId: employee.id,
-            leaveTypeId: leaveType.id,
-            year: currentYear,
-            totalDays: quota.days,
-            usedDays: 0,
-            remainingDays: quota.days
-          }
+      if (leaveBalanceRecords.length > 0) {
+        await tx.leaveBalance.createMany({
+          data: leaveBalanceRecords
         });
       }
 
-      // 7. Audit Log
+      // 6. Audit Log
       let auditUserId = user.id;
       if (createdBy) {
         const creatorExists = await tx.user.findUnique({ where: { id: createdBy } });
@@ -422,24 +432,39 @@ export const employeesService = {
 
       return { employee, user };
     }, {
-      maxWait: 10000,
-      timeout: 30000
+      maxWait: 5000,
+      timeout: 10000
     });
 
     // Cleanup session
     await authRepository.deleteOTP(`session:${sessionId}`, 'EMPLOYEE_CREATE');
 
-    // Queue Credentials Email via BullMQ
-    await addCredentialsEmail({
-      to: employeeData.email,
-      name: `${employeeData.firstName} ${employeeData.lastName}`,
-      email: employeeData.email,
-      password: temporaryPassword,
-      role: targetRole.name || 'EMPLOYEE',
-      companyName: company.name,
-      employeeCode,
-      department: employeeData.department || 'General',
-      loginUrl: 'http://localhost:3000/login'
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`;
+
+    console.log('========== EMPLOYEE CREDENTIALS ==========');
+    console.log('Session:', sessionId);
+    console.log('Employee:', `${employeeData.firstName} ${employeeData.lastName}`);
+    console.log('Email:', employeeData.email);
+    console.log('Phone:', employeeData.phone || 'N/A');
+    console.log('Temporary Password:', temporaryPassword);
+    console.log('Login URL:', loginUrl);
+    console.log('==========================================');
+
+    // Fire-and-forget Credentials Email
+    Promise.resolve().then(() => {
+      addCredentialsEmail({
+        to: employeeData.email,
+        name: `${employeeData.firstName} ${employeeData.lastName}`,
+        email: employeeData.email,
+        password: temporaryPassword,
+        role: targetRole.name || 'EMPLOYEE',
+        companyName: company.name,
+        employeeCode,
+        department: employeeData.department || 'General',
+        loginUrl
+      }).catch(err => {
+        console.error('[EMAIL] Credentials delivery error:', err?.message || err);
+      });
     });
 
     return {

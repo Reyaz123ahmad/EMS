@@ -22,7 +22,10 @@ function parseRedisUrl(urlStr) {
       password: url.password || undefined,
       tls: isTls ? { rejectUnauthorized: false } : undefined,
       maxRetriesPerRequest: null,
-      enableReadyCheck: false
+      enableReadyCheck: false,
+      retryStrategy(times) {
+        return Math.min(times * 1000, 10000);
+      }
     };
   } catch {
     return {
