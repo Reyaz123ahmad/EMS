@@ -19,12 +19,6 @@ async function startServer() {
     await bootstrap();
     await loadFaceModels();
 
-    // In development mode (or if standalone worker not deployed), run workers in-process
-    if (env.NODE_ENV !== 'production' && !process.env.WORKER_ID) {
-      logger.info('Starting in-process BullMQ workers for development environment...');
-      startAllWorkers();
-    }
-
     const PORT = process.env.PORT || env.PORT || 5000;
     httpServer = http.createServer(app);
 
@@ -41,6 +35,16 @@ async function startServer() {
         logger.info('Sent ready signal to PM2 master process');
       }
     });
+
+    // In development mode (or if standalone worker not deployed), run workers in-process
+    if (env.NODE_ENV !== 'production' && !process.env.WORKER_ID) {
+      try {
+        logger.info('Starting in-process BullMQ workers for development environment...');
+        startAllWorkers();
+      } catch (workerErr) {
+        logger.warn({ err: workerErr.message }, 'Failed to start some BullMQ workers (Redis might be unavailable)');
+      }
+    }
 
     const shutdown = async (signal) => {
       if (isShuttingDown) return;

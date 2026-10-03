@@ -21,14 +21,17 @@ const setupRedisAdapter = async (io) => {
     subClient = pubClient.duplicate();
 
     pubClient.on('error', (err) => {
-      logger.error({ err: err.message }, 'Socket.io Redis PubClient Error');
+      logger.warn({ err: err.message }, 'Socket.io Redis PubClient Error');
     });
 
     subClient.on('error', (err) => {
-      logger.error({ err: err.message }, 'Socket.io Redis SubClient Error');
+      logger.warn({ err: err.message }, 'Socket.io Redis SubClient Error');
     });
 
-    await Promise.all([pubClient.connect(), subClient.connect()]);
+    await Promise.race([
+      Promise.all([pubClient.connect(), subClient.connect()]),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connection timeout')), 2000))
+    ]);
 
     io.adapter(createAdapter(pubClient, subClient));
     logger.info('Socket.io Redis adapter attached successfully for multi-instance cluster');

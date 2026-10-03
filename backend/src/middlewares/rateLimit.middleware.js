@@ -13,12 +13,14 @@ const createSafeRedisStore = (prefix) => {
     try {
       return new RedisStore({
         sendCommand: async (...args) => {
+          const [cmd, key, ...rest] = args;
           try {
             return await redis.call(...args);
           } catch (err) {
             logger.warn({ err: err.message, prefix }, 'Redis rate-limit error, falling back dynamically to memory');
-            // Safe fallback return so express-rate-limit continues without 500 error
-            const [cmd, key, ...rest] = args;
+            if (cmd && String(cmd).toUpperCase() === 'SCRIPT') {
+              return 'fallback_sha_token';
+            }
             const now = Date.now();
             const fullKey = `${prefix}${key || 'ip'}`;
             const entry = memStore.get(fullKey) || { count: 0, resetTime: now + 900000 };

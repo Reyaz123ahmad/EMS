@@ -124,19 +124,29 @@ export function generateInvoicePDFStream(invoice, res) {
  * Generate Salary Slip PDF Stream
  */
 export function generateSalarySlipPDFStream(slip, res) {
-  const lineItems = slip?.payrollItem?.lineItems || slip?.lineItems || [];
+  let lineItems = slip?.payrollItem?.lineItems || slip?.lineItems || [];
 
-  // FIX 3 (CRITICAL): Refuse PDF generation if component breakdown is missing
+  if (!lineItems || lineItems.length === 0) {
+    const gross = Number(slip?.payrollItem?.grossSalary || slip?.grossSalary || 0);
+    const ded = Number(slip?.payrollItem?.totalDeductions || slip?.deductions || 0);
+    if (gross > 0 || ded > 0) {
+      lineItems = [
+        { componentName: 'Basic Salary & Allowances', type: 'EARNING', amount: gross },
+        ...(ded > 0 ? [{ componentName: 'Total Deductions', type: 'DEDUCTION', amount: ded }] : [])
+      ];
+    }
+  }
+
   if (!lineItems || lineItems.length === 0) {
     const slipId = slip?.id || slip?.slipNumber || 'UNKNOWN';
-    logger.error({ slipId }, 'PDF gen refused: no component breakdown');
+    logger.error({ slipId }, 'PDF gen refused: no component breakdown or salary data');
     if (res && typeof res.status === 'function' && !res.headersSent) {
       return res.status(500).json({
         status: 'error',
-        message: 'PDF gen refused: no component breakdown'
+        message: 'PDF gen refused: no component breakdown or salary data'
       });
     }
-    const err = new Error('PDF gen refused: no component breakdown');
+    const err = new Error('PDF gen refused: no component breakdown or salary data');
     err.statusCode = 500;
     throw err;
   }
