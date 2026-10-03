@@ -114,7 +114,7 @@ export const employeesService = {
       createdAt: Date.now()
     };
 
-    // Store in Redis/memory for 15 minutes
+    // 2. Store in Redis/memory for 15 minutes (fast)
     await authRepository.storeOTP(
       `session:${sessionId}`,
       JSON.stringify(sessionPayload),
@@ -122,27 +122,38 @@ export const employeesService = {
       15
     );
 
-    // 1. Queue OTP email via BullMQ
-    await addOTPEmail({
-      to: employeeData.email,
-      name: `${employeeData.firstName} ${employeeData.lastName}`,
-      otp: emailOtp,
-      purpose: 'EMPLOYEE_CREATE',
-      expiryMinutes: 15,
-      companyName: company.name
+    // 3. Log EMAIL OTP
+    console.log('========== EMAIL OTP ==========');
+    console.log('Session:', sessionId);
+    console.log('Email:', employeeData.email);
+    console.log('Email OTP:', emailOtp);
+    console.log('===============================');
+
+    // 4. Fire-and-forget email + SMS (do NOT await)
+    Promise.resolve().then(() => {
+      addOTPEmail({
+        to: employeeData.email,
+        name: `${employeeData.firstName} ${employeeData.lastName}`,
+        otp: emailOtp,
+        purpose: 'EMPLOYEE_CREATE',
+        expiryMinutes: 15,
+        companyName: company.name
+      }).catch(err =>
+        console.error('[EMAIL] Failed:', err?.message || err)
+      );
+
+      if (employeeData.phone) {
+        sendOtpSms(employeeData.phone, phoneOtp).catch(err =>
+          console.error('[SMS] Failed:', err?.message || err)
+        );
+      }
     });
 
-    // 2. Dispatch OTP SMS via Apihome
-    let phoneSent = false;
-    if (employeeData.phone) {
-      const smsResult = await sendOtpSms(employeeData.phone, phoneOtp);
-      phoneSent = Boolean(smsResult?.success);
-    }
-
+    // 5. Return IMMEDIATELY
     return {
       sessionId,
       emailSent: true,
-      phoneSent,
+      phoneSent: Boolean(employeeData.phone),
       message: employeeData.phone
         ? `Verification codes sent to ${employeeData.email} and ${employeeData.phone}`
         : `Verification code sent to ${employeeData.email}`

@@ -40,12 +40,14 @@ async function runAllTests() {
 
   const adminRoles = admin.userRoles?.map(ur => ur.role.name) || ['COMPANY_ADMIN', 'HR_ADMIN'];
 
+  const testEmail = `candidate_${Date.now()}@gmail.com`;
+
   // 1. Send OTP via employeesService
   const sendResult = await employeesService.sendEmployeeOTP({
     employeeData: {
       firstName: 'Reyaz',
       lastName: 'Ahmad',
-      email: 'reyazjaisinghpur@gmail.com',
+      email: testEmail,
       phone: '9661440544',
       employmentType: 'FULL_TIME',
       role: 'EMPLOYEE'
@@ -77,7 +79,7 @@ async function runAllTests() {
   console.log('\n--- Test 3A: Wrong Phone OTP Verification ---');
   try {
     await employeesService.verifyEmployeeOTP({
-      email: 'reyazjaisinghpur@gmail.com',
+      email: testEmail,
       emailOtp,
       phoneOtp: '000000',
       sessionId
@@ -90,7 +92,7 @@ async function runAllTests() {
   console.log('\n--- Test 3B: Wrong Email OTP Verification ---');
   try {
     await employeesService.verifyEmployeeOTP({
-      email: 'reyazjaisinghpur@gmail.com',
+      email: testEmail,
       emailOtp: '000000',
       phoneOtp,
       sessionId
@@ -102,7 +104,7 @@ async function runAllTests() {
 
   console.log('\n--- Test 3C: Valid Both OTPs Verification ---');
   const verifyResult = await employeesService.verifyEmployeeOTP({
-    email: 'reyazjaisinghpur@gmail.com',
+    email: testEmail,
     emailOtp,
     phoneOtp,
     sessionId

@@ -4,6 +4,13 @@ import { OTP_EXPIRY_MINUTES } from './auth.constants.js';
 
 const memoryOTPStore = new Map();
 
+function withTimeout(promise, ms = 200) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), ms))
+  ]);
+}
+
 export const authRepository = {
   /**
    * Find user by unique email with company, employee and roles
@@ -265,7 +272,7 @@ export const authRepository = {
     memoryOTPStore.set(key, { payload, expiresAt: Date.now() + expiryMinutes * 60 * 1000 });
     if (redis) {
       try {
-        await redis.set(key, payload, 'EX', expiryMinutes * 60);
+        await withTimeout(redis.set(key, payload, 'EX', expiryMinutes * 60), 100);
       } catch (err) {
         // Fallback stored in memoryOTPStore
       }
@@ -282,7 +289,7 @@ export const authRepository = {
     const key = `otp:${purpose}:${email.toLowerCase()}`;
     if (redis) {
       try {
-        const raw = await redis.get(key);
+        const raw = await withTimeout(redis.get(key), 100);
         if (raw) {
           try {
             return JSON.parse(raw);
@@ -315,7 +322,7 @@ export const authRepository = {
     memoryOTPStore.delete(key);
     if (redis) {
       try {
-        await redis.del(key);
+        await withTimeout(redis.del(key), 100);
       } catch (err) {}
     }
   }
