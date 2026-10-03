@@ -129,11 +129,11 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   const force = Boolean(options.forceAllShifts);
   const currentDayName = DAY_NAMES[targetDate.getDay()];
 
-  const startOfDay = new Date(targetDate);
-  startOfDay.setUTCHours(0, 0, 0, 0);
-
-  const endOfDay = new Date(targetDate);
-  endOfDay.setUTCHours(23, 59, 59, 999);
+  const y = targetDate.getFullYear();
+  const m = targetDate.getMonth();
+  const d = targetDate.getDate();
+  const startOfDay = new Date(Date.UTC(y, m, d, 0, 0, 0, 0));
+  const endOfDay = new Date(Date.UTC(y, m, d, 23, 59, 59, 999));
 
   // 1. Holiday Check
   const holidayInfo = await attendanceService.checkHoliday(companyId, targetDate);
@@ -149,14 +149,10 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   }
 
   // 2. Batch Fetch all required company data in parallel
-  const [employees, defaultWeeklyOff, approvedLeaves, existingLogs, companyDefaultShift] = await Promise.all([
+  const [employees, approvedLeaves, existingLogs, companyDefaultShift] = await Promise.all([
     prisma.employee.findMany({
       where: { companyId, status: 'ACTIVE' },
       select: { id: true, firstName: true, lastName: true, employeeCode: true, branchId: true, departmentId: true }
-    }),
-    prisma.weeklyOffRule.findFirst({
-      where: { companyId, isActive: true },
-      orderBy: { createdAt: 'asc' }
     }),
     prisma.leaveRequest.findMany({
       where: {
@@ -182,10 +178,6 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
     return { companyId, marked: 0, skipped: 0, total: 0, details: [] };
   }
 
-  const isCompanyWeeklyOff = defaultWeeklyOff 
-    ? (defaultWeeklyOff.days || []).map(d => d.toUpperCase()).includes(currentDayName)
-    : false;
-
   const onLeaveEmpIds = new Set(approvedLeaves.map(l => l.employeeId));
   const logsByEmpId = new Map(existingLogs.map(l => [l.employeeId, l]));
 
@@ -198,10 +190,11 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   for (const employee of employees) {
     const empId = employee.id;
 
-    // A. Weekly Off Check
-    if (isCompanyWeeklyOff) {
+    // A. Weekly Off Check (Per-employee custom rule or company fallback)
+    const weeklyOffInfo = await checkWeeklyOff(empId, companyId, targetDate);
+    if (weeklyOffInfo.isWeeklyOff) {
       skippedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'WEEKLY_OFF' });
+      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'WEEKLY_OFF', rule: weeklyOffInfo.ruleName });
       continue;
     }
 

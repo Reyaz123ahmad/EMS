@@ -48,11 +48,12 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
     return cached.data;
   }
 
-  if (inFlightShiftPromises.has(cacheKey)) {
-    return inFlightShiftPromises.get(cacheKey);
+  let queryPromise = inFlightShiftPromises.get(cacheKey);
+  if (queryPromise) {
+    return queryPromise;
   }
 
-  const queryPromise = (async () => {
+  queryPromise = (async () => {
     try {
       const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0, 0);
       const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999);

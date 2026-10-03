@@ -235,37 +235,24 @@ export const attendanceService = {
     const targetDateStr = targetDate.toISOString().slice(0, 10);
     const year = targetDate.getFullYear();
     const cacheKey = `holidays:${companyId}:${year}`;
-
     if (!global._holidayCalendarCache) global._holidayCalendarCache = new Map();
-    if (!global._inFlightHolidayPromises) global._inFlightHolidayPromises = new Map();
 
     let calendar = null;
     const cached = global._holidayCalendarCache.get(cacheKey);
     if (cached && Date.now() < cached.expiresAt) {
       calendar = cached.data;
-    } else if (global._inFlightHolidayPromises.has(cacheKey)) {
-      calendar = await global._inFlightHolidayPromises.get(cacheKey);
     } else {
-      const queryPromise = (async () => {
-        try {
-          const data = await prisma.holidayCalendar.findFirst({
-            where: {
-              companyId,
-              year,
-              isActive: true
-            },
-            include: {
-              holidays: true
-            }
-          });
-          global._holidayCalendarCache.set(cacheKey, { data, expiresAt: Date.now() + 300000 });
-          return data;
-        } finally {
-          global._inFlightHolidayPromises.delete(cacheKey);
+      calendar = await prisma.holidayCalendar.findFirst({
+        where: {
+          companyId,
+          year,
+          isActive: true
+        },
+        include: {
+          holidays: true
         }
-      })();
-      global._inFlightHolidayPromises.set(cacheKey, queryPromise);
-      calendar = await queryPromise;
+      });
+      global._holidayCalendarCache.set(cacheKey, { data: calendar, expiresAt: Date.now() + 300000 });
     }
 
     if (!calendar || !calendar.holidays || calendar.holidays.length === 0) {
