@@ -5,33 +5,36 @@ import attendanceService from '../attendance.service.js';
 const DAY_NAMES = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
 /**
- * Calculate the shift end cutoff time for absent marking
- * Handles both regular same-day shifts and overnight (cross-midnight) shifts
+ * Check if a given day is a weekly off based on rules/settings/default
  */
-export function calculateShiftEndCutoff(targetDate, shift, bufferMinutes = 15) {
-  const startTimeStr = shift.startTime || '09:00';
-  const endTimeStr = shift.endTime || '18:00';
+function isDayWeeklyOff(dayOfWeek, currentDayName, offDaysConfig) {
+  if (!offDaysConfig || !Array.isArray(offDaysConfig) || offDaysConfig.length === 0) {
+    // Default fallback: Sunday is weekly off (0 or SUNDAY)
+    return dayOfWeek === 0 || currentDayName === 'SUNDAY';
+  }
+  return offDaysConfig.some((d) => {
+    const dStr = String(d).toUpperCase().trim();
+    return dStr === currentDayName || dStr === String(dayOfWeek) || Number(d) === dayOfWeek;
+  });
+}
 
+/**
+ * Calculate shift start and grace cutoff time
+ */
+export function calculateShiftGraceCutoff(targetDate, shift, defaultGrace = 15) {
+  const startTimeStr = shift?.startTime || '09:00';
   const [startH, startM] = startTimeStr.split(':').map(Number);
-  const [endH, endM] = endTimeStr.split(':').map(Number);
 
   const shiftStart = new Date(targetDate);
-  shiftStart.setHours(startH, startM, 0, 0);
+  shiftStart.setHours(startH, startM || 0, 0, 0);
 
-  const shiftEnd = new Date(targetDate);
-  shiftEnd.setHours(endH, endM, 0, 0);
+  const graceMinutes = Number(shift?.graceMinutes != null ? shift.graceMinutes : defaultGrace);
+  const graceCutoff = new Date(shiftStart.getTime() + graceMinutes * 60000);
 
-  // If night shift or end time is earlier than start time (crosses midnight)
-  if (shift.isNightShift || endH < startH || (endH === startH && endM <= startM)) {
-    shiftEnd.setDate(shiftEnd.getDate() + 1);
-  }
-
-  const absentCutoff = new Date(shiftEnd.getTime() + bufferMinutes * 60 * 1000);
   return {
     shiftStart,
-    shiftEnd,
-    absentCutoff,
-    isOvernight: shiftEnd.getDate() !== shiftStart.getDate()
+    graceCutoff,
+    graceMinutes
   };
 }
 
@@ -47,7 +50,9 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   const targetDate = options.date ? new Date(options.date) : new Date();
   const now = options.currentTime ? new Date(options.currentTime) : new Date();
   const force = Boolean(options.forceAllShifts);
-  const currentDayName = DAY_NAMES[targetDate.getDay()];
+
+  const dayOfWeek = targetDate.getDay(); // 0 = Sunday, 1 = Monday, ...
+  const currentDayName = DAY_NAMES[dayOfWeek];
 
   const y = targetDate.getFullYear();
   const m = targetDate.getMonth();
@@ -55,30 +60,53 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   const startOfDay = new Date(Date.UTC(y, m, d, 0, 0, 0, 0));
   const endOfDay = new Date(Date.UTC(y, m, d, 23, 59, 59, 999));
 
-  // 1. Holiday Check
-  const holidayInfo = await attendanceService.checkHoliday(companyId, targetDate);
-  if (holidayInfo.isHoliday) {
-    logger.info({ companyId, holiday: holidayInfo.holiday?.name }, 'Skipping absent marking: Company is on official holiday today');
+  // 1. Company-wide Holiday Check
+  const holidayInfo = await attendanceService.checkHoliday(companyId, targetDate).catch(() => ({ isHoliday: false, holiday: null }));
+  if (holidayInfo?.isHoliday) {
+    logger.info({ companyId, holiday: holidayInfo.holiday?.name, date: startOfDay.toISOString().slice(0, 10) }, 'Skipping absent marking: Company holiday today');
     return {
       companyId,
+      date: startOfDay.toISOString().slice(0, 10),
       marked: 0,
-      skipped: 0,
-      reason: `Company holiday: ${holidayInfo.holiday?.name}`,
+      skipped: 'ALL',
+      reason: 'HOLIDAY',
+      holiday: holidayInfo.holiday?.name,
       details: []
     };
   }
 
-  // 2. Batch Fetch all required company data in parallel
+  // 2. Fetch Company metadata & Weekly off rules
   const [
+    company,
+    weeklyOffRules,
+    customWeeklyOffAssignments,
     employees,
     approvedLeaves,
     existingLogs,
     companyDefaultShift,
-    companyWeeklyOff,
-    allWeeklyOffAssignments,
     allShiftAssignments,
     allRosters
   ] = await Promise.all([
+    prisma.company.findUnique({
+      where: { id: companyId },
+      select: { id: true, attendanceSettings: true, generalSettings: true }
+    }),
+    prisma.weeklyOffRule.findMany({
+      where: { companyId, isActive: true },
+      orderBy: { createdAt: 'asc' }
+    }),
+    prisma.weeklyOffAssignment.findMany({
+      where: {
+        employee: { companyId },
+        effectiveFrom: { lte: targetDate },
+        OR: [
+          { effectiveTo: null },
+          { effectiveTo: { gte: targetDate } }
+        ]
+      },
+      include: { weeklyOffRule: true },
+      orderBy: { effectiveFrom: 'desc' }
+    }),
     prisma.employee.findMany({
       where: { companyId, status: 'ACTIVE' },
       select: { id: true, firstName: true, lastName: true, employeeCode: true, branchId: true, departmentId: true }
@@ -102,22 +130,6 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
       where: { companyId, isActive: true },
       orderBy: { createdAt: 'asc' }
     }),
-    prisma.weeklyOffRule.findFirst({
-      where: { companyId, isActive: true },
-      orderBy: { createdAt: 'asc' }
-    }),
-    prisma.weeklyOffAssignment.findMany({
-      where: {
-        employee: { companyId },
-        effectiveFrom: { lte: targetDate },
-        OR: [
-          { effectiveTo: null },
-          { effectiveTo: { gte: targetDate } }
-        ]
-      },
-      include: { weeklyOffRule: true },
-      orderBy: { effectiveFrom: 'desc' }
-    }),
     prisma.shiftAssignment.findMany({
       where: {
         employee: { companyId },
@@ -140,16 +152,47 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
     })
   ]);
 
-  if (employees.length === 0) {
+  if (!employees || employees.length === 0) {
     return { companyId, marked: 0, skipped: 0, total: 0, details: [] };
   }
 
-  const onLeaveEmpIds = new Set(approvedLeaves.map(l => l.employeeId));
-  const logsByEmpId = new Map(existingLogs.map(l => [l.employeeId, l]));
+  // Determine Company-wide default weekly off days
+  let companyOffDays = [];
+  if (weeklyOffRules && weeklyOffRules.length > 0) {
+    companyOffDays = weeklyOffRules.flatMap((r) => r.days || []);
+  } else if (company?.attendanceSettings?.weeklyOff && Array.isArray(company.attendanceSettings.weeklyOff)) {
+    companyOffDays = company.attendanceSettings.weeklyOff;
+  } else {
+    // Default fallback is Sunday
+    companyOffDays = ['SUNDAY', 0, '0'];
+  }
+
+  const isCompanyWeeklyOffToday = isDayWeeklyOff(dayOfWeek, currentDayName, companyOffDays);
+
+  // If company-wide weekly off today and no employee has custom weekly off assignments overriding it
+  if (isCompanyWeeklyOffToday && customWeeklyOffAssignments.length === 0) {
+    logger.info({ companyId, day: currentDayName, date: startOfDay.toISOString().slice(0, 10) }, 'Skipping absent marking: Company-wide weekly off today');
+    return {
+      companyId,
+      date: startOfDay.toISOString().slice(0, 10),
+      marked: 0,
+      skipped: employees.length,
+      reason: 'WEEKLY_OFF',
+      details: employees.map((e) => ({
+        employeeId: e.id,
+        employeeCode: e.employeeCode,
+        action: 'SKIPPED',
+        reason: 'WEEKLY_OFF'
+      }))
+    };
+  }
+
+  const onLeaveEmpIds = new Set(approvedLeaves.map((l) => l.employeeId));
+  const logsByEmpId = new Map(existingLogs.map((l) => [l.employeeId, l]));
 
   // Index custom weekly offs
   const customWeeklyOffByEmpId = new Map();
-  allWeeklyOffAssignments.forEach(wa => {
+  customWeeklyOffAssignments.forEach((wa) => {
     if (!customWeeklyOffByEmpId.has(wa.employeeId)) {
       customWeeklyOffByEmpId.set(wa.employeeId, wa);
     }
@@ -157,7 +200,7 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
 
   // Index rosters
   const rosterByEmpId = new Map();
-  allRosters.forEach(r => {
+  allRosters.forEach((r) => {
     if (!rosterByEmpId.has(r.employeeId)) {
       rosterByEmpId.set(r.employeeId, r);
     }
@@ -165,13 +208,11 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
 
   // Index shift assignments
   const shiftAssignmentByEmpId = new Map();
-  allShiftAssignments.forEach(sa => {
+  allShiftAssignments.forEach((sa) => {
     if (!shiftAssignmentByEmpId.has(sa.employeeId)) {
       shiftAssignmentByEmpId.set(sa.employeeId, sa);
     }
   });
-
-  const companyWeeklyOffDays = (companyWeeklyOff?.days || []).map(d => String(d).toUpperCase());
 
   let markedCount = 0;
   let skippedCount = 0;
@@ -182,29 +223,44 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   for (const employee of employees) {
     const empId = employee.id;
 
-    // A. Weekly Off Check
+    // A. Weekly Off Check for individual employee
     const customOff = customWeeklyOffByEmpId.get(empId);
+    let isEmployeeWeeklyOff = false;
+    let weeklyOffRuleName = 'Default Sunday';
+
     if (customOff?.weeklyOffRule?.isActive) {
-      const days = (customOff.weeklyOffRule.days || []).map(d => String(d).toUpperCase());
-      if (days.includes(currentDayName)) {
-        skippedCount++;
-        details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'WEEKLY_OFF', rule: customOff.weeklyOffRule.name });
-        continue;
-      }
-    } else if (companyWeeklyOffDays.includes(currentDayName)) {
+      isEmployeeWeeklyOff = isDayWeeklyOff(dayOfWeek, currentDayName, customOff.weeklyOffRule.days);
+      weeklyOffRuleName = customOff.weeklyOffRule.name;
+    } else {
+      isEmployeeWeeklyOff = isCompanyWeeklyOffToday;
+      weeklyOffRuleName = weeklyOffRules[0]?.name || 'Default Sunday';
+    }
+
+    if (isEmployeeWeeklyOff) {
       skippedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'WEEKLY_OFF', rule: companyWeeklyOff?.name });
+      details.push({
+        employeeId: empId,
+        employeeCode: employee.employeeCode,
+        action: 'SKIPPED',
+        reason: 'WEEKLY_OFF',
+        rule: weeklyOffRuleName
+      });
       continue;
     }
 
     // B. Approved Leave Check
     if (onLeaveEmpIds.has(empId)) {
       skippedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'ON_APPROVED_LEAVE' });
+      details.push({
+        employeeId: empId,
+        employeeCode: employee.employeeCode,
+        action: 'SKIPPED',
+        reason: 'ON_APPROVED_LEAVE'
+      });
       continue;
     }
 
-    // C. Shift Info Resolution in-memory (Roster > Assignment > Default)
+    // C. Shift Info Resolution (Roster > Assignment > Default)
     let shift = null;
     let shiftSource = 'COMPANY_DEFAULT';
     let isRosterOverride = false;
@@ -228,28 +284,29 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
     if (!shift || !shift.startTime) {
       logger.warn({ employeeId: empId }, 'No active shift found for employee, skipping absent marking');
       skippedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'NO_SHIFT_ASSIGNED' });
+      details.push({
+        employeeId: empId,
+        employeeCode: employee.employeeCode,
+        action: 'SKIPPED',
+        reason: 'NO_SHIFT_ASSIGNED'
+      });
       continue;
     }
 
-    const graceMinutes = Number(shift.graceMinutes !== undefined && shift.graceMinutes !== null ? shift.graceMinutes : 15);
+    // D. Shift Timing & Grace Cutoff Check
+    const { graceCutoff } = calculateShiftGraceCutoff(targetDate, shift);
 
-    // D. Grace Period Cutoff Check (shiftStart + graceMinutes)
-    const [startH, startM] = shift.startTime.split(':').map(Number);
-    const shiftStart = new Date(targetDate);
-    shiftStart.setHours(startH, startM || 0, 0, 0);
-
-    const graceCutoff = new Date(shiftStart.getTime() + graceMinutes * 60000);
-
-    // If targetDate is today and now is still within grace period, skip for now
-    if (!force && now.getTime() <= graceCutoff.getTime()) {
+    // If grace cutoff has not passed yet, SKIP (Do NOT mark absent before grace cutoff)
+    if (!force && now.getTime() < graceCutoff.getTime()) {
       skippedCount++;
       details.push({
         employeeId: empId,
         employeeCode: employee.employeeCode,
         action: 'SKIPPED',
-        reason: 'GRACE_PERIOD_ACTIVE',
-        shiftName: shift.name
+        reason: 'GRACE_NOT_PASSED',
+        shiftName: shift.name,
+        shiftStartTime: shift.startTime,
+        graceCutoff: graceCutoff.toISOString()
       });
       continue;
     }
@@ -257,18 +314,27 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
     // E. Existing log check
     const existingLog = logsByEmpId.get(empId);
     if (existingLog) {
-      if (existingLog.checkInAt || ['PRESENT', 'LATE', 'HALF_DAY'].includes(existingLog.status)) {
+      if (existingLog.checkInAt || ['PRESENT', 'LATE', 'HALF_DAY', 'ON_LEAVE', 'HOLIDAY', 'WEEKLY_OFF', 'ABSENT'].includes(existingLog.status)) {
         skippedCount++;
-        continue;
-      }
-      if (existingLog.status === 'ABSENT' || ['ON_LEAVE', 'HOLIDAY', 'WEEKLY_OFF'].includes(existingLog.status)) {
-        skippedCount++;
+        details.push({
+          employeeId: empId,
+          employeeCode: employee.employeeCode,
+          action: 'SKIPPED',
+          reason: 'ALREADY_MARKED',
+          status: existingLog.status
+        });
         continue;
       }
 
       logsToUpdate.push(existingLog.id);
       markedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', updated: true, shiftName: shift.name });
+      details.push({
+        employeeId: empId,
+        employeeCode: employee.employeeCode,
+        action: 'MARKED_ABSENT',
+        updated: true,
+        shiftName: shift.name
+      });
     } else {
       recordsToCreate.push({
         companyId,
@@ -283,11 +349,19 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
         isRosterOverride,
         isLate: false,
         isHoliday: false,
-        totalWorkedMinutes: 0
+        totalWorkedMinutes: 0,
+        remarks: 'Marked by SYSTEM'
       });
       markedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', created: true, shiftName: shift.name });
+      details.push({
+        employeeId: empId,
+        employeeCode: employee.employeeCode,
+        action: 'MARKED_ABSENT',
+        created: true,
+        shiftName: shift.name
+      });
     }
+
     if (global._todayAttendanceCache) {
       const cacheKey = `${empId}_${startOfDay.toISOString().split('T')[0]}`;
       global._todayAttendanceCache.delete(cacheKey);
@@ -332,7 +406,7 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
  * @returns {Promise<{totalCompanies: number, totalMarked: number, totalSkipped: number, results: Array}>}
  */
 export async function markAbsenteesAllCompanies(options = {}) {
-  logger.info('INFO: Auto absent marking job started across all active companies...');
+  logger.info('Auto absent marking job started across all active companies...');
   const companies = await prisma.company.findMany({
     where: { status: 'ACTIVE' },
     select: { id: true, name: true }
@@ -355,7 +429,7 @@ export async function markAbsenteesAllCompanies(options = {}) {
           date: evalDate
         });
         totalMarked += res.marked || 0;
-        totalSkipped += res.skipped || 0;
+        totalSkipped += (typeof res.skipped === 'number' ? res.skipped : 0);
         results.push(res);
       } catch (err) {
         logger.error({ companyId: company.id, date: evalDate, err: err.message }, 'Failed absent marking for company');
@@ -366,7 +440,7 @@ export async function markAbsenteesAllCompanies(options = {}) {
 
   logger.info(
     { totalCompanies: companies.length, totalMarked, totalSkipped },
-    'INFO: Auto absent marking job completed successfully across all companies'
+    'Auto absent marking job completed successfully across all companies'
   );
 
   return {
@@ -379,5 +453,6 @@ export async function markAbsenteesAllCompanies(options = {}) {
 
 export default {
   markAbsenteesForCompany,
-  markAbsenteesAllCompanies
+  markAbsenteesAllCompanies,
+  calculateShiftGraceCutoff
 };
