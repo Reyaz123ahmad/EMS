@@ -1,14 +1,20 @@
-import transporter from './email.client.js';
+import { Resend } from 'resend';
 import env from '../../config/env.js';
 import logger from '../../config/logger.js';
 import { getOTPEmailTemplate } from './templates/otp.template.js';
 import { getCredentialsEmailTemplate } from './templates/credentials.template.js';
 import { getWelcomeEmailTemplate } from './templates/welcome.template.js';
 
+const resend = new Resend(env.RESEND_API_KEY || process.env.RESEND_API_KEY);
+
+const FROM_EMAIL = env.RESEND_FROM_EMAIL || process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+const FROM_NAME = env.RESEND_FROM_NAME || process.env.RESEND_FROM_NAME || 'EMS Platform';
+const FROM = `${FROM_NAME} <${FROM_EMAIL}>`;
+
 /**
- * Core generic send email method
+ * Core generic send email method using Resend
  * @param {Object} options
- * @param {string} options.to
+ * @param {string|string[]} options.to
  * @param {string} options.subject
  * @param {string} options.html
  * @param {string} [options.text]
@@ -16,104 +22,102 @@ import { getWelcomeEmailTemplate } from './templates/welcome.template.js';
  */
 export async function sendEmail({ to, subject, html, text }) {
   try {
-    const fromAddress = `"${env.SMTP_FROM_NAME || 'Mindstocs'}" <${env.SMTP_FROM || env.SMTP_USER}>`;
-    const mailOptions = {
-      from: fromAddress,
-      to,
+    const { data, error } = await resend.emails.send({
+      from: FROM,
+      to: Array.isArray(to) ? to : [to],
       subject,
-      html,
-      text: text || html.replace(/<[^>]*>?/gm, '')
-    };
+      html: html || text,
+      text: text || html?.replace(/<[^>]*>?/gm, '')
+    });
 
-    const info = await transporter.sendMail(mailOptions);
-    logger.info({ messageId: info.messageId, to, subject }, 'Email sent successfully');
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    logger.error({ error: error.message, to, subject }, 'Failed to send email');
-    throw error;
+    if (error) {
+      console.error('[EMAIL] Resend error:', error);
+      logger.error({ error, to, subject }, '[EMAIL] Resend error');
+      throw new Error(error.message || 'Email send failed');
+    }
+
+    console.log('[EMAIL] Sent:', data?.id, 'to:', to);
+    logger.info({ id: data?.id, to, subject }, '[EMAIL] Sent successfully via Resend');
+    return { success: true, id: data?.id, messageId: data?.id };
+  } catch (err) {
+    console.error('[EMAIL] Send failed:', err.message);
+    logger.error({ error: err.message, to, subject }, '[EMAIL] Send failed');
+    return { success: false, error: err.message };
   }
 }
 
 /**
- * Send OTP Verification Email
- * @param {Object} options
- * @param {string} options.to
- * @param {string} options.name
- * @param {string} options.otp
- * @param {string} [options.purpose]
- * @param {number} [options.expiryMinutes=10]
- * @param {string} [options.companyName]
- * @returns {Promise<Object>}
+ * Send OTP Verification Email (Supports both object & positional args)
  */
-/**
- * Send OTP Verification Email
- * @param {Object} options
- * @param {string} options.to
- * @param {string} options.name
- * @param {string} options.otp
- * @param {string} [options.purpose]
- * @param {number} [options.expiryMinutes=10]
- * @param {string} [options.companyName]
- * @returns {Promise<Object>}
- */
-export async function sendOTPEmail({ to, name, otp, purpose, expiryMinutes = 10, companyName }) {
+export async function sendOTPEmail(optionsOrTo, maybeOtp) {
+  let to, name, otp, purpose, expiryMinutes, companyName;
+  if (typeof optionsOrTo === 'string') {
+    to = optionsOrTo;
+    otp = maybeOtp;
+    name = 'Valued User';
+  } else {
+    ({ to, name, otp, purpose, expiryMinutes = 10, companyName } = optionsOrTo || {});
+  }
+
   console.log('[EMAIL] Sending OTP to:', to);
   console.log('[EMAIL] OTP:', otp);
-  console.log('[EMAIL] Provider:', env.SMTP_HOST || 'Gmail SMTP');
+  console.log('[EMAIL] Provider: Resend');
 
-  const html = getOTPEmailTemplate({ name, otp, purpose, expiryMinutes, companyName });
+  const html = getOTPEmailTemplate({
+    name: name || 'Valued User',
+    otp,
+    purpose: purpose || 'Verification',
+    expiryMinutes,
+    companyName: companyName || 'Mindstocs EMS'
+  });
   const subject = `Your Verification Code: ${otp} - ${companyName || 'Mindstocs EMS'}`;
   return sendEmail({ to, subject, html });
 }
 
+export const sendOtpEmail = sendOTPEmail;
+
 /**
- * Send Account Credentials Email
- * @param {Object} options
- * @param {string} options.to
- * @param {string} options.name
- * @param {string} options.email
- * @param {string} options.password
- * @param {string} options.role
- * @param {string} [options.companyName]
- * @param {string} [options.employeeCode]
- * @param {string} [options.department]
- * @param {string} [options.loginUrl]
- * @returns {Promise<Object>}
+ * Send Account Credentials Email (Supports both object & positional args)
  */
-export async function sendCredentialsEmail({
-  to,
-  name,
-  email,
-  password,
-  role,
-  companyName,
-  employeeCode,
-  department,
-  loginUrl
-}) {
+export async function sendCredentialsEmail(optionsOrTo, maybeOptions) {
+  let to, name, email, password, role, companyName, employeeCode, department, loginUrl;
+  if (typeof optionsOrTo === 'string') {
+    to = optionsOrTo;
+    ({ email, password, role, companyName, employeeCode, department, loginUrl, name } = maybeOptions || {});
+  } else {
+    ({ to, name, email, password, role, companyName, employeeCode, department, loginUrl } = optionsOrTo || {});
+  }
+
   const html = getCredentialsEmailTemplate({
-    name,
-    email,
+    name: name || 'Employee',
+    email: email || to,
     password,
-    role,
-    companyName,
+    role: role || 'EMPLOYEE',
+    companyName: companyName || 'Mindstocs EMS',
     employeeCode,
     department,
-    loginUrl
+    loginUrl: loginUrl || `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`
   });
   const subject = `Welcome to ${companyName || 'Mindstocs EMS'} - Account Credentials`;
   return sendEmail({ to, subject, html });
 }
 
 /**
+ * Send Password Reset Email
+ */
+export async function sendPasswordResetEmail(to, { otp, name, companyName, expiryMinutes = 10 } = {}) {
+  return sendOTPEmail({
+    to,
+    name,
+    otp,
+    purpose: 'Password Reset',
+    expiryMinutes,
+    companyName
+  });
+}
+
+/**
  * Send Welcome Email
- * @param {Object} options
- * @param {string} options.to
- * @param {string} options.name
- * @param {string} [options.companyName]
- * @param {string} [options.role]
- * @param {string} [options.loginUrl]
- * @returns {Promise<Object>}
  */
 export async function sendWelcomeEmail({ to, name, companyName, role, loginUrl }) {
   const html = getWelcomeEmailTemplate({ name, companyName, role, loginUrl });
@@ -166,7 +170,9 @@ export async function sendDocumentRejectionEmail({ to, name, documentName, rejec
 export default {
   sendEmail,
   sendOTPEmail,
+  sendOtpEmail,
   sendCredentialsEmail,
+  sendPasswordResetEmail,
   sendWelcomeEmail,
   sendDocumentApprovalEmail,
   sendDocumentRejectionEmail

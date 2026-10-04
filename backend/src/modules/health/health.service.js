@@ -2,7 +2,6 @@ import prisma from '../../config/prisma.js';
 import redis from '../../config/redis.js';
 import { allQueues } from '../../queues/index.js';
 import { v2 as cloudinary } from 'cloudinary';
-import nodemailer from 'nodemailer';
 import env from '../../config/env.js';
 
 export async function checkDatabase() {
@@ -62,10 +61,10 @@ export async function checkStorage() {
 
 export async function checkEmail() {
   try {
-    const isConfigured = !!(env.SMTP_HOST || process.env.SMTP_HOST || env.RESEND_API_KEY);
+    const isConfigured = !!(env.RESEND_API_KEY || process.env.RESEND_API_KEY);
     return {
       status: isConfigured ? 'healthy' : 'simulated',
-      provider: env.SMTP_HOST ? 'SMTP' : 'Direct/Simulated',
+      provider: 'Resend',
     };
   } catch (err) {
     return { status: 'degraded', error: err.message };
