@@ -1,88 +1,8 @@
 import { prisma } from '../../../config/prisma.js';
 import logger from '../../../config/logger.js';
 import attendanceService from '../attendance.service.js';
-import attendanceRepository from '../attendance.repository.js';
-import { resolveShiftForEmployee } from '../../shifts/services/shift-resolver.service.js';
 
 const DAY_NAMES = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
-
-/**
- * Check if a given date is a weekly off for an employee
- */
-async function checkWeeklyOff(employeeId, companyId, date) {
-  const targetDate = new Date(date);
-  const currentDayName = DAY_NAMES[targetDate.getDay()];
-
-  // 1. Check custom weekly off assignment for employee
-  const empWeeklyOff = await prisma.weeklyOffAssignment.findFirst({
-    where: {
-      employeeId,
-      effectiveFrom: { lte: targetDate },
-      OR: [
-        { effectiveTo: null },
-        { effectiveTo: { gte: targetDate } }
-      ]
-    },
-    include: { weeklyOffRule: true },
-    orderBy: { effectiveFrom: 'desc' }
-  });
-
-  if (empWeeklyOff?.weeklyOffRule?.isActive) {
-    const days = (empWeeklyOff.weeklyOffRule.days || []).map((d) => d.toUpperCase());
-    if (days.includes(currentDayName)) {
-      return { isWeeklyOff: true, ruleName: empWeeklyOff.weeklyOffRule.name };
-    }
-    return { isWeeklyOff: false };
-  }
-
-  // 2. Fallback to company default active weekly off rule
-  if (companyId) {
-    const companyWeeklyOff = await prisma.weeklyOffRule.findFirst({
-      where: { companyId, isActive: true },
-      orderBy: { createdAt: 'asc' }
-    });
-
-    if (companyWeeklyOff) {
-      const days = (companyWeeklyOff.days || []).map((d) => d.toUpperCase());
-      if (days.includes(currentDayName)) {
-        return { isWeeklyOff: true, ruleName: companyWeeklyOff.name };
-      }
-    }
-  }
-
-  return { isWeeklyOff: false };
-}
-
-/**
- * Check if employee is on approved leave on the given date
- */
-async function checkApprovedLeave(employeeId, date) {
-  const startOfDay = new Date(date);
-  startOfDay.setUTCHours(0, 0, 0, 0);
-
-  const endOfDay = new Date(date);
-  endOfDay.setUTCHours(23, 59, 59, 999);
-
-  const leave = await prisma.leaveRequest.findFirst({
-    where: {
-      employeeId,
-      status: 'APPROVED',
-      startDate: { lte: endOfDay },
-      endDate: { gte: startOfDay }
-    },
-    include: { leaveType: true }
-  });
-
-  if (leave) {
-    return {
-      isOnLeave: true,
-      leaveType: leave.leaveType?.name || 'Leave',
-      leaveId: leave.id
-    };
-  }
-
-  return { isOnLeave: false };
-}
 
 /**
  * Calculate the shift end cutoff time for absent marking
@@ -149,7 +69,16 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   }
 
   // 2. Batch Fetch all required company data in parallel
-  const [employees, approvedLeaves, existingLogs, companyDefaultShift] = await Promise.all([
+  const [
+    employees,
+    approvedLeaves,
+    existingLogs,
+    companyDefaultShift,
+    companyWeeklyOff,
+    allWeeklyOffAssignments,
+    allShiftAssignments,
+    allRosters
+  ] = await Promise.all([
     prisma.employee.findMany({
       where: { companyId, status: 'ACTIVE' },
       select: { id: true, firstName: true, lastName: true, employeeCode: true, branchId: true, departmentId: true }
@@ -170,7 +99,44 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
       }
     }),
     prisma.shift.findFirst({
-      where: { companyId, isActive: true }
+      where: { companyId, isActive: true },
+      orderBy: { createdAt: 'asc' }
+    }),
+    prisma.weeklyOffRule.findFirst({
+      where: { companyId, isActive: true },
+      orderBy: { createdAt: 'asc' }
+    }),
+    prisma.weeklyOffAssignment.findMany({
+      where: {
+        employee: { companyId },
+        effectiveFrom: { lte: targetDate },
+        OR: [
+          { effectiveTo: null },
+          { effectiveTo: { gte: targetDate } }
+        ]
+      },
+      include: { weeklyOffRule: true },
+      orderBy: { effectiveFrom: 'desc' }
+    }),
+    prisma.shiftAssignment.findMany({
+      where: {
+        employee: { companyId },
+        effectiveFrom: { lte: targetDate },
+        OR: [
+          { effectiveTo: null },
+          { effectiveTo: { gte: targetDate } }
+        ]
+      },
+      include: { shift: true },
+      orderBy: { effectiveFrom: 'desc' }
+    }),
+    prisma.roster.findMany({
+      where: {
+        employee: { companyId },
+        date: { gte: startOfDay, lte: endOfDay },
+        isPublished: true
+      },
+      include: { shift: true }
     })
   ]);
 
@@ -181,6 +147,32 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   const onLeaveEmpIds = new Set(approvedLeaves.map(l => l.employeeId));
   const logsByEmpId = new Map(existingLogs.map(l => [l.employeeId, l]));
 
+  // Index custom weekly offs
+  const customWeeklyOffByEmpId = new Map();
+  allWeeklyOffAssignments.forEach(wa => {
+    if (!customWeeklyOffByEmpId.has(wa.employeeId)) {
+      customWeeklyOffByEmpId.set(wa.employeeId, wa);
+    }
+  });
+
+  // Index rosters
+  const rosterByEmpId = new Map();
+  allRosters.forEach(r => {
+    if (!rosterByEmpId.has(r.employeeId)) {
+      rosterByEmpId.set(r.employeeId, r);
+    }
+  });
+
+  // Index shift assignments
+  const shiftAssignmentByEmpId = new Map();
+  allShiftAssignments.forEach(sa => {
+    if (!shiftAssignmentByEmpId.has(sa.employeeId)) {
+      shiftAssignmentByEmpId.set(sa.employeeId, sa);
+    }
+  });
+
+  const companyWeeklyOffDays = (companyWeeklyOff?.days || []).map(d => String(d).toUpperCase());
+
   let markedCount = 0;
   let skippedCount = 0;
   const details = [];
@@ -190,11 +182,18 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   for (const employee of employees) {
     const empId = employee.id;
 
-    // A. Weekly Off Check (Per-employee custom rule or company fallback)
-    const weeklyOffInfo = await checkWeeklyOff(empId, companyId, targetDate);
-    if (weeklyOffInfo.isWeeklyOff) {
+    // A. Weekly Off Check
+    const customOff = customWeeklyOffByEmpId.get(empId);
+    if (customOff?.weeklyOffRule?.isActive) {
+      const days = (customOff.weeklyOffRule.days || []).map(d => String(d).toUpperCase());
+      if (days.includes(currentDayName)) {
+        skippedCount++;
+        details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'WEEKLY_OFF', rule: customOff.weeklyOffRule.name });
+        continue;
+      }
+    } else if (companyWeeklyOffDays.includes(currentDayName)) {
       skippedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'WEEKLY_OFF', rule: weeklyOffInfo.ruleName });
+      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'WEEKLY_OFF', rule: companyWeeklyOff?.name });
       continue;
     }
 
@@ -205,15 +204,34 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
       continue;
     }
 
-    // C. Shift Info (Resolve shift: Roster > Assignment > Default)
-    const shiftInfo = await resolveShiftForEmployee({ employeeId: empId, companyId, date: targetDate });
-    const shift = shiftInfo?.shift;
+    // C. Shift Info Resolution in-memory (Roster > Assignment > Default)
+    let shift = null;
+    let shiftSource = 'COMPANY_DEFAULT';
+    let isRosterOverride = false;
+
+    const roster = rosterByEmpId.get(empId);
+    if (roster?.shift && roster.shift.isActive !== false) {
+      shift = roster.shift;
+      shiftSource = 'ROSTER';
+      isRosterOverride = true;
+    } else {
+      const sa = shiftAssignmentByEmpId.get(empId);
+      if (sa?.shift && sa.shift.isActive !== false) {
+        shift = sa.shift;
+        shiftSource = 'ASSIGNMENT';
+      } else if (companyDefaultShift && companyDefaultShift.isActive !== false) {
+        shift = companyDefaultShift;
+        shiftSource = 'COMPANY_DEFAULT';
+      }
+    }
+
     if (!shift || !shift.startTime) {
       logger.warn({ employeeId: empId }, 'No active shift found for employee, skipping absent marking');
       skippedCount++;
       details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'SKIPPED', reason: 'NO_SHIFT_ASSIGNED' });
       continue;
     }
+
     const graceMinutes = Number(shift.graceMinutes !== undefined && shift.graceMinutes !== null ? shift.graceMinutes : 15);
 
     // D. Grace Period Cutoff Check (shiftStart + graceMinutes)
@@ -223,13 +241,15 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
 
     const graceCutoff = new Date(shiftStart.getTime() + graceMinutes * 60000);
 
+    // If targetDate is today and now is still within grace period, skip for now
     if (!force && now.getTime() <= graceCutoff.getTime()) {
       skippedCount++;
       details.push({
         employeeId: empId,
         employeeCode: employee.employeeCode,
         action: 'SKIPPED',
-        reason: 'GRACE_PERIOD_ACTIVE'
+        reason: 'GRACE_PERIOD_ACTIVE',
+        shiftName: shift.name
       });
       continue;
     }
@@ -248,7 +268,7 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
 
       logsToUpdate.push(existingLog.id);
       markedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', updated: true });
+      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', updated: true, shiftName: shift.name });
     } else {
       recordsToCreate.push({
         companyId,
@@ -259,14 +279,14 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
         shiftName: shift.name,
         shiftStartTime: shift.startTime,
         shiftEndTime: shift.endTime,
-        shiftSource: shiftInfo?.source || 'COMPANY_DEFAULT',
-        isRosterOverride: Boolean(shiftInfo?.source === 'ROSTER'),
+        shiftSource,
+        isRosterOverride,
         isLate: false,
         isHoliday: false,
         totalWorkedMinutes: 0
       });
       markedCount++;
-      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', created: true });
+      details.push({ employeeId: empId, employeeCode: employee.employeeCode, action: 'MARKED_ABSENT', created: true, shiftName: shift.name });
     }
     if (global._todayAttendanceCache) {
       const cacheKey = `${empId}_${startOfDay.toISOString().split('T')[0]}`;
@@ -290,12 +310,13 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
   }
 
   logger.info(
-    { companyId, marked: markedCount, skipped: skippedCount, total: employees.length },
+    { companyId, date: startOfDay.toISOString().split('T')[0], marked: markedCount, skipped: skippedCount, total: employees.length },
     `Absent marking completed for company: ${markedCount} marked, ${skippedCount} skipped`
   );
 
   return {
     companyId,
+    date: startOfDay.toISOString().split('T')[0],
     marked: markedCount,
     skipped: skippedCount,
     total: employees.length,
@@ -305,6 +326,7 @@ export async function markAbsenteesForCompany(companyId, options = {}) {
 
 /**
  * Mark absentees across all active companies
+ * Evaluates both today and yesterday (to catch overnight/night shifts that concluded)
  * 
  * @param {object} [options] - Optional configuration overrides
  * @returns {Promise<{totalCompanies: number, totalMarked: number, totalSkipped: number, results: Array}>}
@@ -320,15 +342,25 @@ export async function markAbsenteesAllCompanies(options = {}) {
   let totalSkipped = 0;
   const results = [];
 
+  const datesToEvaluate = options.date ? [new Date(options.date)] : [
+    new Date(Date.now() - 24 * 60 * 60 * 1000), // Yesterday
+    new Date()                                   // Today
+  ];
+
   for (const company of companies) {
-    try {
-      const res = await markAbsenteesForCompany(company.id, options);
-      totalMarked += res.marked || 0;
-      totalSkipped += res.skipped || 0;
-      results.push(res);
-    } catch (err) {
-      logger.error({ companyId: company.id, err: err.message }, 'Failed absent marking for company');
-      results.push({ companyId: company.id, error: err.message, marked: 0, skipped: 0 });
+    for (const evalDate of datesToEvaluate) {
+      try {
+        const res = await markAbsenteesForCompany(company.id, {
+          ...options,
+          date: evalDate
+        });
+        totalMarked += res.marked || 0;
+        totalSkipped += res.skipped || 0;
+        results.push(res);
+      } catch (err) {
+        logger.error({ companyId: company.id, date: evalDate, err: err.message }, 'Failed absent marking for company');
+        results.push({ companyId: company.id, error: err.message, marked: 0, skipped: 0 });
+      }
     }
   }
 
