@@ -157,10 +157,25 @@ export const authRepository = {
   },
 
   /**
+   * Clear in-memory cached user by email
+   * @param {string} email
+   */
+  clearUserCache(email) {
+    if (!email) return;
+    const cleanEmail = email.toLowerCase().trim();
+    if (global._userEmailCache) {
+      global._userEmailCache.delete(cleanEmail);
+    }
+  },
+
+  /**
    * Create a new user record
    * @param {Object} data 
    */
   async createUser(data) {
+    if (data?.email) {
+      this.clearUserCache(data.email);
+    }
     return prisma.user.create({ data });
   },
 
@@ -170,10 +185,14 @@ export const authRepository = {
    * @param {Object} data 
    */
   async updateUser(id, data) {
-    return prisma.user.update({
+    const updated = await prisma.user.update({
       where: { id },
       data
     });
+    if (updated?.email) {
+      this.clearUserCache(updated.email);
+    }
+    return updated;
   },
 
   /**

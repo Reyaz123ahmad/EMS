@@ -284,6 +284,10 @@ export const authService = {
 
     const newHash = await hashPassword(newPassword);
     await authRepository.updateUser(userId, { passwordHash: newHash });
+    if (user.email) {
+      authRepository.clearUserCache(user.email);
+    }
+    meProfileCache.delete(userId);
     await authRepository.deleteAllUserSessions(userId);
 
     return { success: true, message: 'Password updated successfully' };
@@ -334,10 +338,17 @@ export const authService = {
 
     const passwordHash = await hashPassword(newPassword);
     await authRepository.updateUser(user.id, { passwordHash });
+    authRepository.clearUserCache(email);
+    meProfileCache.delete(user.id);
     await authRepository.deleteOTP(email, OTP_PURPOSES.PASSWORD_RESET);
     await authRepository.deleteAllUserSessions(user.id);
 
-    return { success: true, message: 'Password reset successfully. You can now sign in.' };
+    return {
+      success: true,
+      userId: user.id,
+      email: user.email,
+      message: 'Password reset successfully. You can now sign in.'
+    };
   },
 
   /**
