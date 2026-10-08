@@ -16,6 +16,7 @@ import { uploadBase64Image } from '../../config/cloudinary.js';
 import { livenessService } from '../attendance-security/attendance-security.service.js';
 import { createNotification } from '../notifications/notifications.repository.js';
 import { AppError } from '../../utils/response.js';
+import { invalidateCache } from '../../middlewares/cache.middleware.js';
 
 export const faceRegistrationService = {
   /**
@@ -162,6 +163,11 @@ export const faceRegistrationService = {
           registeredAt: new Date().toISOString()
         }
       });
+
+      // Invalidate backend caches immediately
+      invalidateCache('cache:employees_list', companyId).catch(() => {});
+      invalidateCache('cache:employees_detail', companyId).catch(() => {});
+      invalidateCache('cache:employees_dash', companyId).catch(() => {});
 
       return {
         success: true,

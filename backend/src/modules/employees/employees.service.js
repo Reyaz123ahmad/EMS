@@ -8,6 +8,7 @@ import { sendOtpSms, sendSms } from '../../services/sms.service.js';
 import { DEFAULT_LEAVE_QUOTAS } from './employees.constants.js';
 import { prisma } from '../../config/prisma.js';
 import logger from '../../config/logger.js';
+import { invalidateCache } from '../../middlewares/cache.middleware.js';
 
 function parseSessionData(rawData) {
   if (!rawData) return null;
@@ -639,11 +640,16 @@ export const employeesService = {
    * Register Face Embedding and photo URL
    */
   async registerFace(employeeId, photoUrl, embedding) {
-    return employeesRepository.updateEmployee(employeeId, {
+    const updated = await employeesRepository.updateEmployee(employeeId, {
       facePhotoUrl: photoUrl,
       faceEmbedding: typeof embedding === 'string' ? embedding : JSON.stringify(embedding),
       faceRegisteredAt: new Date()
     });
+    if (updated?.companyId) {
+      invalidateCache('cache:employees_list', updated.companyId).catch(() => {});
+      invalidateCache('cache:employees_detail', updated.companyId).catch(() => {});
+    }
+    return updated;
   },
 
   /**

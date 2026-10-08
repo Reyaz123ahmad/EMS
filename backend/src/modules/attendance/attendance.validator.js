@@ -10,13 +10,15 @@ const locationSchema = Joi.object({
 
 const deviceInfoSchema = Joi.object({
   deviceId: Joi.string().optional().allow('', null),
+  deviceModel: Joi.string().optional().allow('', null),
   isMockLocation: Joi.boolean().default(false),
+  isSimulator: Joi.boolean().optional(),
   ipAddress: Joi.string().optional().allow('', null),
   userAgent: Joi.string().optional().allow('', null),
   platform: Joi.string().optional().allow('', null),
   osVersion: Joi.string().optional().allow('', null),
   appVersion: Joi.string().optional().allow('', null)
-}).default({});
+}).unknown(true).default({});
 
 export const checkInSchema = Joi.object({
   mode: Joi.string()

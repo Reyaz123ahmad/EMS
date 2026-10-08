@@ -85,11 +85,11 @@ router.get(
   employeesController.getAnalytics
 );
 
-// List employees
-router.get('/', cacheResponse('cache:employees_list', 60), employeesController.listEmployees);
+// List employees (Real-time, no stale 60s cache)
+router.get('/', employeesController.listEmployees);
 
-// Single employee detail
-router.get('/:id', cacheResponse('cache:employees_detail', 60), employeesController.getEmployee);
+// Single employee detail (Real-time, no stale 60s cache)
+router.get('/:id', employeesController.getEmployee);
 
 // Effective active shift for employee (Roster override > Assignment > Default)
 router.get('/:id/effective-shift', cacheResponse('cache:employees_eff_shift', 60), shiftsController.getEffectiveShift);
