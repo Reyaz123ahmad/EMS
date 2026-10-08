@@ -104,9 +104,9 @@ export async function generateEmbedding(base64Photo) {
     const img = await getCanvasImage(base64Photo);
     if (!img) return null;
 
-    // Detect all faces in frame to ensure single-face constraint
+    // Detect all faces in frame with optimized input size for fast sub-second inference
     const detections = await faceapi
-      .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.3 }))
+      .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 }))
       .withFaceLandmarks()
       .withFaceDescriptors();
 
@@ -120,9 +120,9 @@ export async function generateEmbedding(base64Photo) {
       return Array.from(detections[0].descriptor);
     }
 
-    // Fallback: Check standard 224 input size
+    // Fallback: Check 160 input size
     const fallbackDetections = await faceapi
-      .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.2 }))
+      .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.2 }))
       .withFaceLandmarks()
       .withFaceDescriptors();
 

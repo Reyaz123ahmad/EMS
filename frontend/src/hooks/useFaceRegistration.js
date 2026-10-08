@@ -43,6 +43,8 @@ export function useRegisterFace() {
       } else {
         toast.success(res?.message || 'Face registered successfully');
       }
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['employee'] });
       queryClient.invalidateQueries({ queryKey: ['employeesWithFace'] });
       queryClient.invalidateQueries({ queryKey: ['employeesWithoutFace'] });
       queryClient.invalidateQueries({ queryKey: ['faceStatus'] });
@@ -62,6 +64,8 @@ export function useUpdateFace() {
     mutationFn: (data) => faceRegistrationService.updateFace(data),
     onSuccess: (data) => {
       toast.success(data?.message || 'Face biometric updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['employee'] });
       queryClient.invalidateQueries({ queryKey: ['employeesWithFace'] });
       queryClient.invalidateQueries({ queryKey: ['faceStats'] });
     },
@@ -77,6 +81,8 @@ export function useDeleteFace() {
     mutationFn: (data) => faceRegistrationService.deleteFace(data),
     onSuccess: (data) => {
       toast.success(data?.message || 'Face biometric reset successfully');
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['employee'] });
       queryClient.invalidateQueries({ queryKey: ['employeesWithFace'] });
       queryClient.invalidateQueries({ queryKey: ['employeesWithoutFace'] });
       queryClient.invalidateQueries({ queryKey: ['faceStats'] });

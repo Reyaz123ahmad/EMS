@@ -118,6 +118,21 @@ export function useUpdateEmployeeRole() {
   });
 }
 
+export function useRegisterFace() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => employeeService.registerFace(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['employee', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      queryClient.invalidateQueries({ queryKey: ['employeesWithFace'] });
+      queryClient.invalidateQueries({ queryKey: ['employeesWithoutFace'] });
+      queryClient.invalidateQueries({ queryKey: ['faceStatus'] });
+      queryClient.invalidateQueries({ queryKey: ['face-registration-status'] });
+    }
+  });
+}
+
 export default {
   useEmployees,
   useEmployee,
@@ -126,6 +141,7 @@ export default {
   useCreateEmployee,
   useUpdateEmployee,
   useUpdateEmployeeRole,
+  useRegisterFace,
   useDeleteEmployee,
   useEmployeeDashboard,
   useBulkImportEmployees,

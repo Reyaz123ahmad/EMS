@@ -60,21 +60,20 @@ export function RegisterFacePage() {
     const canvas = canvasRef.current;
     const video = videoRef.current;
 
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+    const targetWidth = 480;
+    const targetHeight = 360;
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
 
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
     setCapturedImage(dataUrl);
     stopCamera();
 
-    // Simulate AI liveness check
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
-      setLivenessPassed(true);
-    }, 1200);
+    // DEV: Liveness disabled for employee face registration (per request)
+    setIsProcessing(false);
+    setLivenessPassed(true);
   };
 
   const handleRetake = () => {

@@ -67,11 +67,13 @@ export default function FaceCamera({ onCapture, disabled = false }) {
     if (!videoRef.current || !canvasRef.current) return;
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
+    const targetWidth = 480;
+    const targetHeight = 360;
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const base64 = canvas.toDataURL('image/jpeg', 0.9);
+    ctx.drawImage(video, 0, 0, targetWidth, targetHeight);
+    const base64 = canvas.toDataURL('image/jpeg', 0.8);
     setCapturedPhoto(base64);
     if (onCapture) onCapture(base64);
   };

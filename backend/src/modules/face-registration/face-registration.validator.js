@@ -7,6 +7,7 @@ export const registerFaceSchema = Joi.object({
   photo: Joi.string().required().messages({
     'any.required': 'Face photo (Base64 data or image URL) is required'
   }),
+  embedding: Joi.array().items(Joi.number()).optional(),
   livenessScore: Joi.number().min(0).max(1).optional().default(0.95),
   challengeId: Joi.string().uuid().optional().allow(null, '')
 });
@@ -18,6 +19,7 @@ export const updateFaceSchema = Joi.object({
   photo: Joi.string().required().messages({
     'any.required': 'New face photo is required'
   }),
+  embedding: Joi.array().items(Joi.number()).optional(),
   livenessScore: Joi.number().min(0).max(1).optional().default(0.95),
   challengeId: Joi.string().uuid().optional().allow(null, '')
 });

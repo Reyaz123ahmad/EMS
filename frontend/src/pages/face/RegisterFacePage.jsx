@@ -3,25 +3,28 @@ import FaceRegistrationWizard from '../../components/face/FaceRegistrationWizard
 import { useEmployeesWithoutFace } from '../../hooks/useFaceRegistration';
 import { useAuthStore } from '../../store/authStore';
 import { UserCheck, Shield, Sparkles, User, UserCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function RegisterFacePage() {
+  const { id } = useParams();
   const { user } = useAuthStore();
   const userRole = user?.role || user?.roles?.[0]?.name || user?.roles?.[0] || 'EMPLOYEE';
   const isHrOrAdmin = ['HR_ADMIN', 'HR_MANAGER', 'COMPANY_ADMIN', 'SUPER_ADMIN'].includes(userRole);
   const myEmployeeId = user?.employeeId || user?.employee?.id || user?.id;
 
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(myEmployeeId || '');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(id || myEmployeeId || '');
   const { data: pendingData, isLoading } = useEmployeesWithoutFace({ limit: 100 });
   const navigate = useNavigate();
 
   const pendingEmployees = pendingData?.data?.employees || [];
 
   useEffect(() => {
-    if (!selectedEmployeeId && myEmployeeId) {
+    if (id) {
+      setSelectedEmployeeId(id);
+    } else if (!selectedEmployeeId && myEmployeeId) {
       setSelectedEmployeeId(myEmployeeId);
     }
-  }, [myEmployeeId]);
+  }, [id, myEmployeeId]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -79,7 +82,11 @@ export default function RegisterFacePage() {
         <FaceRegistrationWizard
           employeeId={selectedEmployeeId}
           onComplete={() => {
-            navigate('/face/status');
+            if (id) {
+              navigate(`/employees/${id}`);
+            } else {
+              navigate('/face/status');
+            }
           }}
         />
       ) : (
