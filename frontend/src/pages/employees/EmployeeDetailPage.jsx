@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useEmployee, useRoles, useUpdateEmployeeRole } from '../../hooks/useEmployee.js';
+import { useAttendanceLogs } from '../../hooks/useAttendance.js';
+import { useEmployeeLeaveBalances } from '../../hooks/useLeave.js';
 import { useAuthStore } from '../../store/auth.store.js';
 import { Card } from '../../components/ui/Card.jsx';
 import { Button } from '../../components/ui/Button.jsx';
@@ -13,6 +15,8 @@ export function EmployeeDetailPage() {
   const { user } = useAuthStore();
   const { data, isLoading } = useEmployee(id);
   const { data: rolesData } = useRoles();
+  const { data: attendanceData, isLoading: isAttendanceLoading } = useAttendanceLogs({ employeeId: id, limit: 30 });
+  const { data: leaveData, isLoading: isLeaveLoading } = useEmployeeLeaveBalances(id);
   const updateRoleMutation = useUpdateEmployeeRole();
 
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -275,47 +279,131 @@ export function EmployeeDetailPage() {
             )}
 
             {currentTab === 'attendance' && (
-              <div className="text-center py-12 text-slate-400">
-                <svg className="w-12 h-12 mx-auto text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="font-semibold text-slate-300">Attendance Tracker</p>
-                <p className="text-xs text-slate-500 mt-1">Live punch records and Geo-fence attestation logs will show here.</p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-200">Attendance History</h3>
+                  <span className="text-xs text-slate-400">Recent records</span>
+                </div>
+
+                {isAttendanceLoading ? (
+                  <div className="flex justify-center py-12">
+                    <Spinner size="md" className="text-blue-500" />
+                  </div>
+                ) : (() => {
+                  const logs = Array.isArray(attendanceData?.data?.logs)
+                    ? attendanceData.data.logs
+                    : Array.isArray(attendanceData?.logs)
+                    ? attendanceData.logs
+                    : [];
+
+                  if (logs.length === 0) {
+                    return (
+                      <div className="text-center py-12 text-slate-400 border border-dashed border-slate-800 rounded-xl">
+                        <svg className="w-10 h-10 mx-auto text-slate-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p className="font-semibold text-slate-300">No attendance records found for this employee.</p>
+                        <p className="text-xs text-slate-500 mt-1">Punch logs and biometric records will appear here once registered.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="overflow-x-auto rounded-xl border border-slate-800">
+                      <table className="w-full text-left text-xs text-slate-300">
+                        <thead className="bg-slate-950/80 text-slate-400 font-semibold uppercase border-b border-slate-800">
+                          <tr>
+                            <th className="p-3">Date</th>
+                            <th className="p-3">Check-In</th>
+                            <th className="p-3">Check-Out</th>
+                            <th className="p-3">Hours</th>
+                            <th className="p-3">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60 bg-slate-900/30">
+                          {logs.map((log) => {
+                            const dateStr = log.attendanceDate ? new Date(log.attendanceDate).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+                            const inStr = log.checkInAt ? new Date(log.checkInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+                            const outStr = log.checkOutAt ? new Date(log.checkOutAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—';
+                            const hoursStr = log.totalWorkHours !== undefined && log.totalWorkHours !== null
+                              ? `${log.totalWorkHours} hrs`
+                              : log.totalWorkMinutes !== undefined && log.totalWorkMinutes !== null
+                              ? `${(log.totalWorkMinutes / 60).toFixed(1)} hrs`
+                              : '—';
+                            const status = log.status || (log.checkInAt ? 'PRESENT' : 'ABSENT');
+
+                            return (
+                              <tr key={log.id || log.attendanceDate} className="hover:bg-slate-800/40 transition-colors">
+                                <td className="p-3 font-medium text-slate-200">{dateStr}</td>
+                                <td className="p-3 font-mono text-emerald-400">{inStr}</td>
+                                <td className="p-3 font-mono text-blue-400">{outStr}</td>
+                                <td className="p-3 font-mono text-slate-300">{hoursStr}</td>
+                                <td className="p-3">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                                    status === 'PRESENT' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
+                                    status === 'LATE' ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
+                                    status === 'HALF_DAY' ? 'bg-purple-500/10 text-purple-400 border-purple-500/30' :
+                                    'bg-slate-500/10 text-slate-400 border-slate-500/30'
+                                  }`}>
+                                    {status}
+                                  </span>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
             {currentTab === 'leave' && (
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-slate-200">Current Year Leave Balances</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {(employee.leaveBalances || []).length > 0 ? (
-                    employee.leaveBalances.map((bal) => (
-                      <Card key={bal.id} className="p-4 bg-slate-950/60 border-slate-800">
-                        <span className="text-xs text-slate-400">{bal.leaveType?.name || 'Annual Leave'}</span>
-                        <div className="text-2xl font-bold text-white mt-1">{bal.remainingDays} Days</div>
-                        <div className="text-xs text-slate-500 mt-1">Total quota: {bal.totalDays} days</div>
-                      </Card>
-                    ))
-                  ) : (
-                    <>
-                      <Card className="p-4 bg-slate-950/60 border-slate-800">
-                        <span className="text-xs text-slate-400">Casual Leave (CL)</span>
-                        <div className="text-2xl font-bold text-emerald-400 mt-1">12 Days</div>
-                        <div className="text-xs text-slate-500 mt-1">Available for use</div>
-                      </Card>
-                      <Card className="p-4 bg-slate-950/60 border-slate-800">
-                        <span className="text-xs text-slate-400">Sick Leave (SL)</span>
-                        <div className="text-2xl font-bold text-blue-400 mt-1">8 Days</div>
-                        <div className="text-xs text-slate-500 mt-1">Available for use</div>
-                      </Card>
-                      <Card className="p-4 bg-slate-950/60 border-slate-800">
-                        <span className="text-xs text-slate-400">Paid Privilege Leave</span>
-                        <div className="text-2xl font-bold text-purple-400 mt-1">15 Days</div>
-                        <div className="text-xs text-slate-500 mt-1">Available for use</div>
-                      </Card>
-                    </>
-                  )}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-slate-200">Current Year Leave Balances</h3>
+                  <span className="text-xs text-slate-400">Year {new Date().getFullYear()}</span>
                 </div>
+
+                {isLeaveLoading ? (
+                  <div className="flex justify-center py-12">
+                    <Spinner size="md" className="text-blue-500" />
+                  </div>
+                ) : (() => {
+                  const balances = Array.isArray(leaveData?.data?.balances)
+                    ? leaveData.data.balances
+                    : Array.isArray(leaveData?.balances)
+                    ? leaveData.balances
+                    : Array.isArray(leaveData)
+                    ? leaveData
+                    : [];
+
+                  if (balances.length === 0) {
+                    return (
+                      <div className="text-center py-12 text-slate-400 border border-dashed border-slate-800 rounded-xl">
+                        <p className="font-semibold text-slate-300">No leave policy assigned.</p>
+                        <p className="text-xs text-slate-500 mt-1">Leave balances will automatically generate once a policy is assigned.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {balances.map((bal) => (
+                        <Card key={bal.id || bal.leaveTypeId} className="p-4 bg-slate-950/60 border-slate-800">
+                          <span className="text-xs text-slate-400">{bal.leaveType?.name || bal.name || 'Leave'}</span>
+                          <div className="text-2xl font-bold text-white mt-1">
+                            {bal.remainingDays !== undefined && bal.remainingDays !== null ? `${bal.remainingDays} Days` : '—'}
+                          </div>
+                          <div className="text-xs text-slate-500 mt-1">
+                            Used: {bal.usedDays ?? 0} / Total: {bal.totalDays ?? '—'} days
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 

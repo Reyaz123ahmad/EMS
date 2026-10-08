@@ -121,13 +121,14 @@ export const downloadCard = async (req, res, next) => {
       // fallback
     }
 
-    // Generate PDF Buffer
+    // Generate PDF Buffer (Full 2-page Front & Back badge)
     const pdfBuffer = await biometricCardsService.generateCardPDF(
       card.employee,
       card.company,
       card.cardNumber,
       card.qrSignature,
-      qrImageBuffer
+      qrImageBuffer,
+      card
     );
 
     res.setHeader('Content-Type', 'application/pdf');

@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "EMS Platform",
+    "slug": "ems-mobile",
+    "version": "1.0.0",
+    "scheme": "emsmobile",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "plugins": [
+      "expo-router"
+    ],
+    "android": {
+      "package": "com.ems.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.ems.mobile",
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "1553dd77-cee3-4402-a914-ae25bf2d2690"
+      }
+    },
+    "owner": "reyazahmadsteam"
+  }
+}

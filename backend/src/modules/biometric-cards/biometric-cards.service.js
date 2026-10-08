@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import crypto from 'crypto';
 import QRCode from 'qrcode';
 import PDFDocument from 'pdfkit';
@@ -8,6 +9,23 @@ import prisma from '../../config/prisma.js';
 import { biometricCardsRepository } from './biometric-cards.repository.js';
 import { CARD_TYPES, QR_VERSION, QR_EXPIRY_YEARS, CARD_AUDIT_ACTIONS } from './biometric-cards.constants.js';
 import { AppError } from '../../utils/response.js';
+
+// Helper to fetch image buffer from URL or base64
+const fetchImageBuffer = async (url) => {
+  if (!url || typeof url !== 'string') return null;
+  try {
+    if (url.startsWith('data:image')) {
+      const base64Data = url.split(',')[1];
+      return Buffer.from(base64Data, 'base64');
+    }
+    const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) return null;
+    const arrayBuf = await res.arrayBuffer();
+    return Buffer.from(arrayBuf);
+  } catch {
+    return null;
+  }
+};
 
 // Upload Buffer helper to Cloudinary (or base64 fallback)
 const uploadBufferToCloudinary = async (buffer, options = {}) => {
@@ -131,61 +149,153 @@ export const biometricCardsService = {
     });
   },
 
-  generateCardPDF: async (employeeOrCard, companyArg, cardNumberArg, qrDataArg, qrImageBufferArg) => {
+  generateCardPDF: async (employeeOrCard, companyArg, cardNumberArg, qrDataArg, qrImageBufferArg, metaArg) => {
     let employee = employeeOrCard;
     let company = companyArg;
     let cardNumber = cardNumberArg;
     let qrImageBuffer = qrImageBufferArg;
+    let cardMeta = metaArg || {};
 
     if (employeeOrCard && employeeOrCard.employee) {
       employee = employeeOrCard.employee;
       company = employeeOrCard.company || companyArg;
       cardNumber = employeeOrCard.cardNumber || cardNumberArg;
-      if (!qrImageBuffer && employeeOrCard.qrSignature) {
-        try {
-          qrImageBuffer = await QRCode.toBuffer(employeeOrCard.qrSignature, { margin: 1, width: 250 });
-        } catch {}
-      }
+      cardMeta = employeeOrCard;
+    }
+
+    const cardType = cardMeta.cardType || 'QR';
+    const isActive = cardMeta.isActive !== undefined ? cardMeta.isActive : true;
+    const assignedAt = cardMeta.assignedAt || cardMeta.createdAt || new Date();
+    const expiresAt = cardMeta.expiresAt || null;
+
+    const fullName = `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || 'Employee Name';
+    const employeeCode = employee.employeeCode || 'N/A';
+    const departmentName = employee.department?.name || 'General';
+    const designationName = employee.designation?.name || 'Staff Member';
+    const companyName = company?.name || 'Enterprise EMS';
+    const companyInit = companyName.charAt(0).toUpperCase() || 'E';
+    const nameInit = fullName.charAt(0).toUpperCase() || 'E';
+
+    const issuedDateStr = dayjs(assignedAt).format('DD MMM YYYY');
+    const expiryDateStr = expiresAt ? dayjs(expiresAt).format('DD MMM YYYY') : 'Permanent';
+
+    // Fetch images asynchronously
+    const [photoBuffer, logoBuffer] = await Promise.all([
+      employee.photoUrl ? fetchImageBuffer(employee.photoUrl) : null,
+      company?.logoUrl ? fetchImageBuffer(company.logoUrl) : null
+    ]);
+
+    // Ensure QR image buffer exists
+    if (!qrImageBuffer) {
+      const qrDataString = cardMeta.qrSignature || qrDataArg || biometricCardsService.generateQRData(employee, company, cardNumber, expiresAt);
+      try {
+        qrImageBuffer = await QRCode.toBuffer(qrDataString, {
+          margin: 1,
+          width: 300,
+          color: { dark: '#0f172a', light: '#ffffff' }
+        });
+      } catch {}
     }
 
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({
           size: [340, 216], // Standard CR80 landscape card
-          margins: { top: 10, bottom: 10, left: 10, right: 10 }
+          margins: { top: 0, bottom: 0, left: 0, right: 0 }
         });
 
         const buffers = [];
         doc.on('data', buffers.push.bind(buffers));
         doc.on('end', () => resolve(Buffer.concat(buffers)));
 
-        // Background
-        doc.rect(0, 0, 340, 216).fill('#f8fafc');
-        
-        // Header
-        doc.rect(0, 0, 340, 42).fill('#1e293b');
-        doc.fillColor('#ffffff').fontSize(12).font('Helvetica-Bold')
-          .text(company?.name || 'Company Name', 16, 15, { width: 308, align: 'left' });
+        // ==================== PAGE 1 (FRONT SIDE) ====================
+        // Dark Base
+        doc.rect(0, 0, 340, 216).fill('#0f172a');
 
-        // Left details
-        doc.fillColor('#0f172a').fontSize(11).font('Helvetica-Bold')
-          .text(`${employee.firstName || ''} ${employee.lastName || ''}`, 16, 56);
+        // Header Strip
+        doc.rect(0, 0, 340, 42).fill('#1e1b4b');
 
-        doc.fillColor('#475569').fontSize(8).font('Helvetica')
-          .text(`Employee Code: ${employee.employeeCode || 'N/A'}`, 16, 74)
-          .text(`Department: ${employee.department?.name || 'General'}`, 16, 88)
-          .text(`Designation: ${employee.designation?.name || 'Staff'}`, 16, 102)
-          .text(`Card No: ${cardNumber}`, 16, 116);
-
-        // QR Code on right side
-        if (qrImageBuffer) {
-          doc.image(qrImageBuffer, 215, 50, { width: 105, height: 105 });
+        // Company Logo / Initial Badge
+        if (logoBuffer) {
+          try {
+            doc.image(logoBuffer, 12, 8, { width: 26, height: 26 });
+          } catch {
+            doc.roundedRect(12, 8, 26, 26, 6).fill('#4f46e5');
+            doc.fillColor('#ffffff').fontSize(14).font('Helvetica-Bold').text(companyInit, 12, 14, { width: 26, align: 'center' });
+          }
+        } else {
+          doc.roundedRect(12, 8, 26, 26, 6).fill('#4f46e5');
+          doc.fillColor('#ffffff').fontSize(14).font('Helvetica-Bold').text(companyInit, 12, 14, { width: 26, align: 'center' });
         }
 
-        // Footer
-        doc.rect(0, 185, 340, 31).fill('#e2e8f0');
-        doc.fillColor('#64748b').fontSize(6.5).font('Helvetica')
-          .text('Authorized Employee Identity Card • Tamper-proof QR Code Verification', 16, 196, { align: 'center', width: 308 });
+        // Company Name
+        doc.fillColor('#ffffff').fontSize(11).font('Helvetica-Bold').text(companyName, 44, 15, { width: 180, ellipsis: true });
+
+        // Status Pill (Top Right)
+        doc.roundedRect(236, 11, 92, 20, 10).fill(isActive ? '#064e3b' : '#7f1d1d');
+        doc.fillColor(isActive ? '#34d399' : '#fca5a5').fontSize(7.5).font('Helvetica-Bold')
+          .text(`${cardType} • ${isActive ? 'ACTIVE' : 'INACTIVE'}`, 236, 16.5, { width: 92, align: 'center' });
+
+        // Employee Photo
+        doc.roundedRect(14, 52, 64, 80, 8).fill('#1e293b');
+        if (photoBuffer) {
+          try {
+            doc.image(photoBuffer, 15, 53, { fit: [62, 78], align: 'center', valign: 'center' });
+          } catch {
+            doc.fillColor('#e0e7ff').fontSize(24).font('Helvetica-Bold').text(nameInit, 14, 76, { width: 64, align: 'center' });
+          }
+        } else {
+          doc.fillColor('#e0e7ff').fontSize(24).font('Helvetica-Bold').text(nameInit, 14, 76, { width: 64, align: 'center' });
+        }
+        doc.roundedRect(14, 52, 64, 80, 8).lineWidth(1.5).stroke('#6366f1');
+
+        // Employee Details (Middle Column)
+        doc.fillColor('#ffffff').fontSize(12).font('Helvetica-Bold').text(fullName, 86, 54, { width: 140, ellipsis: true });
+        doc.fillColor('#818cf8').fontSize(9).font('Courier-Bold').text(employeeCode, 86, 70);
+        doc.fillColor('#cbd5e1').fontSize(8.5).font('Helvetica').text(designationName, 86, 84, { width: 140, ellipsis: true });
+        doc.fillColor('#94a3b8').fontSize(8).font('Helvetica').text(`Dept: ${departmentName}`, 86, 98, { width: 140, ellipsis: true });
+
+        // Card Number
+        doc.fillColor('#94a3b8').fontSize(6.5).font('Helvetica-Bold').text('CARD NO', 86, 114);
+        doc.fillColor('#fbbf24').fontSize(10).font('Courier-Bold').text(cardNumber, 86, 122);
+
+        // QR Code Box (Right Side)
+        doc.roundedRect(234, 52, 92, 92, 8).fill('#ffffff');
+        if (qrImageBuffer) {
+          try {
+            doc.image(qrImageBuffer, 237, 55, { width: 86, height: 86 });
+          } catch {}
+        }
+
+        // Footer Metadata
+        doc.rect(14, 180, 312, 1).fill('#1e293b');
+        doc.fillColor('#64748b').fontSize(7.5).font('Helvetica').text(`Issued: ${issuedDateStr}`, 14, 192);
+        doc.fillColor('#64748b').fontSize(7.5).font('Helvetica').text(`Expires: ${expiryDateStr}`, 190, 192, { width: 136, align: 'right' });
+
+        // ==================== PAGE 2 (BACK SIDE) ====================
+        doc.addPage({ size: [340, 216], margins: { top: 0, bottom: 0, left: 0, right: 0 } });
+
+        // Dark Background
+        doc.rect(0, 0, 340, 216).fill('#090d16');
+
+        // Header Strip
+        doc.rect(0, 0, 340, 36).fill('#1e1b4b');
+        doc.fillColor('#cbd5e1').fontSize(10).font('Helvetica-Bold').text('CARD GUIDELINES', 16, 13);
+        doc.fillColor('#818cf8').fontSize(8).font('Helvetica-Bold').text('OFFICIAL IDENTITY PASS', 160, 14, { width: 164, align: 'right' });
+
+        // Guidelines List
+        doc.fillColor('#94a3b8').fontSize(7.5).font('Helvetica').lineGap(4);
+        doc.text('• This badge is non-transferable and remains the property of the company.\n• Present or scan this QR at all biometric verification checkpoints.\n• If found, please return to Human Resources Department or email security.', 16, 48, { width: 308 });
+
+        // Emergency Contact Box
+        doc.roundedRect(16, 112, 308, 54, 8).fill('#0f172a');
+        doc.roundedRect(16, 112, 308, 54, 8).lineWidth(1).stroke('#1e293b');
+        doc.fillColor('#10b981').fontSize(8.5).font('Helvetica-Bold').text('Emergency Contact & Support', 26, 120);
+        doc.fillColor('#94a3b8').fontSize(7.5).font('Courier').text('HR Desk: +91 98765 43210', 26, 134);
+        doc.fillColor('#94a3b8').fontSize(7.5).font('Helvetica').text('helpdesk@company.com', 26, 147);
+
+        // Watermark Footer
+        doc.fillColor('#475569').fontSize(7).font('Helvetica-Bold').text('Cryptographically Secured by EMS Zero-Trust HMAC', 16, 192, { width: 308, align: 'center' });
 
         doc.end();
       } catch (err) {

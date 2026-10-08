@@ -101,7 +101,7 @@ export function EmployeeListPage() {
           {row.faceRegisteredAt ? (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5" />
-              Face Active
+              Verified
             </span>
           ) : (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">

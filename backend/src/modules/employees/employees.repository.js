@@ -124,6 +124,8 @@ export const employeesRepository = {
           departmentId: true,
           designationId: true,
           branchId: true,
+          faceRegisteredAt: true,
+          facePhotoUrl: true,
           department: { select: { id: true, name: true } },
           designation: { select: { id: true, name: true, code: true } },
           branch: { select: { id: true, name: true } },
