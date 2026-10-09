@@ -47,6 +47,9 @@ import { cacheResponse, invalidateCache } from '../middlewares/cache.middleware.
 import { successResponse } from '../utils/response.js';
 import prisma from '../config/prisma.js';
 import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds, getAuthClientId } from '../security/data-scope.js';
+import crypto from 'crypto';
+import { hashPassword } from '../security/password.js';
+import { addCredentialsEmail } from '../queues/email.queue.js';
 
 const router = Router();
 
@@ -902,16 +905,75 @@ router.get('/clients', authenticate, requireCompany, cacheResponse('cache:client
   }
 });
 
-router.post('/clients', authenticate, requireCompany, async (req, res, next) => {
+router.post('/clients', authenticate, requireCompany, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN'), async (req, res, next) => {
   try {
     const companyId = req.user.companyId;
     const { name, email, phone, companyName, address } = req.body;
     if (!name) {
       return res.status(400).json({ success: false, message: 'Client name is required' });
     }
+
+    let userId = null;
+    let temporaryPassword = null;
+
+    if (email) {
+      let clientRole = await prisma.role.findFirst({ where: { name: 'CLIENT' } });
+      if (!clientRole) {
+        clientRole = await prisma.role.create({
+          data: {
+            name: 'CLIENT',
+            displayName: 'Client',
+            isSystem: true
+          }
+        }).catch(() => null);
+      }
+      temporaryPassword = `Client@${crypto.randomBytes(4).toString('hex')}!`;
+      const passwordHash = await hashPassword(temporaryPassword);
+
+      let user = await prisma.user.findUnique({
+        where: { email },
+        include: { userRoles: true }
+      });
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email,
+            passwordHash,
+            companyId,
+            status: 'ACTIVE',
+            ...(clientRole ? {
+              userRoles: {
+                create: {
+                  roleId: clientRole.id
+                }
+              }
+            } : {})
+          }
+        });
+      } else {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            passwordHash,
+            companyId: user.companyId || companyId
+          }
+        });
+        if (clientRole && !user.userRoles?.some(ur => ur.roleId === clientRole.id)) {
+          await prisma.userRole.create({
+            data: {
+              userId: user.id,
+              roleId: clientRole.id
+            }
+          }).catch(() => null);
+        }
+      }
+      userId = user.id;
+    }
+
     const client = await prisma.client.create({
       data: {
         companyId,
+        userId,
         name,
         email: email || null,
         phone: phone || null,
@@ -920,6 +982,33 @@ router.post('/clients', authenticate, requireCompany, async (req, res, next) => 
         isActive: true
       }
     });
+
+    if (email && temporaryPassword) {
+      const company = await prisma.company.findUnique({ where: { id: companyId } });
+      const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login`;
+
+      console.log('========== CLIENT CREDENTIALS ==========');
+      console.log('Client:', name);
+      console.log('Email:', email);
+      console.log('Temporary Password:', temporaryPassword);
+      console.log('Login URL:', loginUrl);
+      console.log('========================================');
+
+      Promise.resolve().then(() => {
+        addCredentialsEmail({
+          to: email,
+          name,
+          email,
+          password: temporaryPassword,
+          role: 'CLIENT',
+          companyName: company?.name || 'Mindstocs EMS',
+          loginUrl
+        }).catch((err) => {
+          console.error('[EMAIL] Failed to send client credentials email:', err.message);
+        });
+      });
+    }
+
     return successResponse(res, client, 'Client created successfully', 201);
   } catch (err) {
     next(err);
@@ -951,10 +1040,16 @@ router.get('/tasks', authenticate, requireCompany, cacheResponse('cache:tasks_ma
   }
 });
 
-router.get('/performance/cycles', authenticate, requireCompany, cacheResponse('cache:perf:cycles', 300), async (req, res, next) => {
+router.get('/performance/cycles', authenticate, requireCompany, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE'), cacheResponse('cache:perf:cycles', 60), async (req, res, next) => {
   try {
     const cycles = await prisma.performanceCycle.findMany({
-      where: { companyId: req.user.companyId }
+      where: { companyId: req.user.companyId },
+      include: {
+        _count: {
+          select: { reviews: true, goals: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
     });
     return successResponse(res, cycles, 'Performance cycles retrieved');
   } catch (err) {
@@ -962,7 +1057,26 @@ router.get('/performance/cycles', authenticate, requireCompany, cacheResponse('c
   }
 });
 
-router.get('/performance/reviews', authenticate, requireCompany, cacheResponse('cache:perf:reviews', 300), async (req, res, next) => {
+router.post('/performance/cycles', authenticate, requireCompany, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN'), async (req, res, next) => {
+  try {
+    const { name, startDate, endDate, status } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Cycle name is required' });
+    const cycle = await prisma.performanceCycle.create({
+      data: {
+        companyId: req.user.companyId,
+        name,
+        startDate: startDate ? new Date(startDate) : new Date(),
+        endDate: endDate ? new Date(endDate) : new Date(Date.now() + 90 * 86400000),
+        status: status || 'ACTIVE'
+      }
+    });
+    return successResponse(res, cycle, 'Performance cycle created', 201);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/performance/reviews', authenticate, requireCompany, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE'), cacheResponse('cache:perf:reviews', 60), async (req, res, next) => {
   try {
     const role = req.user?.role || 'EMPLOYEE';
     const companyId = req.user.companyId;
@@ -980,8 +1094,134 @@ router.get('/performance/reviews', authenticate, requireCompany, cacheResponse('
       if (emp?.departmentId) where.employee.departmentId = emp.departmentId;
     }
 
-    const reviews = await prisma.performanceReview.findMany({ where });
+    const reviews = await prisma.performanceReview.findMany({
+      where,
+      include: {
+        employee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            employeeCode: true,
+            department: { select: { name: true } },
+            designation: { select: { name: true } }
+          }
+        },
+        cycle: {
+          select: { id: true, name: true, status: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
     return successResponse(res, reviews, 'Performance reviews retrieved');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/performance/reviews', authenticate, requireCompany, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER'), async (req, res, next) => {
+  try {
+    const { cycleId, employeeId, rating, comments, status } = req.body;
+    if (!cycleId || !employeeId) {
+      return res.status(400).json({ success: false, message: 'Cycle ID and Employee ID are required' });
+    }
+    const review = await prisma.performanceReview.create({
+      data: {
+        cycleId,
+        employeeId,
+        reviewerId: req.user.id,
+        rating: rating !== undefined && rating !== null ? Number(rating) : null,
+        comments: comments || null,
+        status: status || 'COMPLETED',
+        submittedAt: new Date()
+      },
+      include: {
+        employee: true,
+        cycle: true
+      }
+    });
+    return successResponse(res, review, 'Performance review submitted', 201);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/performance/team', authenticate, requireCompany, requireRole('SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER'), async (req, res, next) => {
+  try {
+    const companyId = req.user.companyId;
+    const role = req.user?.role || 'EMPLOYEE';
+    const emp = await getAuthEmployee(req);
+
+    let subordinateIds = [];
+    if (role === 'MANAGER') {
+      if (emp?.id) {
+        const subs = await prisma.employee.findMany({
+          where: { companyId, managerId: emp.id },
+          select: { id: true }
+        });
+        subordinateIds = subs.map((s) => s.id);
+      }
+    } else if (role === 'HR_MANAGER') {
+      if (emp?.departmentId) {
+        const subs = await prisma.employee.findMany({
+          where: { companyId, departmentId: emp.departmentId },
+          select: { id: true }
+        });
+        subordinateIds = subs.map((s) => s.id);
+      }
+    } else {
+      const subs = await prisma.employee.findMany({
+        where: { companyId },
+        select: { id: true }
+      });
+      subordinateIds = subs.map((s) => s.id);
+    }
+
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: subordinateIds }, companyId },
+      include: {
+        department: { select: { name: true } },
+        designation: { select: { name: true } },
+        performanceReviews: {
+          include: { cycle: true },
+          orderBy: { createdAt: 'desc' },
+          take: 5
+        },
+        goals: {
+          where: { status: 'ACTIVE' },
+          take: 5
+        }
+      },
+      orderBy: { firstName: 'asc' }
+    });
+
+    const reviews = await prisma.performanceReview.findMany({
+      where: { employeeId: { in: subordinateIds } },
+      include: {
+        employee: {
+          select: { id: true, firstName: true, lastName: true, employeeCode: true }
+        },
+        cycle: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const totalMembers = employees.length;
+    const completedReviews = reviews.filter((r) => r.status === 'COMPLETED').length;
+    const pendingReviews = reviews.filter((r) => r.status !== 'COMPLETED').length;
+    const ratings = reviews.filter((r) => r.rating !== null).map((r) => Number(r.rating));
+    const avgRating = ratings.length > 0 ? Number((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2)) : 0;
+
+    return successResponse(res, {
+      team: employees,
+      reviews,
+      stats: {
+        totalMembers,
+        completedReviews,
+        pendingReviews,
+        avgRating
+      }
+    }, 'Team performance data retrieved');
   } catch (err) {
     next(err);
   }

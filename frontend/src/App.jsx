@@ -237,6 +237,11 @@ import ClientRequirementsPage from './pages/client-portal/ClientRequirementsPage
 import ClientCommentsPage from './pages/client-portal/ClientCommentsPage.jsx';
 import ClientInvoicesPage from './pages/client-portal/ClientInvoicesPage.jsx';
 import ClientPaymentsPage from './pages/client-portal/ClientPaymentsPage.jsx';
+
+// Performance Module Pages
+import PerformancePage from './pages/performance/PerformancePage.jsx';
+import TeamPerformancePage from './pages/performance/TeamPerformancePage.jsx';
+
 import { useQuery } from '@tanstack/react-query';
 import useAuthStore from './store/auth.store.js';
 import authService from './services/auth.service.js';
@@ -541,6 +546,18 @@ export default function App() {
         <Route path="/tasks" element={
           <ProtectedRoute allowedRoles={['COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER', 'EMPLOYEE', 'SUPER_ADMIN']}>
             <ProjectTasksPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Performance Routes */}
+        <Route path="/performance" element={
+          <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER']}>
+            <PerformancePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/team-performance" element={
+          <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'COMPANY_ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'MANAGER']}>
+            <TeamPerformancePage />
           </ProtectedRoute>
         } />
 
