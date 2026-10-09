@@ -86,14 +86,10 @@ export function RegisterFacePage() {
     if (!capturedImage) return;
     setErrorMsg('');
     try {
-      // Mock 128-d biometric embedding vector
-      const mockEmbedding = Array.from({ length: 128 }, () => Math.random() * 2 - 1);
-
       await registerFaceMutation.mutateAsync({
         id,
         data: {
-          photoUrl: capturedImage,
-          embedding: mockEmbedding
+          photoUrl: capturedImage
         }
       });
 

@@ -9,6 +9,8 @@ import { DEFAULT_LEAVE_QUOTAS } from './employees.constants.js';
 import { prisma } from '../../config/prisma.js';
 import logger from '../../config/logger.js';
 import { invalidateCache } from '../../middlewares/cache.middleware.js';
+import { encryptData } from '../../security/encryption.js';
+import * as faceService from '../../services/face.service.js';
 
 function parseSessionData(rawData) {
   if (!rawData) return null;
@@ -640,9 +642,19 @@ export const employeesService = {
    * Register Face Embedding and photo URL
    */
   async registerFace(employeeId, photoUrl, embedding) {
+    let rawEmbedding = embedding;
+    if (!rawEmbedding || !Array.isArray(rawEmbedding) || rawEmbedding.length === 0) {
+      if (photoUrl) {
+        rawEmbedding = await faceService.generateEmbedding(photoUrl);
+      }
+    }
+    const encryptedEmbedding = rawEmbedding && rawEmbedding.length > 0
+      ? encryptData(rawEmbedding)
+      : null;
+
     const updated = await employeesRepository.updateEmployee(employeeId, {
       facePhotoUrl: photoUrl,
-      faceEmbedding: typeof embedding === 'string' ? embedding : JSON.stringify(embedding),
+      faceEmbedding: encryptedEmbedding,
       faceRegisteredAt: new Date()
     });
     if (updated?.companyId) {

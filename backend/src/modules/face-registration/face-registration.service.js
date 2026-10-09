@@ -69,14 +69,10 @@ export const faceRegistrationService = {
       }
     }
 
-    // 4. Generate 128-dim normalized embedding with face-api.js or consume client-provided vector
-    let rawEmbedding = embedding;
+    // 4. Generate 128-dim normalized embedding with face-api.js from captured photo
+    const rawEmbedding = await faceService.generateEmbedding(photo);
     if (!rawEmbedding || !Array.isArray(rawEmbedding) || rawEmbedding.length === 0) {
-      rawEmbedding = await faceService.generateEmbedding(photo);
-    }
-    if (!rawEmbedding || rawEmbedding.length === 0) {
-      // Fallback 128-dim normalized embedding to guarantee smooth enrollment
-      rawEmbedding = Array.from({ length: EMBEDDING_DIMENSIONS }, () => (Math.random() * 2 - 1) * 0.1);
+      throw new AppError('No face detected in the photo. Please ensure your face is clearly visible, well-lit, and facing the camera.', 400);
     }
     
     // 5. Encrypt embedding using AES-256-GCM

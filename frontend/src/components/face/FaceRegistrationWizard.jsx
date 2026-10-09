@@ -18,13 +18,9 @@ export default function FaceRegistrationWizard({ employeeId, onComplete }) {
     if (!employeeId || !capturedPhoto) return;
 
     try {
-      // 128-d biometric embedding
-      const clientEmbedding = Array.from({ length: 128 }, () => Number((Math.random() * 2 - 1).toFixed(6)));
-
       await registerFaceMutation.mutateAsync({
         employeeId,
         photo: capturedPhoto,
-        embedding: clientEmbedding,
         livenessScore: 0.98
       });
       if (onComplete) onComplete();
