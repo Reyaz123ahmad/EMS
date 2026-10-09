@@ -56,8 +56,26 @@ export function useDeleteShift() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id) => shiftService.deleteShift(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    onSuccess: (_, deletedId) => {
+      queryClient.setQueriesData({ queryKey: ['shifts'] }, (old) => {
+        if (!old) return old;
+        if (Array.isArray(old)) {
+          return old.filter((s) => s?.id !== deletedId);
+        }
+        if (Array.isArray(old?.shifts)) {
+          return { ...old, shifts: old.shifts.filter((s) => s?.id !== deletedId) };
+        }
+        if (Array.isArray(old?.data)) {
+          return { ...old, data: old.data.filter((s) => s?.id !== deletedId) };
+        }
+        return old;
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['shifts'],
+        refetchType: 'active',
+      });
+      queryClient.invalidateQueries({ queryKey: ['shift', deletedId] });
     }
   });
 }
