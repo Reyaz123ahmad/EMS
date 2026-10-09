@@ -1,6 +1,30 @@
 import { prisma } from '../../config/prisma.js';
 import { resolveShiftForEmployee, getEffectiveShiftOverview, calculateShiftDurationHours } from './services/shift-resolver.service.js';
 
+export function enrichShiftWithBreakMetrics(shift) {
+  if (!shift) return shift;
+  const boundRules = (shift.shiftBreakRules || [])
+    .map((sbr) => sbr.breakRule)
+    .filter((br) => br && br.isActive !== false);
+
+  const breakAllowanceMinutes =
+    boundRules.length > 0
+      ? boundRules.reduce((sum, r) => sum + ((Number(r.durationMinutes) || 0) * (Number(r.maxPerShift) || 1)), 0)
+      : null;
+
+  return {
+    ...shift,
+    breakAllowanceMinutes,
+    boundBreakRules: boundRules.map((r) => ({
+      id: r.id,
+      name: r.name,
+      durationMinutes: r.durationMinutes,
+      maxPerShift: r.maxPerShift,
+      isPaid: r.isPaid
+    }))
+  };
+}
+
 export const shiftsService = {
   async listShifts(arg1, arg2) {
     let companyId, filters = {};
@@ -32,11 +56,11 @@ export const shiftsService = {
       orderBy: { createdAt: 'desc' }
     });
 
-    return shifts;
+    return shifts.map(enrichShiftWithBreakMetrics);
   },
 
   async getShiftById(id) {
-    return prisma.shift.findUnique({
+    const shift = await prisma.shift.findUnique({
       where: { id },
       include: {
         shiftBreakRules: {
@@ -53,6 +77,8 @@ export const shiftsService = {
         }
       }
     });
+
+    return enrichShiftWithBreakMetrics(shift);
   },
 
   async createShift(companyIdOrData, maybeData) {
@@ -62,7 +88,7 @@ export const shiftsService = {
     const computedHours = calculateShiftDurationHours(data.startTime, data.endTime, isNight);
     const breakRuleIds = Array.isArray(data.breakRuleIds) ? data.breakRuleIds.filter(Boolean) : [];
 
-    return prisma.$transaction(async (tx) => {
+    const created = await prisma.$transaction(async (tx) => {
       const shift = await tx.shift.create({
         data: {
           companyId,
@@ -97,12 +123,14 @@ export const shiftsService = {
         }
       });
     });
+
+    return enrichShiftWithBreakMetrics(created);
   },
 
   async updateShift(id, data) {
     const { breakRuleIds, ...shiftFields } = data;
 
-    return prisma.$transaction(async (tx) => {
+    const updated = await prisma.$transaction(async (tx) => {
       if (Object.keys(shiftFields).length > 0) {
         await tx.shift.update({
           where: { id },
@@ -138,6 +166,8 @@ export const shiftsService = {
         }
       });
     });
+
+    return enrichShiftWithBreakMetrics(updated);
   },
 
   async deleteShift(id) {

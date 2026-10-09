@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
-import { FiCoffee, FiAlertCircle, FiCheckCircle, FiLock } from 'react-icons/fi';
-import { useBreakRules } from '../../hooks/useBreakRules.js';
+import { FiCoffee, FiAlertCircle, FiCheckCircle, FiLock, FiSlash } from 'react-icons/fi';
+import { useBreakStatus } from '../../hooks/useAttendance.js';
 
 export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false }) {
+  const { data: statusData, isLoading } = useBreakStatus(employeeId ? { employeeId } : {});
+
+  const breakData = statusData?.data || statusData || {};
   const {
-    canTakeBreak,
-    totalBreaks,
-    remainingBreaks,
-    totalBreakMinutes,
-    remainingMinutes,
-    maxBreaks,
-    maxBreakMinutes,
-    lunchDurationMinutes,
-    shortDurationMinutes,
-    hasActiveBreak,
-    reason,
-    isLoading
-  } = useBreakRules(employeeId);
+    canTakeBreak = false,
+    totalBreaks = 0,
+    remainingBreaks = 0,
+    totalBreakMinutes = 0,
+    remainingMinutes = 0,
+    maxBreaks = 0,
+    maxBreakMinutes = 0,
+    lunchDurationMinutes = 0,
+    shortDurationMinutes = 0,
+    hasActiveBreak = false,
+    reason = '',
+    rules = []
+  } = breakData;
 
   const [selectedType, setSelectedType] = useState('SHORT');
 
@@ -29,6 +32,8 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
     );
   }
 
+  const hasConfiguredRules = maxBreaks > 0 || maxBreakMinutes > 0 || (rules && rules.length > 0);
+
   return (
     <div className="p-5 bg-gradient-to-br from-slate-900/90 to-slate-950 border border-slate-800/80 rounded-2xl shadow-xl backdrop-blur-md">
       <div className="flex items-center justify-between mb-3">
@@ -40,6 +45,8 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
           className={`text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 ${
             hasActiveBreak
               ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+              : !hasConfiguredRules
+              ? 'bg-slate-800 text-slate-400 border border-slate-700/60'
               : canTakeBreak
               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
               : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
@@ -47,6 +54,10 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
         >
           {hasActiveBreak ? (
             'Break In Progress'
+          ) : !hasConfiguredRules ? (
+            <>
+              <FiSlash className="w-3.5 h-3.5" /> No Policy
+            </>
           ) : canTakeBreak ? (
             <>
               <FiCheckCircle className="w-3.5 h-3.5" /> {remainingBreaks} Breaks Left
@@ -60,23 +71,34 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
       </div>
 
       {/* Quota stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
-        <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/40">
-          <p className="text-slate-400">Breaks Count</p>
-          <p className="text-sm font-bold text-slate-100 mt-0.5">
-            {totalBreaks} / {maxBreaks} Taken
+      {hasConfiguredRules ? (
+        <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
+          <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/40">
+            <p className="text-slate-400">Breaks Count</p>
+            <p className="text-sm font-bold text-slate-100 mt-0.5">
+              {totalBreaks} / {maxBreaks} Taken
+            </p>
+          </div>
+          <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/40">
+            <p className="text-slate-400">Total Minutes</p>
+            <p className="text-sm font-bold text-slate-100 mt-0.5">
+              {totalBreakMinutes} / {maxBreakMinutes}m used
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="p-3 bg-slate-950/50 rounded-xl border border-slate-800/80 mb-4 text-center">
+          <p className="text-xs text-slate-400 font-medium">
+            No break policy assigned to your shift.
+          </p>
+          <p className="text-[11px] text-slate-500 mt-0.5">
+            Contact your administrator to bind break rules to your shift schedule.
           </p>
         </div>
-        <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/40">
-          <p className="text-slate-400">Total Minutes</p>
-          <p className="text-sm font-bold text-slate-100 mt-0.5">
-            {totalBreakMinutes} / {maxBreakMinutes}m used
-          </p>
-        </div>
-      </div>
+      )}
 
       {/* Break Type Selector */}
-      {!hasActiveBreak && (
+      {!hasActiveBreak && hasConfiguredRules && (
         <div className="mb-4">
           <label className="text-xs text-slate-400 font-medium block mb-1.5">Select Break Type:</label>
           <div className="grid grid-cols-2 gap-2">
@@ -89,7 +111,7 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
                   : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-slate-200'
               }`}
             >
-              Short Break ({shortDurationMinutes}m)
+              Short Break {shortDurationMinutes > 0 ? `(${shortDurationMinutes}m)` : ''}
             </button>
             <button
               type="button"
@@ -100,14 +122,14 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
                   : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-slate-200'
               }`}
             >
-              Lunch Break ({lunchDurationMinutes}m)
+              Lunch Break {lunchDurationMinutes > 0 ? `(${lunchDurationMinutes}m)` : ''}
             </button>
           </div>
         </div>
       )}
 
       {/* Action button */}
-      {onStartBreak && !hasActiveBreak && (
+      {onStartBreak && !hasActiveBreak && hasConfiguredRules && (
         <div>
           <button
             onClick={() => onStartBreak(selectedType)}

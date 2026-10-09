@@ -70,7 +70,11 @@ export default function ShiftDetailPage() {
           </div>
           <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-800 text-center">
             <span className="text-xs text-slate-400 block">Break Allocation</span>
-            <span className="text-sm font-semibold text-slate-200">{shift.breakDuration || 60} Minutes</span>
+            <span className="text-sm font-semibold text-slate-200">
+              {shift.breakAllowanceMinutes !== undefined && shift.breakAllowanceMinutes !== null
+                ? `${shift.breakAllowanceMinutes} Minutes`
+                : '—'}
+            </span>
           </div>
         </div>
 
@@ -79,7 +83,7 @@ export default function ShiftDetailPage() {
           <span className="text-xs font-semibold text-slate-300 block mb-2">Bound Break Policies:</span>
           {(!shift.shiftBreakRules || shift.shiftBreakRules.length === 0) ? (
             <p className="text-xs text-slate-500 italic">
-              No custom break rules linked. Default company break limits (60m / 3 sessions) apply.
+              No break rules bound to this shift.
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

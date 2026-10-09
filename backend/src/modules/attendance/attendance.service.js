@@ -420,17 +420,17 @@ export const attendanceService = {
       const lunchRule = applicableRules.find((r) => r.name.toUpperCase().includes('LUNCH'));
       const shortRule = applicableRules.find((r) => !r.name.toUpperCase().includes('LUNCH'));
 
-      lunchDuration = lunchRule ? Number(lunchRule.durationMinutes) : (settings.breakRules?.lunchDurationMinutes || 30);
-      shortDuration = shortRule ? Number(shortRule.durationMinutes) : (settings.breakRules?.shortDurationMinutes || 10);
+      lunchDuration = lunchRule ? Number(lunchRule.durationMinutes) : 0;
+      shortDuration = shortRule ? Number(shortRule.durationMinutes) : 0;
       breakTypes = applicableRules.map((r) => r.name.toUpperCase());
     } else {
-      // Priority 3: Fallback to Company JSON settings or hardcoded defaults
-      const breakRules = settings.breakRules || {};
-      maxBreaks = breakRules.maxBreaksPerDay || 3;
-      maxBreakMinutes = breakRules.maxBreakMinutesPerDay || 60;
-      lunchDuration = breakRules.lunchDurationMinutes || 30;
-      shortDuration = breakRules.shortDurationMinutes || 10;
-      breakTypes = breakRules.breakTypes || ['LUNCH', 'SHORT'];
+      // Priority 3: No break policy assigned (no shift rules, no company rules)
+      ruleSource = 'NONE';
+      maxBreaks = 0;
+      maxBreakMinutes = 0;
+      lunchDuration = 0;
+      shortDuration = 0;
+      breakTypes = [];
     }
 
     const todayLog = preloadedLog !== undefined && preloadedLog !== null
@@ -461,7 +461,10 @@ export const attendanceService = {
     let canTakeBreak = true;
     let reason = 'You can take a break.';
 
-    if (activeBreak) {
+    if (maxBreaks === 0 || maxBreakMinutes === 0) {
+      canTakeBreak = false;
+      reason = 'No break policy assigned to your shift.';
+    } else if (activeBreak) {
       canTakeBreak = false;
       reason = 'You already have an active break in progress.';
     } else if (totalBreaks >= maxBreaks) {

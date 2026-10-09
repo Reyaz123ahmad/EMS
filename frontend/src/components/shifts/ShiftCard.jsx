@@ -37,7 +37,11 @@ export default function ShiftCard({ shift, onEdit, onDelete, onAssign }) {
           </div>
           <div className="flex justify-between">
             <span>Break Allowance:</span>
-            <span className="text-slate-200">{shift.breakDuration || 60} mins</span>
+            <span className="text-slate-200">
+              {shift.breakAllowanceMinutes !== undefined && shift.breakAllowanceMinutes !== null
+                ? `${shift.breakAllowanceMinutes} mins`
+                : '—'}
+            </span>
           </div>
         </div>
       </div>
