@@ -80,6 +80,7 @@ import ReportHistoryPage from './pages/reports/ReportHistoryPage.jsx';
 // Attendance Module Pages
 import AttendancePage from './pages/attendance/AttendancePage.jsx';
 import AttendanceLogsPage from './pages/attendance/AttendanceLogsPage.jsx';
+import BreakLogsPage from './pages/attendance/BreakLogsPage.jsx';
 import MonthlySummaryPage from './pages/attendance/MonthlySummaryPage.jsx';
 import AttendanceStatsPage from './pages/attendance/AttendanceStatsPage.jsx';
 import AttendanceCalendarPage from './pages/attendance/AttendanceCalendarPage.jsx';
@@ -379,6 +380,11 @@ export default function App() {
         <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/attendance/logs" element={<AttendanceLogsPage />} />
         <Route path="/attendance/my-logs" element={<AttendanceLogsPage />} />
+        <Route path="/attendance/break-logs" element={
+          <ProtectedRoute allowedRoles={['HR_ADMIN', 'COMPANY_ADMIN']}>
+            <BreakLogsPage />
+          </ProtectedRoute>
+        } />
         <Route path="/attendance/calendar" element={<AttendanceCalendarPage />} />
         <Route path="/attendance/manual" element={<ManualAttendancePage />} />
         <Route path="/attendance/stats" element={<AttendanceStatsPage />} />

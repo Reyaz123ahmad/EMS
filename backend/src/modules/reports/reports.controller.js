@@ -96,6 +96,58 @@ export const reportsController = {
     } catch (err) {
       next(err);
     }
+  },
+
+  async getBreaksReport(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      if (!companyId) {
+        return res.status(403).json({ status: 'error', message: 'Company context required' });
+      }
+      const data = await reportsService.getBreaksReport(companyId, req.query);
+      return res.status(200).json({ status: 'ok', data });
+    } catch (err) {
+      if (err.message && (err.message.includes('required') || err.message.includes('Invalid') || err.message.includes('exceed') || err.message.includes('must be earlier'))) {
+        return res.status(400).json({ status: 'error', message: err.message });
+      }
+      next(err);
+    }
+  },
+
+  async getBreaksSummary(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      if (!companyId) {
+        return res.status(403).json({ status: 'error', message: 'Company context required' });
+      }
+      const data = await reportsService.getBreaksSummary(companyId, req.query);
+      return res.status(200).json({ status: 'ok', data });
+    } catch (err) {
+      if (err.message && (err.message.includes('required') || err.message.includes('Invalid') || err.message.includes('exceed') || err.message.includes('must be earlier'))) {
+        return res.status(400).json({ status: 'error', message: err.message });
+      }
+      next(err);
+    }
+  },
+
+  async getEmployeeBreaksReport(req, res, next) {
+    try {
+      const companyId = req.user.companyId;
+      if (!companyId) {
+        return res.status(403).json({ status: 'error', message: 'Company context required' });
+      }
+      const { employeeId } = req.params;
+      const data = await reportsService.getEmployeeBreaksReport(companyId, employeeId, req.query);
+      return res.status(200).json({ status: 'ok', data });
+    } catch (err) {
+      if (err.statusCode === 404 || (err.message && err.message.includes('not found'))) {
+        return res.status(404).json({ status: 'error', message: err.message });
+      }
+      if (err.message && (err.message.includes('required') || err.message.includes('Invalid') || err.message.includes('exceed') || err.message.includes('must be earlier'))) {
+        return res.status(400).json({ status: 'error', message: err.message });
+      }
+      next(err);
+    }
   }
 };
 

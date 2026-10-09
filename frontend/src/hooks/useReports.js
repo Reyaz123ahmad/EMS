@@ -32,9 +32,36 @@ export function useReportHistory(params = {}) {
   });
 }
 
+export function useBreaksReport(params = {}) {
+  return useQuery({
+    queryKey: ['breaks-report', params],
+    queryFn: () => reportService.getBreaksReport(params),
+    enabled: Boolean(params.from && params.to)
+  });
+}
+
+export function useBreaksSummary(params = {}) {
+  return useQuery({
+    queryKey: ['breaks-summary', params],
+    queryFn: () => reportService.getBreaksSummary(params),
+    enabled: Boolean(params.from && params.to)
+  });
+}
+
+export function useEmployeeBreaksReport(employeeId, params = {}) {
+  return useQuery({
+    queryKey: ['employee-breaks-report', employeeId, params],
+    queryFn: () => reportService.getEmployeeBreaksReport(employeeId, params),
+    enabled: Boolean(employeeId && params.from && params.to)
+  });
+}
+
 export default {
   useGenerateReport,
   useExportReport,
   useReportStats,
-  useReportHistory
+  useReportHistory,
+  useBreaksReport,
+  useBreaksSummary,
+  useEmployeeBreaksReport
 };

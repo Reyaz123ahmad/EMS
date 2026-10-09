@@ -98,6 +98,7 @@ export const Sidebar = ({
             children: [
               { label: "Today's Status", to: '/attendance' },
               { label: 'Attendance Logs', to: '/attendance/logs' },
+              { label: 'Break Logs', to: '/attendance/break-logs' },
               { label: 'Monthly Summary', to: '/attendance/monthly-summary' },
               { label: 'Calendar View', to: '/attendance/calendar' },
               { label: 'Exceptions', to: '/attendance/exceptions' }
@@ -169,6 +170,7 @@ export const Sidebar = ({
             children: [
               { label: "Today's Status", to: '/attendance' },
               { label: 'Attendance Logs', to: '/attendance/logs' },
+              { label: 'Break Logs', to: '/attendance/break-logs' },
               { label: 'Monthly Summary', to: '/attendance/monthly-summary' },
               { label: 'Calendar View', to: '/attendance/calendar' },
               { label: 'Exceptions', to: '/attendance/exceptions' },

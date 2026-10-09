@@ -1,5 +1,36 @@
 import reportsRepository from './reports.repository.js';
 import { REPORT_TYPES, EXPORT_FORMATS } from './reports.constants.js';
+import { prisma } from '../../config/prisma.js';
+
+function validateDateRange(from, to) {
+  if (!from || !to) {
+    throw new Error('Both "from" and "to" date parameters are required.');
+  }
+  const fromDate = new Date(from);
+  let toDate = new Date(to);
+
+  if (isNaN(fromDate.getTime())) {
+    throw new Error('Invalid "from" date format.');
+  }
+  if (isNaN(toDate.getTime())) {
+    throw new Error('Invalid "to" date format.');
+  }
+
+  if (typeof to === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(to.trim())) {
+    toDate = new Date(`${to.trim()}T23:59:59.999Z`);
+  }
+
+  if (fromDate > toDate) {
+    throw new Error('"from" date must be earlier than or equal to "to" date.');
+  }
+
+  const maxRangeMs = 366 * 24 * 60 * 60 * 1000;
+  if (toDate.getTime() - fromDate.getTime() > maxRangeMs) {
+    throw new Error('Date range cannot exceed 1 year.');
+  }
+
+  return { fromDate, toDate };
+}
 
 export const reportsService = {
   async generateReport(type, companyId, filters = {}) {
@@ -164,6 +195,170 @@ export const reportsService = {
 
   async getReportHistory(companyId, filters = {}) {
     return reportsRepository.getReportHistories(companyId, filters);
+  },
+
+  async getBreaksReport(companyId, query = {}) {
+    const { from, to, employeeId, breakType, page = 1, limit = 50 } = query;
+    const { fromDate, toDate } = validateDateRange(from, to);
+
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 50));
+
+    const where = {
+      employee: { companyId },
+      breakStartAt: {
+        gte: fromDate,
+        lte: toDate
+      }
+    };
+
+    if (employeeId) {
+      where.employeeId = employeeId;
+    }
+    if (breakType) {
+      where.breakType = breakType;
+    }
+
+    const [total, breaks] = await Promise.all([
+      prisma.attendanceBreak.count({ where }),
+      prisma.attendanceBreak.findMany({
+        where,
+        include: {
+          employee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              employeeCode: true
+            }
+          },
+          attendanceLog: {
+            select: {
+              attendanceDate: true
+            }
+          }
+        },
+        orderBy: { breakStartAt: 'desc' },
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum
+      })
+    ]);
+
+    const formattedBreaks = breaks.map((b) => ({
+      id: b.id,
+      employee: {
+        id: b.employee?.id || b.employeeId,
+        name: b.employee ? `${b.employee.firstName} ${b.employee.lastName}`.trim() : 'N/A',
+        code: b.employee?.employeeCode || 'N/A'
+      },
+      breakType: b.breakType || 'SHORT',
+      breakStartAt: b.breakStartAt,
+      breakEndAt: b.breakEndAt,
+      totalBreakMinutes: b.totalBreakMinutes ?? (b.breakEndAt ? Math.round((new Date(b.breakEndAt) - new Date(b.breakStartAt)) / 60000) : 0),
+      attendanceDate: b.attendanceLog?.attendanceDate
+        ? (b.attendanceLog.attendanceDate instanceof Date
+            ? b.attendanceLog.attendanceDate.toISOString().split('T')[0]
+            : String(b.attendanceLog.attendanceDate).split('T')[0])
+        : (b.breakStartAt instanceof Date
+            ? b.breakStartAt.toISOString().split('T')[0]
+            : String(b.breakStartAt).split('T')[0])
+    }));
+
+    return {
+      breaks: formattedBreaks,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total,
+        totalPages: Math.ceil(total / limitNum) || 1
+      }
+    };
+  },
+
+  async getBreaksSummary(companyId, query = {}) {
+    const { from, to } = query;
+    const { fromDate, toDate } = validateDateRange(from, to);
+
+    const where = {
+      employee: { companyId },
+      breakStartAt: {
+        gte: fromDate,
+        lte: toDate
+      }
+    };
+
+    const grouped = await prisma.attendanceBreak.groupBy({
+      by: ['employeeId', 'breakType'],
+      where,
+      _count: {
+        id: true
+      },
+      _sum: {
+        totalBreakMinutes: true
+      }
+    });
+
+    const employeeIds = [...new Set(grouped.map((g) => g.employeeId))];
+    const employees = await prisma.employee.findMany({
+      where: {
+        id: { in: employeeIds },
+        companyId
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        employeeCode: true
+      }
+    });
+
+    const empMap = new Map(employees.map((e) => [e.id, e]));
+    const summaryMap = new Map();
+
+    for (const row of grouped) {
+      if (!summaryMap.has(row.employeeId)) {
+        const emp = empMap.get(row.employeeId);
+        summaryMap.set(row.employeeId, {
+          employeeId: row.employeeId,
+          employeeName: emp ? `${emp.firstName} ${emp.lastName}`.trim() : 'Unknown',
+          employeeCode: emp?.employeeCode || 'N/A',
+          totalBreaks: 0,
+          totalMinutes: 0,
+          breakdown: {}
+        });
+      }
+
+      const empSummary = summaryMap.get(row.employeeId);
+      const type = row.breakType || 'SHORT';
+      const count = row._count?.id || 0;
+      const minutes = row._sum?.totalBreakMinutes || 0;
+
+      empSummary.totalBreaks += count;
+      empSummary.totalMinutes += minutes;
+      empSummary.breakdown[type] = {
+        count: (empSummary.breakdown[type]?.count || 0) + count,
+        minutes: (empSummary.breakdown[type]?.minutes || 0) + minutes
+      };
+    }
+
+    const summary = Array.from(summaryMap.values()).sort((a, b) => b.totalMinutes - a.totalMinutes);
+
+    return { summary };
+  },
+
+  async getEmployeeBreaksReport(companyId, employeeId, query = {}) {
+    const emp = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId },
+      select: { id: true, firstName: true, lastName: true, employeeCode: true }
+    });
+
+    if (!emp) {
+      const error = new Error('Employee not found in this company');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return this.getBreaksReport(companyId, { ...query, employeeId });
   }
 };
 
