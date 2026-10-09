@@ -68,7 +68,15 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
           },
           isPublished: true
         },
-        include: { shift: true }
+        include: {
+          shift: {
+            include: {
+              shiftBreakRules: {
+                include: { breakRule: true }
+              }
+            }
+          }
+        }
       });
 
       let s = null;
@@ -92,7 +100,15 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
               { effectiveTo: { gte: targetDate } }
             ]
           },
-          include: { shift: true },
+          include: {
+            shift: {
+              include: {
+                shiftBreakRules: {
+                  include: { breakRule: true }
+                }
+              }
+            }
+          },
           orderBy: { effectiveFrom: 'desc' }
         });
 
@@ -117,6 +133,11 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
         if (resolvedCompanyId) {
           s = await prisma.shift.findFirst({
             where: { companyId: resolvedCompanyId, isActive: true },
+            include: {
+              shiftBreakRules: {
+                include: { breakRule: true }
+              }
+            },
             orderBy: { createdAt: 'asc' }
           });
           if (s) {
@@ -128,6 +149,10 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
       if (s) {
         const isNight = Boolean(s.isNightShift || (s.endTime && s.startTime && s.endTime <= s.startTime));
         const calculatedHours = calculateShiftDurationHours(s.startTime, s.endTime, isNight);
+        const resolvedBreakRules = (s.shiftBreakRules || [])
+          .map((sbr) => sbr.breakRule)
+          .filter((br) => br && br.isActive !== false);
+
         const res = {
           hasShift: true,
           source,
@@ -139,7 +164,7 @@ export async function resolveShiftForEmployee({ employeeId, companyId, date = ne
             graceMinutes: s.graceMinutes !== undefined && s.graceMinutes !== null ? s.graceMinutes : 15,
             workingHours: calculatedHours,
             isNightShift: isNight,
-            breakRules: []
+            breakRules: resolvedBreakRules
           },
           validTill
         };

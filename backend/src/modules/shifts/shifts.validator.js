@@ -13,6 +13,7 @@ export const createShiftSchema = Joi.object({
   halfDayHours: Joi.number().min(1).max(24).optional(),
   fullDayHours: Joi.number().min(1).max(24).optional(),
   breakDuration: Joi.number().min(0).max(180).optional(),
+  breakRuleIds: Joi.array().items(Joi.string().uuid()).optional().allow(null),
   description: Joi.string().optional().allow(null, ''),
   isActive: Joi.boolean().default(true)
 }).unknown(true);
@@ -30,6 +31,7 @@ export const updateShiftSchema = Joi.object({
   halfDayHours: Joi.number().min(1).max(24).optional(),
   fullDayHours: Joi.number().min(1).max(24).optional(),
   breakDuration: Joi.number().min(0).max(180).optional(),
+  breakRuleIds: Joi.array().items(Joi.string().uuid()).optional().allow(null),
   description: Joi.string().optional().allow(null, ''),
   isActive: Joi.boolean().optional()
 }).unknown(true);

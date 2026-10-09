@@ -20,6 +20,11 @@ export const shiftsService = {
     const shifts = await prisma.shift.findMany({
       where,
       include: {
+        shiftBreakRules: {
+          include: {
+            breakRule: true
+          }
+        },
         _count: {
           select: { shiftAssignments: true, rosters: true }
         }
@@ -34,6 +39,11 @@ export const shiftsService = {
     return prisma.shift.findUnique({
       where: { id },
       include: {
+        shiftBreakRules: {
+          include: {
+            breakRule: true
+          }
+        },
         shiftAssignments: {
           include: {
             employee: {
@@ -50,25 +60,83 @@ export const shiftsService = {
     const data = typeof companyIdOrData === 'object' ? companyIdOrData : (maybeData || {});
     const isNight = Boolean(data.isNightShift || (data.endTime && data.startTime && data.endTime <= data.startTime));
     const computedHours = calculateShiftDurationHours(data.startTime, data.endTime, isNight);
+    const breakRuleIds = Array.isArray(data.breakRuleIds) ? data.breakRuleIds.filter(Boolean) : [];
 
-    return prisma.shift.create({
-      data: {
-        companyId,
-        name: data.name,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        graceMinutes: data.graceMinutes !== undefined && data.graceMinutes !== null ? Number(data.graceMinutes) : 15,
-        isNightShift: isNight,
-        workingHours: data.workingHours !== undefined && data.workingHours !== null ? Number(data.workingHours) : computedHours,
-        isActive: data.isActive !== undefined ? data.isActive : true
+    return prisma.$transaction(async (tx) => {
+      const shift = await tx.shift.create({
+        data: {
+          companyId,
+          name: data.name,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          graceMinutes: data.graceMinutes !== undefined && data.graceMinutes !== null ? Number(data.graceMinutes) : 15,
+          isNightShift: isNight,
+          workingHours: data.workingHours !== undefined && data.workingHours !== null ? Number(data.workingHours) : computedHours,
+          isActive: data.isActive !== undefined ? data.isActive : true
+        }
+      });
+
+      if (breakRuleIds.length > 0) {
+        await tx.shiftBreakRule.createMany({
+          data: breakRuleIds.map((breakRuleId) => ({
+            shiftId: shift.id,
+            breakRuleId
+          })),
+          skipDuplicates: true
+        });
       }
+
+      return tx.shift.findUnique({
+        where: { id: shift.id },
+        include: {
+          shiftBreakRules: {
+            include: {
+              breakRule: true
+            }
+          }
+        }
+      });
     });
   },
 
   async updateShift(id, data) {
-    return prisma.shift.update({
-      where: { id },
-      data
+    const { breakRuleIds, ...shiftFields } = data;
+
+    return prisma.$transaction(async (tx) => {
+      if (Object.keys(shiftFields).length > 0) {
+        await tx.shift.update({
+          where: { id },
+          data: shiftFields
+        });
+      }
+
+      if (Array.isArray(breakRuleIds)) {
+        await tx.shiftBreakRule.deleteMany({
+          where: { shiftId: id }
+        });
+
+        const validIds = breakRuleIds.filter(Boolean);
+        if (validIds.length > 0) {
+          await tx.shiftBreakRule.createMany({
+            data: validIds.map((breakRuleId) => ({
+              shiftId: id,
+              breakRuleId
+            })),
+            skipDuplicates: true
+          });
+        }
+      }
+
+      return tx.shift.findUnique({
+        where: { id },
+        include: {
+          shiftBreakRules: {
+            include: {
+              breakRule: true
+            }
+          }
+        }
+      });
     });
   },
 

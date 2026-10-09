@@ -13,8 +13,10 @@ import {
   useDeleteShift,
   useAssignShift,
 } from '../../hooks/useShifts';
+import { useBreakRules } from '../../hooks/useBreakRules';
 import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { Coffee } from 'lucide-react';
 
 export default function ShiftListPage() {
   const { user } = useAuthStore();
@@ -22,6 +24,8 @@ export default function ShiftListPage() {
   const navigate = useNavigate();
 
   const { data: shiftsData, isLoading, refetch } = useShifts(companyId);
+  const { data: breakRules = [], isLoading: breakRulesLoading } = useBreakRules({ isActive: true });
+
   const createShift = useCreateShift();
   const updateShift = useUpdateShift();
   const deleteShift = useDeleteShift();
@@ -32,6 +36,7 @@ export default function ShiftListPage() {
   const [editingShift, setEditingShift] = useState(null);
   const [assigningShift, setAssigningShift] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [selectedBreakRuleIds, setSelectedBreakRuleIds] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -46,8 +51,15 @@ export default function ShiftListPage() {
     description: '',
   });
 
+  const toggleBreakRule = (ruleId) => {
+    setSelectedBreakRuleIds((prev) =>
+      prev.includes(ruleId) ? prev.filter((id) => id !== ruleId) : [...prev, ruleId]
+    );
+  };
+
   const handleOpenCreate = () => {
     setEditingShift(null);
+    setSelectedBreakRuleIds([]);
     setFormData({
       name: '',
       code: '',
@@ -65,6 +77,11 @@ export default function ShiftListPage() {
 
   const handleOpenEdit = (shift) => {
     setEditingShift(shift);
+    const existingRuleIds = (shift.shiftBreakRules || [])
+      .map((sbr) => sbr.breakRuleId || sbr.breakRule?.id)
+      .filter(Boolean);
+    setSelectedBreakRuleIds(existingRuleIds);
+
     setFormData({
       name: shift.name,
       code: shift.code,
@@ -82,10 +99,14 @@ export default function ShiftListPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = {
+      ...formData,
+      breakRuleIds: selectedBreakRuleIds,
+    };
     if (editingShift) {
-      await updateShift.mutateAsync({ id: editingShift.id, data: formData });
+      await updateShift.mutateAsync({ id: editingShift.id, data: payload });
     } else {
-      await createShift.mutateAsync({ companyId, ...formData });
+      await createShift.mutateAsync({ companyId, ...payload });
     }
     setIsModalOpen(false);
     refetch();
@@ -230,6 +251,54 @@ export default function ShiftListPage() {
               />
               Crosses Midnight (Night Shift)
             </label>
+          </div>
+
+          {/* Break Rules Selection */}
+          <div className="pt-2 border-t border-slate-800">
+            <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+              <Coffee className="w-3.5 h-3.5 text-amber-400" />
+              Applied Break Rules
+            </label>
+            <p className="text-[11px] text-slate-400 mb-2">
+              Select which company break policies apply to this shift:
+            </p>
+
+            {breakRulesLoading ? (
+              <div className="text-xs text-slate-500 py-2">Loading break rules...</div>
+            ) : breakRules.length === 0 ? (
+              <div className="p-2.5 bg-slate-900/60 rounded-lg border border-slate-800 text-xs text-slate-400">
+                No break rules defined yet. Standard default limits (60m total) will apply.
+              </div>
+            ) : (
+              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                {breakRules.map((rule) => {
+                  const isChecked = selectedBreakRuleIds.includes(rule.id);
+                  return (
+                    <label
+                      key={rule.id}
+                      className={`flex items-center justify-between p-2 rounded-lg border transition cursor-pointer text-xs ${
+                        isChecked
+                          ? 'bg-indigo-950/30 border-indigo-700/60 text-white'
+                          : 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleBreakRule(rule.id)}
+                          className="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700"
+                        />
+                        <span className="font-medium">{rule.name}</span>
+                      </div>
+                      <span className="text-[11px] text-slate-400">
+                        {rule.durationMinutes}m ({rule.maxPerShift}x) • {rule.isPaid ? 'Paid' : 'Unpaid'}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-4">

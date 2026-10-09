@@ -39,6 +39,7 @@ import TwoFactorSetupPage from './pages/profile/TwoFactorSetupPage.jsx';
 import SettingsLayout from './pages/settings/SettingsLayout.jsx';
 import GeneralSettingsPage from './pages/settings/GeneralSettingsPage.jsx';
 import AttendanceSettingsPage from './pages/settings/AttendanceSettingsPage.jsx';
+import BreakRulesPage from './pages/settings/BreakRulesPage.jsx';
 import SecuritySettingsPage from './pages/settings/SecuritySettingsPage.jsx';
 import LeaveSettingsPage from './pages/settings/LeaveSettingsPage.jsx';
 import PayrollSettingsPage from './pages/settings/PayrollSettingsPage.jsx';
@@ -328,6 +329,7 @@ export default function App() {
           <Route index element={<Navigate to="/settings/general" replace />} />
           <Route path="general" element={<GeneralSettingsPage />} />
           <Route path="attendance" element={<AttendanceSettingsPage />} />
+          <Route path="break-rules" element={<BreakRulesPage />} />
           <Route path="security" element={<SecuritySettingsPage />} />
           <Route path="leave" element={<LeaveSettingsPage />} />
           <Route path="payroll" element={<PayrollRulesPage />} />

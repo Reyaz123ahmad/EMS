@@ -377,13 +377,61 @@ export const attendanceService = {
   async checkBreakLimit(employeeId, companyId, preloadedLog = null, preloadedSettings = null) {
     const realCompanyId = companyId;
     const settings = preloadedSettings || await attendanceRules.getCompanyAttendanceSettings(realCompanyId);
-    const breakRules = settings.breakRules || {};
 
-    const maxBreaks = breakRules.maxBreaksPerDay || 3;
-    const maxBreakMinutes = breakRules.maxBreakMinutesPerDay || 60;
-    const lunchDuration = breakRules.lunchDurationMinutes || 30;
-    const shortDuration = breakRules.shortDurationMinutes || 10;
-    const breakTypes = breakRules.breakTypes || ['LUNCH', 'SHORT'];
+    // Priority 1: ShiftBreakRule from Employee's Assigned Shift
+    let applicableRules = [];
+    let ruleSource = 'DEFAULTS';
+
+    try {
+      const shiftOverview = await resolveShiftForEmployee({ employeeId, companyId: realCompanyId, date: new Date() }).catch(() => null);
+      if (shiftOverview?.shift?.breakRules && Array.isArray(shiftOverview.shift.breakRules) && shiftOverview.shift.breakRules.length > 0) {
+        applicableRules = shiftOverview.shift.breakRules.filter((r) => r && r.isActive !== false);
+        if (applicableRules.length > 0) {
+          ruleSource = 'SHIFT';
+        }
+      }
+    } catch {}
+
+    // Priority 2: Company-wide BreakRule records (if no shift-specific rules)
+    if (ruleSource === 'DEFAULTS' && realCompanyId) {
+      try {
+        const companyRules = await prisma.breakRule.findMany({
+          where: { companyId: realCompanyId, isActive: true },
+          orderBy: { createdAt: 'asc' }
+        });
+        if (companyRules && companyRules.length > 0) {
+          applicableRules = companyRules;
+          ruleSource = 'COMPANY';
+        }
+      } catch {}
+    }
+
+    // Determine limits
+    let maxBreaks;
+    let maxBreakMinutes;
+    let lunchDuration;
+    let shortDuration;
+    let breakTypes;
+
+    if (applicableRules.length > 0) {
+      maxBreaks = applicableRules.reduce((sum, r) => sum + (Number(r.maxPerShift) || 1), 0);
+      maxBreakMinutes = applicableRules.reduce((sum, r) => sum + ((Number(r.durationMinutes) || 0) * (Number(r.maxPerShift) || 1)), 0);
+
+      const lunchRule = applicableRules.find((r) => r.name.toUpperCase().includes('LUNCH'));
+      const shortRule = applicableRules.find((r) => !r.name.toUpperCase().includes('LUNCH'));
+
+      lunchDuration = lunchRule ? Number(lunchRule.durationMinutes) : (settings.breakRules?.lunchDurationMinutes || 30);
+      shortDuration = shortRule ? Number(shortRule.durationMinutes) : (settings.breakRules?.shortDurationMinutes || 10);
+      breakTypes = applicableRules.map((r) => r.name.toUpperCase());
+    } else {
+      // Priority 3: Fallback to Company JSON settings or hardcoded defaults
+      const breakRules = settings.breakRules || {};
+      maxBreaks = breakRules.maxBreaksPerDay || 3;
+      maxBreakMinutes = breakRules.maxBreakMinutesPerDay || 60;
+      lunchDuration = breakRules.lunchDurationMinutes || 30;
+      shortDuration = breakRules.shortDurationMinutes || 10;
+      breakTypes = breakRules.breakTypes || ['LUNCH', 'SHORT'];
+    }
 
     const todayLog = preloadedLog !== undefined && preloadedLog !== null
       ? preloadedLog
@@ -438,7 +486,9 @@ export const attendanceService = {
       allowedBreakTypes: breakTypes,
       hasActiveBreak: Boolean(activeBreak),
       activeBreak,
-      reason
+      reason,
+      ruleSource,
+      rules: applicableRules
     };
   },
 

@@ -214,7 +214,19 @@ export const Sidebar = ({
           { label: 'Subscription & Billing', to: '/subscription/current', icon: CreditCard },
           { label: 'Documents', to: '/documents', icon: FileText },
           { label: 'Security & Audits', to: '/security/dashboard', icon: ShieldAlert },
-          { label: 'Company Settings', to: '/settings/general', icon: Settings },
+          {
+            label: 'Company Settings',
+            icon: Settings,
+            children: [
+              { label: 'General & Branding', to: '/settings/general' },
+              { label: 'Attendance Policies', to: '/settings/attendance' },
+              { label: 'Break Rules', to: '/settings/break-rules' },
+              { label: 'Security Policies', to: '/settings/security' },
+              { label: 'Leave Schemes', to: '/settings/leave' },
+              { label: 'Payroll Rules', to: '/settings/payroll-rules' },
+              { label: 'Alert Preferences', to: '/settings/notifications' }
+            ]
+          },
           { label: 'Notifications', to: '/notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null },
           { label: 'My Profile', to: '/profile', icon: User }
         ];

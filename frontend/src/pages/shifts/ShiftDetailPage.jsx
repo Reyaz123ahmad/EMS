@@ -74,6 +74,39 @@ export default function ShiftDetailPage() {
           </div>
         </div>
 
+        {/* Bound Break Rules List */}
+        <div className="pt-2 border-t border-slate-800/80">
+          <span className="text-xs font-semibold text-slate-300 block mb-2">Bound Break Policies:</span>
+          {(!shift.shiftBreakRules || shift.shiftBreakRules.length === 0) ? (
+            <p className="text-xs text-slate-500 italic">
+              No custom break rules linked. Default company break limits (60m / 3 sessions) apply.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {shift.shiftBreakRules.map((sbr) => {
+                const rule = sbr.breakRule;
+                if (!rule) return null;
+                return (
+                  <div
+                    key={sbr.id || rule.id}
+                    className="p-2.5 rounded-lg bg-slate-950/40 border border-slate-800 flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <div className="font-semibold text-white">{rule.name}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        {rule.durationMinutes} mins • {rule.maxPerShift}x per shift
+                      </div>
+                    </div>
+                    <Badge variant={rule.isPaid ? 'success' : 'neutral'} className="text-[10px]">
+                      {rule.isPaid ? 'Paid' : 'Unpaid'}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         {shift.description && (
           <div className="pt-2">
             <span className="text-xs text-slate-400 block mb-1">Description:</span>

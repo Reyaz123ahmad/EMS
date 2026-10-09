@@ -57,7 +57,12 @@ function FingerprintIcon({ size = 24, color = '#FFFFFF' }) {
 
 export default function AttendanceScreen() {
   const [refreshing, setRefreshing] = useState(false);
-  const [cameraVisible, setCameraVisible] = useState(false);
+  const [cameraModalConfig, setCameraModalConfig] = useState({
+    visible: false,
+    actionType: 'CHECK_IN', // 'CHECK_IN' | 'BREAK_START' | 'BREAK_END'
+    actionTitle: 'Face Biometric Check-In',
+    breakType: 'SHORT', // 'SHORT' | 'LUNCH'
+  });
   const [actionLoading, setActionLoading] = useState(false);
   const [selectedMode, setSelectedMode] = useState('face'); // 'face' | 'rfid' | 'fingerprint'
   const [rfidCardNumber, setRfidCardNumber] = useState('');
@@ -98,6 +103,20 @@ export default function AttendanceScreen() {
     retryDelay: 2000,
   });
 
+  // Fetch checkout readiness and shift working hours status
+  const {
+    data: checkoutData,
+    isLoading: checkoutLoading,
+    refetch: refetchCheckoutStatus,
+  } = useQuery({
+    queryKey: ['attendance', 'checkout-status'],
+    queryFn: () => attendanceService.getCheckoutStatus(),
+    staleTime: 15000,
+    refetchInterval: 30000,
+    retry: 2,
+    retryDelay: 2000,
+  });
+
   // Fetch attendance logs history
   const {
     data: logsData,
@@ -113,9 +132,9 @@ export default function AttendanceScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([refetchToday(), refetchBreakStatus(), refetchLogs()]);
+    await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
     setRefreshing(false);
-  }, [refetchToday, refetchBreakStatus, refetchLogs]);
+  }, [refetchToday, refetchBreakStatus, refetchCheckoutStatus, refetchLogs]);
 
   // Derived Attendance States
   const todayLog = todayData?.log || todayData?.attendance;
@@ -136,10 +155,52 @@ export default function AttendanceScreen() {
   const checkInBlockReason = todayData?.checkInBlockReason;
 
   // Derived Break States
-  const onBreak = Boolean(breakData?.onBreak || todayData?.isOnBreak || todayData?.onBreak);
-  const breakStart = breakData?.breakStart || todayData?.activeBreak?.startTime || breakData?.activeBreak?.startTime;
-  const totalBreakMinutes = breakData?.totalBreakMinutes ?? (todayData?.breaks?.reduce((acc, b) => acc + (b.totalBreakMinutes || b.durationMinutes || 0), 0) ?? 0);
-  const sessionCount = breakData?.sessionCount ?? (todayData?.breaks?.length ?? 0);
+  const allTodayBreaks = useMemo(() => {
+    return todayData?.breaks || todayLog?.breaks || todayData?.attendance?.breaks || [];
+  }, [todayData?.breaks, todayLog?.breaks, todayData?.attendance?.breaks]);
+
+  const activeBreakFromList = useMemo(() => {
+    return allTodayBreaks.find((b) => !b.breakEndAt) || null;
+  }, [allTodayBreaks]);
+
+  const resolvedActiveBreak =
+    breakData?.activeBreak ||
+    todayData?.breakStatus?.activeBreak ||
+    todayData?.activeBreak ||
+    activeBreakFromList ||
+    null;
+
+  const onBreak = Boolean(
+    breakData?.hasActiveBreak ||
+    breakData?.onBreak ||
+    todayData?.isOnBreak ||
+    todayData?.onBreak ||
+    resolvedActiveBreak
+  );
+
+  const breakStart =
+    resolvedActiveBreak?.breakStartAt ||
+    resolvedActiveBreak?.startTime ||
+    resolvedActiveBreak?.startedAt ||
+    resolvedActiveBreak?.createdAt ||
+    breakData?.breakStart ||
+    null;
+
+  const activeBreakType =
+    resolvedActiveBreak?.breakType ||
+    breakData?.breakType ||
+    todayData?.activeBreak?.breakType ||
+    'SHORT';
+
+  const totalBreakMinutes =
+    breakData?.totalBreakMinutes ??
+    (todayData?.breakStatus?.totalBreakMinutes ??
+      (allTodayBreaks.reduce((acc, b) => acc + (b.totalBreakMinutes || b.durationMinutes || 0), 0) ?? 0));
+
+  const sessionCount =
+    breakData?.totalBreaks ??
+    breakData?.sessionCount ??
+    (todayData?.breakStatus?.totalBreaks ?? allTodayBreaks.length ?? 0);
 
   // Live Break Elapsed Timer (ticking every 1s)
   const [breakElapsed, setBreakElapsed] = useState(0);
@@ -150,10 +211,17 @@ export default function AttendanceScreen() {
       return;
     }
     const startTimeMs = new Date(breakStart).getTime();
+    if (isNaN(startTimeMs)) {
+      setBreakElapsed(0);
+      return;
+    }
+
     const updateElapsed = () => {
-      const diffSecs = Math.max(0, Math.floor((Date.now() - startTimeMs) / 1000));
+      const nowMs = Date.now();
+      const diffSecs = Math.max(0, Math.floor((nowMs - startTimeMs) / 1000));
       setBreakElapsed(diffSecs);
     };
+
     updateElapsed();
     const interval = setInterval(updateElapsed, 1000);
     return () => clearInterval(interval);
@@ -244,6 +312,45 @@ export default function AttendanceScreen() {
     }
     return resolvedEndTime;
   }, [todayData?.expectedCheckout, todayLog?.adjustedCheckOutTime, resolvedEndTime]);
+
+  // Derived Shift Working Hours States (from /attendance/checkout-status)
+  const checkoutStatus = checkoutData?.data || checkoutData || {};
+  const checkoutCanCheckout = Boolean(checkoutStatus?.canCheckout);
+  const checkoutActualMinutes = Number(
+    checkoutStatus?.actualMinutes !== undefined
+      ? checkoutStatus.actualMinutes
+      : todayLog?.totalWorkedMinutes || 0
+  );
+  const checkoutRequiredMinutes = Number(
+    checkoutStatus?.requiredMinutes !== undefined
+      ? checkoutStatus.requiredMinutes
+      : (plannedShiftHours ? plannedShiftHours * 60 : 480)
+  );
+  const checkoutRemainingMinutes = Number(
+    checkoutStatus?.remainingMinutes !== undefined
+      ? checkoutStatus.remainingMinutes
+      : Math.max(0, checkoutRequiredMinutes - checkoutActualMinutes)
+  );
+  const checkoutExpectedCheckoutTime =
+    checkoutStatus?.expectedCheckoutTime || todayData?.expectedCheckout || todayLog?.adjustedCheckOutTime;
+  const checkoutDisabledReason = checkoutStatus?.reason || '';
+
+  const formatWorkingMins = (mins) => {
+    const h = Math.floor((mins || 0) / 60);
+    const m = (mins || 0) % 60;
+    if (h === 0) return `${m}m`;
+    return `${h}h ${m}m`;
+  };
+
+  const formattedExpectedCheckoutTime = checkoutExpectedCheckoutTime
+    ? new Date(checkoutExpectedCheckoutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : expectedCheckoutTimeStr || '--:--';
+
+  const workingTargetMinutes = checkoutRequiredMinutes || (checkoutActualMinutes > 0 ? checkoutActualMinutes : 480);
+  const workingProgressPercent = Math.min(
+    100,
+    Math.round((checkoutActualMinutes / (workingTargetMinutes || 1)) * 100)
+  );
 
   // Format Helpers
   const formatCountdown = (totalSeconds) => {
@@ -382,7 +489,12 @@ export default function AttendanceScreen() {
 
     // Window is open, execute selected biometric mode
     if (selectedMode === 'face') {
-      setCameraVisible(true);
+      setCameraModalConfig({
+        visible: true,
+        actionType: 'CHECK_IN',
+        actionTitle: 'Face Biometric Check-In',
+        breakType: 'SHORT',
+      });
     } else if (selectedMode === 'fingerprint') {
       handleFingerprintCheckIn();
     } else if (selectedMode === 'rfid') {
@@ -449,7 +561,7 @@ export default function AttendanceScreen() {
             minute: '2-digit',
           })}.`
         );
-        await Promise.all([refetchToday(), refetchBreakStatus(), refetchLogs()]);
+        await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
       } else {
         Alert.alert('Verification Cancelled', 'Fingerprint authentication was not completed.');
       }
@@ -491,7 +603,7 @@ export default function AttendanceScreen() {
         })}.`
       );
       setRfidCardNumber('');
-      await Promise.all([refetchToday(), refetchBreakStatus(), refetchLogs()]);
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || err.response?.data?.error || err.message || 'RFID check-in failed.';
@@ -503,7 +615,6 @@ export default function AttendanceScreen() {
 
   // Face Check-In from Camera
   const handleFaceCheckIn = async ({ photo, location }) => {
-    setCameraVisible(false);
     setActionLoading(true);
     try {
       const loc = location || (await getCurrentLocation());
@@ -522,7 +633,7 @@ export default function AttendanceScreen() {
           minute: '2-digit',
         })}.`
       );
-      await Promise.all([refetchToday(), refetchBreakStatus(), refetchLogs()]);
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message ||
@@ -535,8 +646,107 @@ export default function AttendanceScreen() {
     }
   };
 
+  // Face Break Start from Camera
+  const handleFaceBreakStart = async ({ photo, location, breakType = 'SHORT' }) => {
+    setActionLoading(true);
+    try {
+      const loc = location || (await getCurrentLocation());
+      console.log('[ATTENDANCE] Submitting face break start with GPS location:', breakType, loc);
+      await attendanceService.startBreak({
+        breakType,
+        mode: 'face',
+        photo,
+        location: loc,
+        remarks: `Mobile biometric face ${breakType.toLowerCase()} break start`,
+      });
+
+      Alert.alert(
+        'Break Started ☕',
+        `${breakType === 'LUNCH' ? 'Lunch' : 'Short'} break timer has started with biometric verification.`
+      );
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Could not start break.';
+      Alert.alert('Break Start Error', errorMsg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Face Break End from Camera
+  const handleFaceBreakEnd = async ({ photo, location }) => {
+    setActionLoading(true);
+    try {
+      const loc = location || (await getCurrentLocation());
+      console.log('[ATTENDANCE] Submitting face break end with GPS location:', loc);
+      await attendanceService.endBreak({
+        mode: 'face',
+        photo,
+        location: loc,
+        remarks: 'Mobile biometric face break end',
+      });
+
+      Alert.alert(
+        'Break Ended 💼',
+        'Welcome back! Workday timer resumed with biometric verification.'
+      );
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Could not end break.';
+      Alert.alert('Break End Error', errorMsg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Unified Camera Capture Router
+  const handleCameraCapture = async ({ photo, location }) => {
+    const { actionType, breakType } = cameraModalConfig;
+    setCameraModalConfig((prev) => ({ ...prev, visible: false }));
+
+    if (actionType === 'CHECK_IN') {
+      await handleFaceCheckIn({ photo, location });
+    } else if (actionType === 'BREAK_START') {
+      await handleFaceBreakStart({ photo, location, breakType });
+    } else if (actionType === 'BREAK_END') {
+      await handleFaceBreakEnd({ photo, location });
+    }
+  };
+
   // Break Actions
   const handleStartBreak = async (type = 'SHORT') => {
+    if (selectedMode === 'face') {
+      setCameraModalConfig({
+        visible: true,
+        actionType: 'BREAK_START',
+        actionTitle: `Face Biometric Break Start (${type === 'LUNCH' ? 'Lunch' : 'Short'} Break)`,
+        breakType: type,
+      });
+      return;
+    }
+
+    if (selectedMode === 'fingerprint') {
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        if (hasHardware && isEnrolled) {
+          const authResult = await LocalAuthentication.authenticateAsync({
+            promptMessage: `Verify fingerprint to start ${type === 'LUNCH' ? 'lunch' : 'short'} break`,
+            cancelLabel: 'Cancel',
+          });
+          if (!authResult.success) return;
+        }
+      } catch {}
+    }
+
     setActionLoading(true);
     try {
       let location = null;
@@ -546,7 +756,7 @@ export default function AttendanceScreen() {
       console.log('[ATTENDANCE] Starting break of type:', type, location);
       await attendanceService.startBreak({ breakType: type, mode: selectedMode, location });
       Alert.alert('Break Started ☕', `${type === 'LUNCH' ? 'Lunch' : 'Short'} break timer has started.`);
-      await Promise.all([refetchToday(), refetchBreakStatus(), refetchLogs()]);
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || err.response?.data?.error || err.message || 'Could not start break.';
@@ -557,6 +767,30 @@ export default function AttendanceScreen() {
   };
 
   const handleEndBreak = async () => {
+    if (selectedMode === 'face') {
+      setCameraModalConfig({
+        visible: true,
+        actionType: 'BREAK_END',
+        actionTitle: 'Face Biometric Break End',
+        breakType: 'SHORT',
+      });
+      return;
+    }
+
+    if (selectedMode === 'fingerprint') {
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        if (hasHardware && isEnrolled) {
+          const authResult = await LocalAuthentication.authenticateAsync({
+            promptMessage: 'Verify fingerprint to end break',
+            cancelLabel: 'Cancel',
+          });
+          if (!authResult.success) return;
+        }
+      } catch {}
+    }
+
     setActionLoading(true);
     try {
       let location = null;
@@ -566,7 +800,7 @@ export default function AttendanceScreen() {
       console.log('[ATTENDANCE] Ending active break session...', location);
       await attendanceService.endBreak({ mode: selectedMode, location });
       Alert.alert('Break Ended 💼', 'Welcome back! Workday timer resumed.');
-      await Promise.all([refetchToday(), refetchBreakStatus(), refetchLogs()]);
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || err.response?.data?.error || err.message || 'Could not end break.';
@@ -578,10 +812,12 @@ export default function AttendanceScreen() {
 
   // Check-Out Tap Handler (Always responsive with alert on disabled)
   const handleCheckOutTap = () => {
-    if (!canCheckOut) {
+    const canExit = canCheckOut || checkoutCanCheckout;
+    if (!canExit) {
       Alert.alert(
         'Cannot Check Out Yet',
-        `You need to work more. Expected checkout: ${expectedCheckoutTimeStr}`
+        checkoutDisabledReason ||
+          `You need to work more. Expected checkout: ${formattedExpectedCheckoutTime}`
       );
       return;
     }
@@ -604,7 +840,7 @@ export default function AttendanceScreen() {
                 remarks: `Mobile ${selectedMode} check-out`,
               });
               Alert.alert('Checked Out', 'Your check-out timestamp has been recorded.');
-              await Promise.all([refetchToday(), refetchBreakStatus(), refetchLogs()]);
+              await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
             } catch (err) {
               const errorMsg =
                 err.response?.data?.message ||
@@ -617,8 +853,7 @@ export default function AttendanceScreen() {
             }
           },
         },
-      ],
-      { cancelable: true }
+      ]
     );
   };
 
@@ -793,6 +1028,114 @@ export default function AttendanceScreen() {
           </View>
         </View>
 
+        {/* SECTION: SHIFT WORKING HOURS (Matches Web CheckoutStatus Card) */}
+        <View style={styles.workingHoursCard}>
+          <View style={styles.workingHoursHeader}>
+            <View style={styles.workingHoursTitleRow}>
+              <Clock size={18} color="#4F46E5" />
+              <Text style={styles.workingHoursTitle}>Shift Working Hours</Text>
+            </View>
+            <View
+              style={[
+                styles.workingHoursBadge,
+                checkoutCanCheckout ? styles.workingHoursBadgeSuccess : styles.workingHoursBadgeProgress,
+              ]}
+            >
+              {checkoutCanCheckout ? (
+                <CheckCircle2 size={13} color="#059669" />
+              ) : (
+                <AlertTriangle size={13} color="#D97706" />
+              )}
+              <Text
+                style={[
+                  styles.workingHoursBadgeText,
+                  checkoutCanCheckout
+                    ? styles.workingHoursBadgeTextSuccess
+                    : styles.workingHoursBadgeTextProgress,
+                ]}
+              >
+                {checkoutCanCheckout ? 'Full Time Met' : 'In Progress'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Progress Bar & Worked / Required */}
+          <View style={styles.workingProgressContainer}>
+            <View style={styles.workingProgressLabels}>
+              <Text style={styles.workingProgressLabelLeft}>
+                Worked: {formatWorkingMins(checkoutActualMinutes)}
+              </Text>
+              <Text style={styles.workingProgressLabelRight}>
+                Required: {formatWorkingMins(checkoutRequiredMinutes)}
+              </Text>
+            </View>
+            <View style={styles.workingProgressTrack}>
+              <View
+                style={[
+                  styles.workingProgressFill,
+                  { width: `${workingProgressPercent}%` },
+                  workingProgressPercent >= 100 && styles.workingProgressFillComplete,
+                ]}
+              />
+            </View>
+          </View>
+
+          {/* 2-Column Stats Grid: Earliest Checkout & Remaining Time */}
+          <View style={styles.workingGrid}>
+            <View style={styles.workingGridCol}>
+              <Text style={styles.workingGridLabel}>Earliest Checkout</Text>
+              <Text style={styles.workingGridVal}>{formattedExpectedCheckoutTime}</Text>
+            </View>
+            <View style={styles.workingGridCol}>
+              <Text style={styles.workingGridLabel}>Remaining Time</Text>
+              <Text
+                style={[
+                  styles.workingGridVal,
+                  checkoutRemainingMinutes > 0 ? styles.workingGridValAmber : styles.workingGridValGreen,
+                ]}
+              >
+                {checkoutRemainingMinutes > 0
+                  ? formatWorkingMins(checkoutRemainingMinutes)
+                  : '0m (Completed)'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Disabled State Message / Interactive Action */}
+          {checkedIn && !checkedOut && !onBreak && (
+            <View style={styles.checkoutActionBlock}>
+              <TouchableOpacity
+                style={[
+                  styles.shiftCheckoutBtn,
+                  !checkoutCanCheckout && styles.shiftCheckoutBtnDisabled,
+                ]}
+                onPress={handleCheckOutTap}
+                disabled={actionLoading}
+                activeOpacity={0.8}
+              >
+                {!checkoutCanCheckout && <Lock size={16} color="#94A3B8" />}
+                {checkoutCanCheckout && <LogOut size={16} color="#FFFFFF" />}
+                <Text
+                  style={[
+                    styles.shiftCheckoutBtnText,
+                    !checkoutCanCheckout && styles.shiftCheckoutBtnTextDisabled,
+                  ]}
+                >
+                  {checkoutCanCheckout
+                    ? 'Check Out Now'
+                    : 'Checkout Disabled (Work Full Hours)'}
+                </Text>
+              </TouchableOpacity>
+              {!checkoutCanCheckout && (
+                <Text style={styles.checkoutDisabledSubMessage}>
+                  {checkoutDisabledReason ||
+                    `You need to work ${checkoutRemainingMinutes} more minutes. Checkout enabled at ${formattedExpectedCheckoutTime}.`}
+                </Text>
+              )}
+            </View>
+          )}
+        </View>
+
         {/* SECTION 4: LIVE 1-SECOND COUNTDOWN TIMER */}
         {!checkedIn && countdownSecs > 0 && (
           <View style={styles.liveTimerCard}>
@@ -836,7 +1179,7 @@ export default function AttendanceScreen() {
                   <Text style={styles.activeBreakDigits}>{formatCountdown(breakElapsed)}</Text>
                 </View>
                 <Text style={styles.activeBreakSub}>
-                  {breakData?.breakType || todayData?.activeBreak?.breakType || 'SHORT'} break running
+                  {activeBreakType} break running
                 </Text>
 
                 <TouchableOpacity
@@ -1113,12 +1456,12 @@ export default function AttendanceScreen() {
         )}
       </ScrollView>
 
-      {/* Face Check-In Camera Modal with Oval Guide & GPS */}
+      {/* Face Biometric Camera Modal with Oval Guide & GPS */}
       <CameraModal
-        visible={cameraVisible}
-        onClose={() => setCameraVisible(false)}
-        onCapture={handleFaceCheckIn}
-        actionTitle="Face Biometric Check-In"
+        visible={cameraModalConfig.visible}
+        onClose={() => setCameraModalConfig((prev) => ({ ...prev, visible: false }))}
+        onCapture={handleCameraCapture}
+        actionTitle={cameraModalConfig.actionTitle}
       />
     </SafeAreaView>
   );
@@ -1799,5 +2142,169 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     color: '#334155',
+  },
+  workingHoursCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  workingHoursHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  workingHoursTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  workingHoursTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  workingHoursBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  workingHoursBadgeSuccess: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+  },
+  workingHoursBadgeProgress: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  workingHoursBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  workingHoursBadgeTextSuccess: {
+    color: '#059669',
+  },
+  workingHoursBadgeTextProgress: {
+    color: '#D97706',
+  },
+  workingProgressContainer: {
+    marginBottom: 14,
+  },
+  workingProgressLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  workingProgressLabelLeft: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    fontVariant: ['tabular-nums'],
+  },
+  workingProgressLabelRight: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    fontVariant: ['tabular-nums'],
+  },
+  workingProgressTrack: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 999,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  workingProgressFill: {
+    height: '100%',
+    backgroundColor: '#4F46E5',
+    borderRadius: 999,
+  },
+  workingProgressFillComplete: {
+    backgroundColor: '#059669',
+  },
+  workingGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 14,
+  },
+  workingGridCol: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  workingGridLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+    marginBottom: 4,
+  },
+  workingGridVal: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  workingGridValAmber: {
+    color: '#D97706',
+  },
+  workingGridValGreen: {
+    color: '#059669',
+  },
+  checkoutActionBlock: {
+    marginTop: 2,
+  },
+  shiftCheckoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#E11D48',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 14,
+    shadowColor: '#E11D48',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  shiftCheckoutBtnDisabled: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  shiftCheckoutBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  shiftCheckoutBtnTextDisabled: {
+    color: '#94A3B8',
+  },
+  checkoutDisabledSubMessage: {
+    fontSize: 11,
+    color: '#D97706',
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 16,
+    fontWeight: '500',
   },
 });

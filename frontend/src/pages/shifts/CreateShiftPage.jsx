@@ -4,8 +4,9 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import { useCreateShift } from '../../hooks/useShifts';
+import { useBreakRules } from '../../hooks/useBreakRules';
 import { useAuthStore } from '../../store/authStore';
-import { Clock, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { Clock, ArrowLeft, CheckCircle2, Coffee } from 'lucide-react';
 import { toast } from 'sonner';
 
 function calculateHours(start, end, isNight = false) {
@@ -26,6 +27,9 @@ export default function CreateShiftPage() {
   const companyId = user?.companyId;
   const createShift = useCreateShift();
 
+  const { data: breakRules = [], isLoading: breakRulesLoading } = useBreakRules({ isActive: true });
+  const [selectedBreakRuleIds, setSelectedBreakRuleIds] = useState([]);
+
   const [formData, setFormData] = useState({
     name: '',
     startTime: '09:00',
@@ -35,6 +39,12 @@ export default function CreateShiftPage() {
     isNightShift: false,
     isActive: true
   });
+
+  const toggleBreakRule = (ruleId) => {
+    setSelectedBreakRuleIds((prev) =>
+      prev.includes(ruleId) ? prev.filter((id) => id !== ruleId) : [...prev, ruleId]
+    );
+  };
 
   const handleTimeChange = (field, val) => {
     const updated = { ...formData, [field]: val };
@@ -66,7 +76,8 @@ export default function CreateShiftPage() {
         graceMinutes: Number(formData.graceMinutes) || 15,
         workingHours: computedWorkingHours,
         isNightShift: isNight,
-        isActive: Boolean(formData.isActive)
+        isActive: Boolean(formData.isActive),
+        breakRuleIds: selectedBreakRuleIds
       });
       toast.success('Shift created successfully!');
       navigate('/shifts');
@@ -182,6 +193,54 @@ export default function CreateShiftPage() {
               />
               Active Status
             </label>
+          </div>
+
+          {/* Break Rules Multi-Select */}
+          <div className="pt-2 border-t border-slate-800/80">
+            <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+              <Coffee className="w-3.5 h-3.5 text-amber-400" />
+              Applied Break Rules
+            </label>
+            <p className="text-[11px] text-slate-400 mb-2.5">
+              Select which company break policies apply to employees on this shift.
+            </p>
+
+            {breakRulesLoading ? (
+              <div className="text-xs text-slate-500 py-2">Loading break rules...</div>
+            ) : breakRules.length === 0 ? (
+              <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-800 text-xs text-slate-400">
+                No break rules defined yet. Standard default break limits (60m / 3 breaks) will apply.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-48 overflow-y-auto pr-1">
+                {breakRules.map((rule) => {
+                  const isChecked = selectedBreakRuleIds.includes(rule.id);
+                  return (
+                    <label
+                      key={rule.id}
+                      className={`flex items-start gap-2.5 p-2.5 rounded-lg border transition cursor-pointer text-xs ${
+                        isChecked
+                          ? 'bg-indigo-950/30 border-indigo-700/60 text-white'
+                          : 'bg-slate-950/30 border-slate-800 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleBreakRule(rule.id)}
+                        className="w-4 h-4 mt-0.5 rounded text-indigo-600 bg-slate-950 border-slate-700"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{rule.name}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">
+                          {rule.durationMinutes}m • {rule.maxPerShift}x/shift • {rule.isPaid ? 'Paid' : 'Unpaid'}
+                        </div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">

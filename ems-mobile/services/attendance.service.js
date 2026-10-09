@@ -70,10 +70,11 @@ export const attendanceService = {
   },
 
   // POST /attendance/break-start
-  async startBreak({ breakType = 'SHORT', mode, location = null, remarks = '' } = {}) {
+  async startBreak({ breakType = 'SHORT', mode, photo = null, location = null, remarks = '' } = {}) {
     const payload = {
       breakType,
       mode: mode || 'face',
+      photo: photo || undefined,
       location: location
         ? {
             lat: location.lat ?? location.latitude,
@@ -90,9 +91,10 @@ export const attendanceService = {
   },
 
   // POST /attendance/break-end
-  async endBreak({ mode, location = null, remarks = '' } = {}) {
+  async endBreak({ mode, photo = null, location = null, remarks = '' } = {}) {
     const payload = {
       mode: mode || 'face',
+      photo: photo || undefined,
       location: location
         ? {
             lat: location.lat ?? location.latitude,
@@ -112,6 +114,16 @@ export const attendanceService = {
   async getBreakStatus() {
     try {
       const res = await api.get('/attendance/break-status');
+      return res.data?.data || res.data;
+    } catch {
+      return null;
+    }
+  },
+
+  // GET /attendance/checkout-status
+  async getCheckoutStatus(params = {}) {
+    try {
+      const res = await api.get('/attendance/checkout-status', { params });
       return res.data?.data || res.data;
     } catch {
       return null;
