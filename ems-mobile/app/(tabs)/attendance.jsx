@@ -136,8 +136,27 @@ export default function AttendanceScreen() {
     setRefreshing(false);
   }, [refetchToday, refetchBreakStatus, refetchCheckoutStatus, refetchLogs]);
 
-  // Derived Attendance States
+  // Derived Attendance States & Live Worked Time
   const todayLog = todayData?.log || todayData?.attendance;
+  const checkInIso = todayLog?.checkInAt || todayData?.checkInAt || todayData?.checkIn;
+  const checkOutIso = todayLog?.checkOutAt || todayData?.checkOutAt || todayData?.checkOut;
+
+  const liveWorkedMinutes = useMemo(() => {
+    if (todayLog?.totalWorkedMinutes) return todayLog.totalWorkedMinutes;
+    if (checkInIso) {
+      const startMs = new Date(checkInIso).getTime();
+      if (!isNaN(startMs)) {
+        const endMs = checkOutIso ? new Date(checkOutIso).getTime() : currentTime.getTime();
+        if (!isNaN(endMs) && endMs >= startMs) {
+          return Math.floor((endMs - startMs) / 60000);
+        }
+      }
+    }
+    return 0;
+  }, [todayLog?.totalWorkedMinutes, checkInIso, checkOutIso, currentTime]);
+
+  const liveWorkedStr = `${Math.floor(liveWorkedMinutes / 60)}h ${liveWorkedMinutes % 60}m`;
+
   const checkedIn = Boolean(
     todayData?.checkedIn ||
     todayData?.isCheckedIn ||
@@ -154,7 +173,26 @@ export default function AttendanceScreen() {
   const canCheckOut = Boolean(todayData?.canCheckOut ?? true);
   const checkInBlockReason = todayData?.checkInBlockReason;
 
-  // Derived Break States
+  // Derived Break States from breakData & todayData
+  const resolvedBreakData = breakData?.data || breakData || {};
+  const {
+    canTakeBreak = false,
+    totalBreaks = 0,
+    remainingBreaks = 0,
+    totalBreakMinutes = 0,
+    remainingMinutes = 0,
+    maxBreaks = 0,
+    maxBreakMinutes = 0,
+    lunchDurationMinutes = 0,
+    shortDurationMinutes = 0,
+    reason: breakBlockReason = '',
+    rules: breakRulesList = [],
+  } = resolvedBreakData;
+
+  const hasConfiguredBreakRules = Boolean(
+    maxBreaks > 0 || maxBreakMinutes > 0 || (breakRulesList && breakRulesList.length > 0)
+  );
+
   const allTodayBreaks = useMemo(() => {
     return todayData?.breaks || todayLog?.breaks || todayData?.attendance?.breaks || [];
   }, [todayData?.breaks, todayLog?.breaks, todayData?.attendance?.breaks]);
@@ -171,8 +209,8 @@ export default function AttendanceScreen() {
     null;
 
   const onBreak = Boolean(
-    breakData?.hasActiveBreak ||
-    breakData?.onBreak ||
+    resolvedBreakData?.hasActiveBreak ||
+    resolvedBreakData?.onBreak ||
     todayData?.isOnBreak ||
     todayData?.onBreak ||
     resolvedActiveBreak
@@ -183,24 +221,14 @@ export default function AttendanceScreen() {
     resolvedActiveBreak?.startTime ||
     resolvedActiveBreak?.startedAt ||
     resolvedActiveBreak?.createdAt ||
-    breakData?.breakStart ||
+    resolvedBreakData?.breakStart ||
     null;
 
   const activeBreakType =
     resolvedActiveBreak?.breakType ||
-    breakData?.breakType ||
+    resolvedBreakData?.breakType ||
     todayData?.activeBreak?.breakType ||
     'SHORT';
-
-  const totalBreakMinutes =
-    breakData?.totalBreakMinutes ??
-    (todayData?.breakStatus?.totalBreakMinutes ??
-      (allTodayBreaks.reduce((acc, b) => acc + (b.totalBreakMinutes || b.durationMinutes || 0), 0) ?? 0));
-
-  const sessionCount =
-    breakData?.totalBreaks ??
-    breakData?.sessionCount ??
-    (todayData?.breakStatus?.totalBreaks ?? allTodayBreaks.length ?? 0);
 
   // Live Break Elapsed Timer (ticking every 1s)
   const [breakElapsed, setBreakElapsed] = useState(0);
@@ -319,7 +347,7 @@ export default function AttendanceScreen() {
   const checkoutActualMinutes = Number(
     checkoutStatus?.actualMinutes !== undefined
       ? checkoutStatus.actualMinutes
-      : todayLog?.totalWorkedMinutes || 0
+      : liveWorkedMinutes
   );
   const checkoutRequiredMinutes = Number(
     checkoutStatus?.requiredMinutes !== undefined
@@ -1018,11 +1046,7 @@ export default function AttendanceScreen() {
             <View style={styles.shiftCol}>
               <Text style={styles.shiftLabel}>Total Worked</Text>
               <Text style={[styles.shiftVal, { color: '#4F46E5' }]}>
-                {todayLog?.totalWorkedMinutes
-                  ? `${Math.floor(todayLog.totalWorkedMinutes / 60)}h ${todayLog.totalWorkedMinutes % 60}m`
-                  : checkedIn && !checkedOut
-                  ? 'In Progress'
-                  : '0h 0m'}
+                {checkedIn || checkedOut ? liveWorkedStr : '0h 0m'}
               </Text>
             </View>
           </View>
@@ -1163,13 +1187,76 @@ export default function AttendanceScreen() {
               <View style={styles.breakTitleLeft}>
                 <Coffee size={18} color={onBreak ? '#D97706' : '#4F46E5'} />
                 <Text style={styles.breakSectionTitle}>
-                  {onBreak ? 'Break In Progress' : 'Break Controls'}
+                  {onBreak ? 'Break In Progress' : 'Daily Break Allowance'}
                 </Text>
               </View>
-              <Text style={styles.breakTotalText}>
-                Break: {totalBreakMinutes}m ({sessionCount} sessions)
-              </Text>
+              <View
+                style={[
+                  styles.breakStatusBadge,
+                  onBreak
+                    ? styles.breakStatusBadgeActive
+                    : !hasConfiguredBreakRules
+                    ? styles.breakStatusBadgeNeutral
+                    : canTakeBreak
+                    ? styles.breakStatusBadgeAvailable
+                    : styles.breakStatusBadgeLimit,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.breakStatusBadgeText,
+                    onBreak
+                      ? styles.breakStatusBadgeTextActive
+                      : !hasConfiguredBreakRules
+                      ? styles.breakStatusBadgeTextNeutral
+                      : canTakeBreak
+                      ? styles.breakStatusBadgeTextAvailable
+                      : styles.breakStatusBadgeTextLimit,
+                  ]}
+                >
+                  {onBreak
+                    ? 'In Progress'
+                    : !hasConfiguredBreakRules
+                    ? 'No Policy'
+                    : canTakeBreak
+                    ? `${remainingBreaks} Left`
+                    : 'Limit Reached'}
+                </Text>
+              </View>
             </View>
+
+            {/* Quota stats grid if rules configured */}
+            {hasConfiguredBreakRules ? (
+              <View style={styles.breakQuotaGrid}>
+                <View style={styles.breakQuotaBox}>
+                  <Text style={styles.breakQuotaLabel}>Breaks Count</Text>
+                  <Text style={styles.breakQuotaVal}>
+                    {totalBreaks} / {maxBreaks} Taken
+                  </Text>
+                  <Text style={styles.breakQuotaSub}>
+                    {remainingBreaks} remaining
+                  </Text>
+                </View>
+                <View style={styles.breakQuotaBox}>
+                  <Text style={styles.breakQuotaLabel}>Total Minutes</Text>
+                  <Text style={styles.breakQuotaVal}>
+                    {totalBreakMinutes} / {maxBreakMinutes}m used
+                  </Text>
+                  <Text style={styles.breakQuotaSub}>
+                    {remainingMinutes}m remaining
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.noBreakPolicyBox}>
+                <Text style={styles.noBreakPolicyTitle}>
+                  No break policy assigned to your shift.
+                </Text>
+                <Text style={styles.noBreakPolicyDesc}>
+                  Contact your administrator to bind break rules to your shift schedule.
+                </Text>
+              </View>
+            )}
 
             {onBreak ? (
               /* Ongoing Break Timer + End Break Button */
@@ -1192,30 +1279,47 @@ export default function AttendanceScreen() {
                   <Text style={styles.endBreakBtnText}>End Break</Text>
                 </TouchableOpacity>
               </View>
-            ) : (
-              /* Break Start Buttons */
-              <View style={styles.breakActionButtonsRow}>
-                <TouchableOpacity
-                  style={styles.startShortBreakBtn}
-                  onPress={() => handleStartBreak('SHORT')}
-                  disabled={actionLoading}
-                  activeOpacity={0.8}
-                >
-                  <Coffee size={16} color="#4F46E5" />
-                  <Text style={styles.startShortBreakText}>Take Short Break</Text>
-                </TouchableOpacity>
+            ) : hasConfiguredBreakRules ? (
+              canTakeBreak ? (
+                /* Break Start Buttons */
+                <View style={styles.breakActionButtonsRow}>
+                  <TouchableOpacity
+                    style={styles.startShortBreakBtn}
+                    onPress={() => handleStartBreak('SHORT')}
+                    disabled={actionLoading}
+                    activeOpacity={0.8}
+                  >
+                    <Coffee size={16} color="#4F46E5" />
+                    <Text style={styles.startShortBreakText}>
+                      Take Short Break {shortDurationMinutes > 0 ? `(${shortDurationMinutes}m)` : ''}
+                    </Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.startLunchBreakBtn}
-                  onPress={() => handleStartBreak('LUNCH')}
-                  disabled={actionLoading}
-                  activeOpacity={0.8}
-                >
-                  <Coffee size={16} color="#0891B2" />
-                  <Text style={styles.startLunchBreakText}>Take Lunch Break</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+                  <TouchableOpacity
+                    style={styles.startLunchBreakBtn}
+                    onPress={() => handleStartBreak('LUNCH')}
+                    disabled={actionLoading}
+                    activeOpacity={0.8}
+                  >
+                    <Coffee size={16} color="#0891B2" />
+                    <Text style={styles.startLunchBreakText}>
+                      Take Lunch Break {lunchDurationMinutes > 0 ? `(${lunchDurationMinutes}m)` : ''}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                /* Disabled Break Button with Limit Reached */
+                <View style={styles.breakLimitBlock}>
+                  <View style={styles.breakLimitBtn}>
+                    <Lock size={16} color="#94A3B8" />
+                    <Text style={styles.breakLimitBtnText}>Break Limit Reached</Text>
+                  </View>
+                  {breakBlockReason ? (
+                    <Text style={styles.breakLimitReason}>{breakBlockReason}</Text>
+                  ) : null}
+                </View>
+              )
+            ) : null}
           </View>
         )}
 
@@ -1731,10 +1835,120 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0F172A',
   },
-  breakTotalText: {
+  breakStatusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  breakStatusBadgeActive: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#FDE68A',
+  },
+  breakStatusBadgeNeutral: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
+  },
+  breakStatusBadgeAvailable: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+  },
+  breakStatusBadgeLimit: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  breakStatusBadgeText: {
     fontSize: 11,
+    fontWeight: '700',
+  },
+  breakStatusBadgeTextActive: {
+    color: '#B45309',
+  },
+  breakStatusBadgeTextNeutral: {
     color: '#64748B',
+  },
+  breakStatusBadgeTextAvailable: {
+    color: '#065F46',
+  },
+  breakStatusBadgeTextLimit: {
+    color: '#B91C1C',
+  },
+  breakQuotaGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 14,
+  },
+  breakQuotaBox: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  breakQuotaLabel: {
+    fontSize: 10,
     fontWeight: '600',
+    color: '#64748B',
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  breakQuotaVal: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  breakQuotaSub: {
+    fontSize: 10,
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  noBreakPolicyBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  noBreakPolicyTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#475569',
+    textAlign: 'center',
+  },
+  noBreakPolicyDesc: {
+    fontSize: 11,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  breakLimitBlock: {
+    alignItems: 'center',
+  },
+  breakLimitBtn: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  breakLimitBtnText: {
+    color: '#94A3B8',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  breakLimitReason: {
+    fontSize: 11,
+    color: '#E11D48',
+    textAlign: 'center',
+    marginTop: 6,
   },
   activeBreakBanner: {
     backgroundColor: '#FFFBEB',

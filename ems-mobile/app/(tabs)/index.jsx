@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -76,6 +76,13 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [nowTs, setNowTs] = useState(Date.now());
+
+  // 60-second live update ticker
+  useEffect(() => {
+    const timer = setInterval(() => setNowTs(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   // ── Queries ────────────────────────────────────────────────────────────────
   const {
@@ -145,14 +152,26 @@ export default function HomeScreen() {
     shiftName?.toLowerCase().includes('night') ||
     (shift?.startTime && parseInt(shift.startTime.split(':')[0], 10) >= 18);
 
-  // Attendance log
-  const log = todayStatus?.attendance || null;
-  const checkInTime = formatTime(log?.checkInAt || dashData?.checkInTime);
-  const workedMinutes =
-    log?.totalWorkedMinutes ||
-    todayStatus?.workedMinutes ||
-    dashData?.workMinutesToday ||
-    0;
+  // Attendance log & Live Worked Time
+  const log = todayStatus?.attendance || todayStatus?.log || null;
+  const checkInIso = log?.checkInAt || todayStatus?.checkInAt || todayStatus?.checkIn || dashData?.checkInTime;
+  const checkOutIso = log?.checkOutAt || todayStatus?.checkOutAt || todayStatus?.checkOut || dashData?.checkOutTime;
+  const checkInTime = formatTime(checkInIso);
+
+  const workedMinutes = useMemo(() => {
+    if (log?.totalWorkedMinutes) return log.totalWorkedMinutes;
+    if (checkInIso) {
+      const startMs = new Date(checkInIso).getTime();
+      if (!isNaN(startMs)) {
+        const endMs = checkOutIso ? new Date(checkOutIso).getTime() : nowTs;
+        if (!isNaN(endMs) && endMs >= startMs) {
+          return Math.floor((endMs - startMs) / 60000);
+        }
+      }
+    }
+    return dashData?.workMinutesToday || 0;
+  }, [log?.totalWorkedMinutes, checkInIso, checkOutIso, dashData?.workMinutesToday, nowTs]);
+
   const workedStr = formatWorked(workedMinutes);
 
   // Status label & dot color
