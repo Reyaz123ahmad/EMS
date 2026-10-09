@@ -1289,9 +1289,13 @@ export default function AttendanceScreen() {
                     disabled={actionLoading}
                     activeOpacity={0.8}
                   >
-                    <Coffee size={16} color="#4F46E5" />
-                    <Text style={styles.startShortBreakText}>
-                      Take Short Break {shortDurationMinutes > 0 ? `(${shortDurationMinutes}m)` : ''}
+                    <Coffee size={15} color="#4F46E5" />
+                    <Text
+                      style={styles.startShortBreakText}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      Short Break {shortDurationMinutes > 0 ? `(${shortDurationMinutes}m)` : ''}
                     </Text>
                   </TouchableOpacity>
 
@@ -1301,9 +1305,13 @@ export default function AttendanceScreen() {
                     disabled={actionLoading}
                     activeOpacity={0.8}
                   >
-                    <Coffee size={16} color="#0891B2" />
-                    <Text style={styles.startLunchBreakText}>
-                      Take Lunch Break {lunchDurationMinutes > 0 ? `(${lunchDurationMinutes}m)` : ''}
+                    <Coffee size={15} color="#0891B2" />
+                    <Text
+                      style={styles.startLunchBreakText}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      Lunch Break {lunchDurationMinutes > 0 ? `(${lunchDurationMinutes}m)` : ''}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -2000,41 +2008,47 @@ const styles = StyleSheet.create({
   },
   breakActionButtonsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   startShortBreakBtn: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
     backgroundColor: '#EEF2FF',
     borderWidth: 1,
     borderColor: '#C7D2FE',
     paddingVertical: 12,
+    paddingHorizontal: 8,
     borderRadius: 12,
   },
   startShortBreakText: {
     color: '#4F46E5',
     fontWeight: '700',
     fontSize: 12,
+    flexShrink: 1,
   },
   startLunchBreakBtn: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
     backgroundColor: '#ECFEFF',
     borderWidth: 1,
     borderColor: '#A5F3FC',
     paddingVertical: 12,
+    paddingHorizontal: 8,
     borderRadius: 12,
   },
   startLunchBreakText: {
     color: '#0891B2',
     fontWeight: '700',
     fontSize: 12,
+    flexShrink: 1,
   },
   modeSection: {
     marginBottom: 14,
