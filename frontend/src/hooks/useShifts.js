@@ -46,8 +46,12 @@ export function useUpdateShift() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }) => shiftService.updateShift(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['shifts'] });
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({
+        queryKey: ['shifts'],
+        refetchType: 'active',
+      });
+      queryClient.invalidateQueries({ queryKey: ['shift', id] });
     }
   });
 }

@@ -128,13 +128,35 @@ export const shiftsService = {
   },
 
   async updateShift(id, data) {
-    const { breakRuleIds, ...shiftFields } = data;
+    const { breakRuleIds } = data;
+
+    const updateData = {};
+    if (data.name !== undefined && data.name !== null) updateData.name = data.name;
+    if (data.startTime !== undefined && data.startTime !== null) updateData.startTime = data.startTime;
+    if (data.endTime !== undefined && data.endTime !== null) updateData.endTime = data.endTime;
+    if (data.isNightShift !== undefined) {
+      updateData.isNightShift = Boolean(data.isNightShift);
+    } else if (data.startTime && data.endTime) {
+      updateData.isNightShift = data.endTime <= data.startTime;
+    }
+    if (data.graceMinutes !== undefined && data.graceMinutes !== null) {
+      updateData.graceMinutes = Number(data.graceMinutes);
+    } else if (data.gracePeriod !== undefined && data.gracePeriod !== null) {
+      updateData.graceMinutes = Number(data.gracePeriod);
+    }
+    if (data.workingHours !== undefined && data.workingHours !== null) {
+      updateData.workingHours = Math.round(Number(data.workingHours));
+    } else if (data.startTime && data.endTime) {
+      const isNight = updateData.isNightShift !== undefined ? updateData.isNightShift : (data.endTime <= data.startTime);
+      updateData.workingHours = calculateShiftDurationHours(data.startTime, data.endTime, isNight);
+    }
+    if (data.isActive !== undefined) updateData.isActive = Boolean(data.isActive);
 
     const updated = await prisma.$transaction(async (tx) => {
-      if (Object.keys(shiftFields).length > 0) {
+      if (Object.keys(updateData).length > 0) {
         await tx.shift.update({
           where: { id },
-          data: shiftFields
+          data: updateData
         });
       }
 
