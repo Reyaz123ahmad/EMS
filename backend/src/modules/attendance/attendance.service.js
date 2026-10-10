@@ -439,11 +439,9 @@ export const attendanceService = {
     const breaks = todayLog?.breaks || [];
 
     let totalBreakMinutes = 0;
-    let activeBreak = null;
 
     breaks.forEach((b) => {
       if (!b.breakEndAt) {
-        activeBreak = b;
         const ongoingMins = Math.max(0, Math.round((Date.now() - new Date(b.breakStartAt).getTime()) / 60000));
         totalBreakMinutes += ongoingMins;
       } else if (b.totalBreakMinutes) {
@@ -458,15 +456,15 @@ export const attendanceService = {
     const remainingBreaks = Math.max(0, maxBreaks - totalBreaks);
     const remainingMinutes = Math.max(0, maxBreakMinutes - totalBreakMinutes);
 
+    const activeBreaks = breaks.filter((b) => !b.breakEndAt);
+    const activeBreak = activeBreaks[0] || null;
+
     let canTakeBreak = true;
     let reason = 'You can take a break.';
 
     if (maxBreaks === 0 || maxBreakMinutes === 0) {
       canTakeBreak = false;
       reason = 'No break policy assigned to your shift.';
-    } else if (activeBreak) {
-      canTakeBreak = false;
-      reason = 'You already have an active break in progress.';
     } else if (totalBreaks >= maxBreaks) {
       canTakeBreak = false;
       reason = `Break limit reached. You have taken ${totalBreaks} of ${maxBreaks} breaks today.`;
@@ -487,8 +485,10 @@ export const attendanceService = {
       shortDurationMinutes: shortDuration,
       breakTypes,
       allowedBreakTypes: breakTypes,
-      hasActiveBreak: Boolean(activeBreak),
+      hasActiveBreak: activeBreaks.length > 0,
       activeBreak,
+      activeBreaks,
+      activeBreaksCount: activeBreaks.length,
       reason,
       ruleSource,
       rules: applicableRules
@@ -1177,6 +1177,7 @@ export const attendanceService = {
   async endBreak({
     employeeId,
     companyId,
+    breakId,
     mode = 'face',
     photo,
     location,
@@ -1196,9 +1197,12 @@ export const attendanceService = {
     }
     const empId = employee.id;
 
-    const activeBreak = todayLog?.breaks?.find((b) => !b.breakEndAt) || null;
+    const activeBreaks = todayLog?.breaks?.filter((b) => !b.breakEndAt) || [];
+    const activeBreak = breakId
+      ? activeBreaks.find((b) => b.id === breakId)
+      : activeBreaks[0] || null;
     if (!activeBreak) {
-      const err = new Error('No active break found to end.');
+      const err = new Error(breakId ? 'Specified break is not active or not found.' : 'No active break found to end.');
       err.statusCode = 400;
       throw err;
     }
@@ -1356,6 +1360,193 @@ export const attendanceService = {
       extraBreakMinutes: checkoutCalc.extraBreakMinutes,
       warning: warningMessage,
       message: warningMessage || `Break concluded. Total duration: ${durationMinutes} mins.`
+    };
+  },
+
+  /**
+   * 9b. End All Active Breaks (with Security & Checkout Extension)
+   */
+  async endAllBreaks({
+    employeeId,
+    companyId,
+    mode = 'face',
+    photo,
+    location,
+    deviceInfo = {},
+    cardNumber,
+    remarks,
+    livenessScore = 0.95
+  }) {
+    const [employee, todayLog, settings] = await Promise.all([
+      attendanceRepository.findEmployeeWithBranch(employeeId),
+      attendanceRepository.findTodayAttendance(employeeId),
+      attendanceRules.getCompanyAttendanceSettings(companyId)
+    ]);
+
+    if (!employee) {
+      throw new Error('Employee record not found.');
+    }
+    const empId = employee.id;
+
+    const activeBreaks = todayLog?.breaks?.filter((b) => !b.breakEndAt) || [];
+    if (activeBreaks.length === 0) {
+      const err = new Error('No active breaks found to end.');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    // Security Verification 1: Mock Location Detection
+    if (deviceInfo.isMockLocation) {
+      const err = new Error('Mock location detected on device.');
+      err.statusCode = 403;
+      throw err;
+    }
+
+    // Security Verification 2: Geo-Fencing Check
+    if (location && location.lat !== undefined && location.lng !== undefined && settings.geoFencing) {
+      const geoResult = await geoFencingService.validateLocation({
+        latitude: location.lat,
+        longitude: location.lng,
+        accuracy: location.accuracy,
+        isMockLocation: deviceInfo.isMockLocation || false,
+        ipAddress: deviceInfo.ipAddress,
+        branch: employee?.branch,
+        companyId,
+        employeeId: empId
+      });
+
+      if (!geoResult.passed) {
+        const err = new Error(`Location verification failed on break end: ${geoResult.reason}`);
+        err.statusCode = 403;
+        throw err;
+      }
+    }
+
+    // Security Verification 3: Biometric / Mode Attestation
+    let faceMatchResult = null;
+    const effectiveLivenessScore = Number(livenessScore !== undefined ? livenessScore : 0.95);
+
+    if (mode.toLowerCase() === 'face') {
+      if (effectiveLivenessScore < 0.75) {
+        const err = new Error('Liveness check failed. Please look directly into the camera and try again.');
+        err.statusCode = 403;
+        err.code = 'LIVENESS_FAILED';
+        throw err;
+      }
+
+      if (!employee.faceEmbedding) {
+        const err = new Error('No face registered. Please register your face first.');
+        err.statusCode = 400;
+        err.code = 'NO_FACE_REGISTERED';
+        throw err;
+      }
+
+      if (!photo) {
+        const err = new Error('Live camera face photo is required for face break end.');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      faceMatchResult = await faceMatchService.matchFace(employee, photo);
+      if (!faceMatchResult.passed) {
+        const err = new Error(`Face mismatch (${faceMatchResult.matchConfidence || Math.round(faceMatchResult.score * 100) + '%'}).`);
+        err.statusCode = 403;
+        err.code = 'FACE_MISMATCH';
+        throw err;
+      }
+    } else if (mode.toLowerCase() === 'card') {
+      if (!cardNumber) {
+        const err = new Error('NFC/RFID Card Number is required for card punch mode.');
+        err.statusCode = 400;
+        throw err;
+      }
+
+      const card = await attendanceRepository.findCardByNumber(companyId, cardNumber);
+      if (!card || card.employeeId !== empId) {
+        const err = new Error('Invalid or unassigned NFC/RFID access card.');
+        err.statusCode = 400;
+        throw err;
+      }
+    }
+
+    const actualReturnTime = new Date();
+    const updatedBreaks = [];
+
+    for (const b of activeBreaks) {
+      const startTime = new Date(b.breakStartAt);
+      const durationMinutes = Math.max(1, Math.round((actualReturnTime.getTime() - startTime.getTime()) / 60000));
+      let lateReturnMinutes = 0;
+      if (b.expectedReturnTime) {
+        lateReturnMinutes = Math.max(0, Math.round((actualReturnTime.getTime() - new Date(b.expectedReturnTime).getTime()) / 60000));
+      }
+
+      const updated = await attendanceRepository.updateAttendanceBreak(b.id, {
+        breakEndAt: actualReturnTime,
+        breakEndPhotoUrl: photo || null,
+        breakEndLivenessScore: photo ? String(effectiveLivenessScore) : null,
+        breakEndFaceMatchScore: faceMatchResult?.score ? String(faceMatchResult.score) : null,
+        actualReturnTime,
+        lateReturnMinutes,
+        totalBreakMinutes: durationMinutes
+      });
+      updatedBreaks.push(updated);
+    }
+
+    const logId = todayLog ? todayLog.id : activeBreaks[0].attendanceLogId;
+    const allBreaks = await attendanceRepository.findTodayBreaks(logId);
+
+    const shiftInfo = await this.checkShiftAssignment(empId, todayLog?.attendanceDate || new Date(), companyId);
+    const assignedShift = shiftInfo?.shift || {
+      startTime: todayLog?.shiftStartTime || '09:00',
+      endTime: todayLog?.shiftEndTime || '18:00',
+      graceMinutes: 15
+    };
+
+    const checkoutCalc = computeExpectedCheckout({
+      shift: assignedShift,
+      lateMinutes: todayLog?.lateMinutes || 0,
+      breaks: allBreaks,
+      attendanceDate: todayLog?.attendanceDate || new Date(),
+      checkInAt: todayLog?.checkInAt || null
+    });
+
+    const totalBreakMinutes = allBreaks.reduce((acc, b) => acc + (b.totalBreakMinutes || 0), 0);
+    const maxAllowed = settings.breakRules?.maxBreakMinutesPerDay || 60;
+
+    if (todayLog) {
+      await attendanceRepository.updateAttendanceLog(todayLog.id, {
+        totalBreakMinutes,
+        remainingBreakMinutes: Math.max(0, maxAllowed - totalBreakMinutes),
+        adjustedCheckOutTime: checkoutCalc.expectedCheckoutDate
+      });
+
+      const startOfDay = new Date(todayLog.attendanceDate || new Date());
+      startOfDay.setUTCHours(0, 0, 0, 0);
+      const cacheKey = `${empId}_${startOfDay.toISOString().split('T')[0]}`;
+      if (global._todayAttendanceCache && global._todayAttendanceCache.has(cacheKey)) {
+        const cached = global._todayAttendanceCache.get(cacheKey);
+        if (cached && cached.data) {
+          cached.data.totalBreakMinutes = totalBreakMinutes;
+          cached.data.adjustedCheckOutTime = checkoutCalc.expectedCheckoutDate;
+          cached.data.breaks = allBreaks;
+        }
+      }
+    }
+
+    let warningMessage = null;
+    if (checkoutCalc.extraBreakMinutes > 0) {
+      warningMessage = `Extra break of ${checkoutCalc.extraBreakMinutes} min detected. Expected checkout extended to ${checkoutCalc.expectedCheckoutDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`;
+    }
+
+    return {
+      breaks: updatedBreaks,
+      closedCount: updatedBreaks.length,
+      expectedCheckout: checkoutCalc.expectedCheckout,
+      totalDelayMinutes: checkoutCalc.totalDelayMinutes,
+      lateMinutes: checkoutCalc.lateMinutes,
+      extraBreakMinutes: checkoutCalc.extraBreakMinutes,
+      warning: warningMessage,
+      message: warningMessage || `All ${updatedBreaks.length} active breaks ended successfully.`
     };
   },
 

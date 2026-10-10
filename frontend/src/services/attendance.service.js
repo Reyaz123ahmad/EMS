@@ -34,6 +34,14 @@ export const attendanceService = {
   },
 
   /**
+   * End all ongoing break intervals
+   */
+  async endAllBreaks(data) {
+    const response = await api.post('/attendance/break-end-all', data);
+    return response.data;
+  },
+
+  /**
    * Get employee real-time status for today
    */
   async getTodayStatus(params = {}) {

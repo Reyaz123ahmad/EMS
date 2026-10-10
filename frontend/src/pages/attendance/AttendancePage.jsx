@@ -21,6 +21,7 @@ import {
   useCheckOut,
   useStartBreak,
   useEndBreak,
+  useEndAllBreaks,
 } from '../../hooks/useAttendance';
 
 import { AttendanceCard } from '../../components/attendance/AttendanceCard';
@@ -53,10 +54,12 @@ export const AttendancePage = () => {
   const checkOutMutation = useCheckOut();
   const startBreakMutation = useStartBreak();
   const endBreakMutation = useEndBreak();
+  const endAllBreaksMutation = useEndAllBreaks();
 
-  // Wizard state for punch operations: null | 'CHECK_IN' | 'CHECK_OUT' | 'BREAK_START' | 'BREAK_END'
+  // Wizard state for punch operations: null | 'CHECK_IN' | 'CHECK_OUT' | 'BREAK_START' | 'BREAK_END' | 'BREAK_END_ALL'
   const [activeAction, setActiveAction] = useState(null);
   const [selectedBreakType, setSelectedBreakType] = useState('SHORT');
+  const [selectedBreakId, setSelectedBreakId] = useState(null);
   const [wizardStep, setWizardStep] = useState(1); // 1: Camera, 2: Liveness, 3: FaceMatch, 4: Geo, 5: Ready
   const [photo, setPhoto] = useState(null);
   const [livenessResult, setLivenessResult] = useState(null);
@@ -221,6 +224,7 @@ export const AttendancePage = () => {
   const resetWizard = () => {
     setActiveAction(null);
     setSelectedBreakType('SHORT');
+    setSelectedBreakId(null);
     setWizardStep(1);
     setPhoto(null);
     setLivenessResult(null);
@@ -242,6 +246,11 @@ export const AttendancePage = () => {
     }
     if (extra.breakType) {
       setSelectedBreakType(extra.breakType);
+    }
+    if (extra.breakId) {
+      setSelectedBreakId(extra.breakId);
+    } else {
+      setSelectedBreakId(null);
     }
     setActiveAction(actionType);
     setWizardStep(1);
@@ -323,12 +332,22 @@ export const AttendancePage = () => {
         }
         toast.success(res.message || 'Break started with biometric verification!');
       } else if (activeAction === 'BREAK_END') {
-        const res = await endBreakMutation.mutateAsync(payload);
+        const res = await endBreakMutation.mutateAsync({
+          ...payload,
+          breakId: selectedBreakId || undefined
+        });
         useAttendanceStore.getState().endBreak(res?.data);
         if (res.warning) {
           toast.warning(res.warning);
         } else {
           toast.success(res.message || 'Break ended with biometric verification!');
+        }
+      } else if (activeAction === 'BREAK_END_ALL') {
+        const res = await endAllBreaksMutation.mutateAsync(payload);
+        if (res.warning) {
+          toast.warning(res.warning);
+        } else {
+          toast.success(res.message || 'All active breaks ended successfully!');
         }
       }
       refetchStatus();
@@ -342,8 +361,12 @@ export const AttendancePage = () => {
     startPunchFlow('BREAK_START', { breakType });
   };
 
-  const handleEndBreak = () => {
-    startPunchFlow('BREAK_END');
+  const handleEndBreak = (breakId, breakType) => {
+    startPunchFlow('BREAK_END', { breakId, breakType });
+  };
+
+  const handleEndAllBreaks = () => {
+    startPunchFlow('BREAK_END_ALL');
   };
 
   return (
@@ -502,7 +525,10 @@ export const AttendancePage = () => {
                     <BreakStatus
                       employeeId={user?.employeeId || user?.id}
                       onStartBreak={(type) => handleStartBreak(type)}
+                      onEndBreak={(breakId, type) => handleEndBreak(breakId, type)}
+                      onEndAllBreaks={() => handleEndAllBreaks()}
                       isStartingBreak={startBreakMutation.isPending}
+                      isEndingBreak={endBreakMutation.isPending || endAllBreaksMutation.isPending}
                     />
 
                     {/* Full Working Hours & Auto Checkout Extension */}
@@ -531,6 +557,7 @@ export const AttendancePage = () => {
                       {activeAction === 'CHECK_IN' ? 'Check-In Verification' :
                        activeAction === 'CHECK_OUT' ? 'Check-Out Verification' :
                        activeAction === 'BREAK_START' ? `Start ${selectedBreakType === 'LUNCH' ? 'Lunch' : 'Short'} Break Verification` :
+                       activeAction === 'BREAK_END_ALL' ? 'End All Active Breaks Verification' :
                        'Conclude Break Verification'}
                     </h3>
                     <p className="text-xs text-slate-400">

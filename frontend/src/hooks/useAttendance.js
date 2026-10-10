@@ -120,6 +120,19 @@ export function useEndBreak() {
   });
 }
 
+export function useEndAllBreaks() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => attendanceService.endAllBreaks(data),
+    onSuccess: () => {
+      useAttendanceStore.setState({ isOnBreak: false, activeBreak: null });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
+    }
+  });
+}
+
 export function useAttendanceLogs(params = {}) {
   return useQuery({
     queryKey: ['attendance', 'logs', params],

@@ -45,6 +45,12 @@ router.post(
   attendanceController.endBreak
 );
 
+router.post(
+  '/break-end-all',
+  requireRole('EMPLOYEE', 'MANAGER', 'HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN'),
+  attendanceController.endAllBreaks
+);
+
 // Card QR Attendance Scan
 router.post(
   '/card-scan',

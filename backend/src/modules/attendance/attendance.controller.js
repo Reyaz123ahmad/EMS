@@ -5,6 +5,7 @@ import {
   checkOutSchema,
   breakStartSchema,
   breakEndSchema,
+  breakEndAllSchema,
   cardScanSchema,
   attendanceLogsSchema,
   monthlySummarySchema,
@@ -142,6 +143,34 @@ export const attendanceController = {
       const companyId = req.user?.companyId;
 
       const result = await attendanceService.endBreak({
+        ...value,
+        employeeId,
+        companyId
+      });
+
+      res.status(200).json({ status: 'ok', data: result });
+    } catch (err) {
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({ status: 'error', message: err.message });
+      }
+      next(err);
+    }
+  },
+
+  /**
+   * POST /attendance/break-end-all
+   */
+  async endAllBreaks(req, res, next) {
+    try {
+      const { error, value } = breakEndAllSchema.validate(req.body || {});
+      if (error) {
+        return res.status(400).json({ status: 'error', message: error.details[0].message });
+      }
+
+      const employeeId = await getAuthEmployeeId(req) || req.user?.id;
+      const companyId = req.user?.companyId;
+
+      const result = await attendanceService.endAllBreaks({
         ...value,
         employeeId,
         companyId

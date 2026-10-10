@@ -1,8 +1,64 @@
-import React, { useState } from 'react';
-import { FiCoffee, FiAlertCircle, FiCheckCircle, FiLock, FiSlash } from 'react-icons/fi';
+import React, { useState, useEffect } from 'react';
+import { FiCoffee, FiAlertCircle, FiCheckCircle, FiLock, FiSlash, FiClock, FiCheckSquare } from 'react-icons/fi';
 import { useBreakStatus } from '../../hooks/useAttendance.js';
 
-export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false }) {
+function ActiveBreakItem({ activeBreak, onEndBreak, isEnding = false }) {
+  const [elapsed, setElapsed] = useState('');
+
+  useEffect(() => {
+    const updateElapsed = () => {
+      const start = new Date(activeBreak.breakStartAt).getTime();
+      const diffMs = Math.max(0, Date.now() - start);
+      const diffSecs = Math.floor(diffMs / 1000);
+      const mins = Math.floor(diffSecs / 60);
+      const secs = diffSecs % 60;
+      setElapsed(`${mins}m ${secs < 10 ? '0' : ''}${secs}s`);
+    };
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+    return () => clearInterval(interval);
+  }, [activeBreak.breakStartAt]);
+
+  const typeLabel = activeBreak.breakType === 'LUNCH' ? 'Lunch Break' : 'Short Break';
+
+  return (
+    <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+      <div className="flex items-center space-x-2.5">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+        </span>
+        <div>
+          <p className="text-xs font-bold text-amber-300">
+            {typeLabel}
+          </p>
+          <p className="text-[11px] font-mono text-amber-200/80 flex items-center gap-1">
+            <FiClock className="w-3 h-3" /> {elapsed}
+          </p>
+        </div>
+      </div>
+      {onEndBreak && (
+        <button
+          type="button"
+          onClick={() => onEndBreak(activeBreak.id, activeBreak.breakType)}
+          disabled={isEnding}
+          className="py-1.5 px-3 rounded-lg text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-sm transition-all cursor-pointer disabled:opacity-50 active:scale-95"
+        >
+          End Break
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function BreakStatus({
+  employeeId,
+  onStartBreak,
+  onEndBreak,
+  onEndAllBreaks,
+  isStartingBreak = false,
+  isEndingBreak = false
+}) {
   const { data: statusData, isLoading } = useBreakStatus(employeeId ? { employeeId } : {});
 
   const breakData = statusData?.data || statusData || {};
@@ -17,6 +73,7 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
     lunchDurationMinutes = 0,
     shortDurationMinutes = 0,
     hasActiveBreak = false,
+    activeBreaks = [],
     reason = '',
     rules = []
   } = breakData;
@@ -33,10 +90,11 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
   }
 
   const hasConfiguredRules = maxBreaks > 0 || maxBreakMinutes > 0 || (rules && rules.length > 0);
+  const activeList = activeBreaks.length > 0 ? activeBreaks : (breakData.activeBreak ? [breakData.activeBreak] : []);
 
   return (
-    <div className="p-5 bg-gradient-to-br from-slate-900/90 to-slate-950 border border-slate-800/80 rounded-2xl shadow-xl backdrop-blur-md">
-      <div className="flex items-center justify-between mb-3">
+    <div className="p-5 bg-gradient-to-br from-slate-900/90 to-slate-950 border border-slate-800/80 rounded-2xl shadow-xl backdrop-blur-md space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <FiCoffee className="w-5 h-5 text-amber-400" />
           <span className="text-sm font-semibold text-slate-200">Daily Break Allowance</span>
@@ -53,7 +111,7 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
           }`}
         >
           {hasActiveBreak ? (
-            'Break In Progress'
+            `${activeList.length} Break${activeList.length > 1 ? 's' : ''} Active`
           ) : !hasConfiguredRules ? (
             <>
               <FiSlash className="w-3.5 h-3.5" /> No Policy
@@ -72,7 +130,7 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
 
       {/* Quota stats */}
       {hasConfiguredRules ? (
-        <div className="grid grid-cols-2 gap-3 mb-4 text-xs">
+        <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/40">
             <p className="text-slate-400">Breaks Count</p>
             <p className="text-sm font-bold text-slate-100 mt-0.5">
@@ -87,7 +145,7 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
           </div>
         </div>
       ) : (
-        <div className="p-3 bg-slate-950/50 rounded-xl border border-slate-800/80 mb-4 text-center">
+        <div className="p-3 bg-slate-950/50 rounded-xl border border-slate-800/80 text-center">
           <p className="text-xs text-slate-400 font-medium">
             No break policy assigned to your shift.
           </p>
@@ -97,10 +155,42 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
         </div>
       )}
 
+      {/* Active Breaks List */}
+      {activeList.length > 0 && (
+        <div className="space-y-2 pt-1">
+          <label className="text-xs text-amber-300/90 font-semibold block">
+            Active Breaks ({activeList.length}):
+          </label>
+          <div className="space-y-2">
+            {activeList.map((b) => (
+              <ActiveBreakItem
+                key={b.id}
+                activeBreak={b}
+                onEndBreak={onEndBreak}
+                isEnding={isEndingBreak}
+              />
+            ))}
+          </div>
+
+          {activeList.length > 1 && onEndAllBreaks && (
+            <button
+              type="button"
+              onClick={onEndAllBreaks}
+              disabled={isEndingBreak}
+              className="w-full mt-2 py-2 px-3 rounded-xl text-xs font-bold bg-rose-700/80 hover:bg-rose-600 text-white border border-rose-600/50 shadow-md transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5 active:scale-95"
+            >
+              <FiCheckSquare className="w-3.5 h-3.5" /> End All Active Breaks ({activeList.length})
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Break Type Selector */}
-      {!hasActiveBreak && hasConfiguredRules && (
-        <div className="mb-4">
-          <label className="text-xs text-slate-400 font-medium block mb-1.5">Select Break Type:</label>
+      {hasConfiguredRules && (
+        <div>
+          <label className="text-xs text-slate-400 font-medium block mb-1.5">
+            {hasActiveBreak ? 'Add Another Break (Combined / Concurrent):' : 'Select Break Type:'}
+          </label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -129,7 +219,7 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
       )}
 
       {/* Action button */}
-      {onStartBreak && !hasActiveBreak && hasConfiguredRules && (
+      {onStartBreak && hasConfiguredRules && (
         <div>
           <button
             onClick={() => onStartBreak(selectedType)}
@@ -144,7 +234,9 @@ export function BreakStatus({ employeeId, onStartBreak, isStartingBreak = false 
             {isStartingBreak
               ? 'Starting Break...'
               : canTakeBreak
-              ? `Start ${selectedType === 'LUNCH' ? 'Lunch' : 'Short'} Break`
+              ? hasActiveBreak
+                ? `Start Additional ${selectedType === 'LUNCH' ? 'Lunch' : 'Short'} Break`
+                : `Start ${selectedType === 'LUNCH' ? 'Lunch' : 'Short'} Break`
               : 'Break Limit Reached'}
           </button>
           {!canTakeBreak && reason && (

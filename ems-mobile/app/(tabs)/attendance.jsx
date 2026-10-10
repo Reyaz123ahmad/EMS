@@ -55,13 +55,69 @@ function FingerprintIcon({ size = 24, color = '#FFFFFF' }) {
   );
 }
 
+function ActiveBreakItemCard({ activeBreak, onEndBreak, actionLoading }) {
+  const [elapsed, setElapsed] = useState(0);
+  const startIso =
+    activeBreak?.breakStartAt ||
+    activeBreak?.startTime ||
+    activeBreak?.startedAt ||
+    activeBreak?.createdAt;
+
+  useEffect(() => {
+    if (!startIso) return;
+    const startMs = new Date(startIso).getTime();
+    if (isNaN(startMs)) return;
+
+    const update = () => {
+      setElapsed(Math.max(0, Math.floor((Date.now() - startMs) / 1000)));
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [startIso]);
+
+  const typeLabel = activeBreak?.breakType === 'LUNCH' ? 'Lunch Break' : 'Short Break';
+
+  const formatCountdown = (totalSeconds) => {
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    if (hrs > 0) {
+      return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+
+  return (
+    <View style={styles.multiBreakItem}>
+      <View style={styles.multiBreakItemLeft}>
+        <View style={styles.pulsingDot} />
+        <View>
+          <Text style={styles.multiBreakType}>{typeLabel}</Text>
+          <Text style={styles.multiBreakDigits}>{formatCountdown(elapsed)}</Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={styles.multiBreakEndBtn}
+        onPress={() => onEndBreak(activeBreak?.id)}
+        disabled={actionLoading}
+        activeOpacity={0.8}
+      >
+        <CheckCircle2 size={14} color="#FFFFFF" />
+        <Text style={styles.multiBreakEndBtnText}>End</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 export default function AttendanceScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [cameraModalConfig, setCameraModalConfig] = useState({
     visible: false,
-    actionType: 'CHECK_IN', // 'CHECK_IN' | 'BREAK_START' | 'BREAK_END'
+    actionType: 'CHECK_IN', // 'CHECK_IN' | 'CHECK_OUT' | 'BREAK_START' | 'BREAK_END' | 'BREAK_END_ALL'
     actionTitle: 'Face Biometric Check-In',
     breakType: 'SHORT', // 'SHORT' | 'LUNCH'
+    breakId: null,
   });
   const [actionLoading, setActionLoading] = useState(false);
   const [selectedMode, setSelectedMode] = useState('face'); // 'face' | 'rfid' | 'fingerprint'
@@ -214,24 +270,34 @@ export default function AttendanceScreen() {
     activeBreakFromList ||
     null;
 
-  const onBreak = Boolean(
-    resolvedBreakData?.hasActiveBreak ||
-    resolvedBreakData?.onBreak ||
-    todayData?.isOnBreak ||
-    todayData?.onBreak ||
-    resolvedActiveBreak
-  );
+  const activeBreaksList = useMemo(() => {
+    if (Array.isArray(resolvedBreakData?.activeBreaks) && resolvedBreakData.activeBreaks.length > 0) {
+      return resolvedBreakData.activeBreaks;
+    }
+    const listFromBreaks = allTodayBreaks.filter((b) => !b.breakEndAt);
+    if (listFromBreaks.length > 0) {
+      return listFromBreaks;
+    }
+    if (resolvedActiveBreak) {
+      return [resolvedActiveBreak];
+    }
+    return [];
+  }, [resolvedBreakData?.activeBreaks, allTodayBreaks, resolvedActiveBreak]);
+
+  const onBreak = activeBreaksList.length > 0;
+
+  const primaryActiveBreak = activeBreaksList[0] || null;
 
   const breakStart =
-    resolvedActiveBreak?.breakStartAt ||
-    resolvedActiveBreak?.startTime ||
-    resolvedActiveBreak?.startedAt ||
-    resolvedActiveBreak?.createdAt ||
+    primaryActiveBreak?.breakStartAt ||
+    primaryActiveBreak?.startTime ||
+    primaryActiveBreak?.startedAt ||
+    primaryActiveBreak?.createdAt ||
     resolvedBreakData?.breakStart ||
     null;
 
   const activeBreakType =
-    resolvedActiveBreak?.breakType ||
+    primaryActiveBreak?.breakType ||
     resolvedBreakData?.breakType ||
     todayData?.activeBreak?.breakType ||
     'SHORT';
@@ -712,12 +778,13 @@ export default function AttendanceScreen() {
   };
 
   // Face Break End from Camera
-  const handleFaceBreakEnd = async ({ photo, location }) => {
+  const handleFaceBreakEnd = async ({ photo, location, breakId = null }) => {
     setActionLoading(true);
     try {
       const loc = location || (await getCurrentLocation());
-      console.log('[ATTENDANCE] Submitting face break end with GPS location:', loc);
+      console.log('[ATTENDANCE] Submitting face break end with GPS location:', breakId, loc);
       await attendanceService.endBreak({
+        breakId,
         mode: 'face',
         photo,
         location: loc,
@@ -736,6 +803,36 @@ export default function AttendanceScreen() {
         err.message ||
         'Could not end break.';
       Alert.alert('Break End Error', errorMsg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Face Break End All from Camera
+  const handleFaceBreakEndAll = async ({ photo, location }) => {
+    setActionLoading(true);
+    try {
+      const loc = location || (await getCurrentLocation());
+      console.log('[ATTENDANCE] Submitting face break end all with GPS location:', loc);
+      await attendanceService.endAllBreaks({
+        mode: 'face',
+        photo,
+        location: loc,
+        remarks: 'Mobile biometric face break end all',
+      });
+
+      Alert.alert(
+        'All Breaks Ended 💼',
+        'Welcome back! All break sessions ended and workday timer resumed.'
+      );
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Could not end all breaks.';
+      Alert.alert('End All Breaks Error', errorMsg);
     } finally {
       setActionLoading(false);
     }
@@ -829,7 +926,7 @@ export default function AttendanceScreen() {
 
   // Unified Camera Capture Router
   const handleCameraCapture = async ({ photo, location }) => {
-    const { actionType, breakType } = cameraModalConfig;
+    const { actionType, breakType, breakId } = cameraModalConfig;
     setCameraModalConfig((prev) => ({ ...prev, visible: false }));
 
     if (actionType === 'CHECK_IN') {
@@ -839,7 +936,9 @@ export default function AttendanceScreen() {
     } else if (actionType === 'BREAK_START') {
       await handleFaceBreakStart({ photo, location, breakType });
     } else if (actionType === 'BREAK_END') {
-      await handleFaceBreakEnd({ photo, location });
+      await handleFaceBreakEnd({ photo, location, breakId });
+    } else if (actionType === 'BREAK_END_ALL') {
+      await handleFaceBreakEndAll({ photo, location });
     }
   };
 
@@ -851,6 +950,7 @@ export default function AttendanceScreen() {
         actionType: 'BREAK_START',
         actionTitle: `Face Biometric Break Start (${type === 'LUNCH' ? 'Lunch' : 'Short'} Break)`,
         breakType: type,
+        breakId: null,
       });
       return;
     }
@@ -888,13 +988,14 @@ export default function AttendanceScreen() {
     }
   };
 
-  const handleEndBreak = async () => {
+  const handleEndBreak = async (breakId = null) => {
     if (selectedMode === 'face') {
       setCameraModalConfig({
         visible: true,
         actionType: 'BREAK_END',
         actionTitle: 'Face Biometric Break End',
         breakType: 'SHORT',
+        breakId,
       });
       return;
     }
@@ -919,14 +1020,59 @@ export default function AttendanceScreen() {
       try {
         location = await getCurrentLocation();
       } catch {}
-      console.log('[ATTENDANCE] Ending active break session...', location);
-      await attendanceService.endBreak({ mode: selectedMode, location });
+      console.log('[ATTENDANCE] Ending active break session...', breakId, location);
+      await attendanceService.endBreak({ breakId, mode: selectedMode, location });
       Alert.alert('Break Ended 💼', 'Welcome back! Workday timer resumed.');
       await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
     } catch (err) {
       const errorMsg =
         err.response?.data?.message || err.response?.data?.error || err.message || 'Could not end break.';
       Alert.alert('Break Error', errorMsg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEndAllBreaks = async () => {
+    if (selectedMode === 'face') {
+      setCameraModalConfig({
+        visible: true,
+        actionType: 'BREAK_END_ALL',
+        actionTitle: 'Face Biometric End All Breaks',
+        breakType: 'SHORT',
+        breakId: null,
+      });
+      return;
+    }
+
+    if (selectedMode === 'fingerprint') {
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        if (hasHardware && isEnrolled) {
+          const authResult = await LocalAuthentication.authenticateAsync({
+            promptMessage: 'Verify fingerprint to end all active breaks',
+            cancelLabel: 'Cancel',
+          });
+          if (!authResult.success) return;
+        }
+      } catch {}
+    }
+
+    setActionLoading(true);
+    try {
+      let location = null;
+      try {
+        location = await getCurrentLocation();
+      } catch {}
+      console.log('[ATTENDANCE] Ending all active break sessions...', location);
+      await attendanceService.endAllBreaks({ mode: selectedMode, location });
+      Alert.alert('All Breaks Ended 💼', 'Welcome back! All break sessions ended and workday timer resumed.');
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message || err.response?.data?.error || err.message || 'Could not end all breaks.';
+      Alert.alert('End All Breaks Error', errorMsg);
     } finally {
       setActionLoading(false);
     }
@@ -1260,7 +1406,11 @@ export default function AttendanceScreen() {
               <View style={styles.breakTitleLeft}>
                 <Coffee size={18} color={onBreak ? '#D97706' : '#4F46E5'} />
                 <Text style={styles.breakSectionTitle}>
-                  {onBreak ? 'Break In Progress' : 'Daily Break Allowance'}
+                  {onBreak
+                    ? activeBreaksList.length > 1
+                      ? `${activeBreaksList.length} Breaks Active`
+                      : 'Break In Progress'
+                    : 'Daily Break Allowance'}
                 </Text>
               </View>
               <View
@@ -1288,7 +1438,7 @@ export default function AttendanceScreen() {
                   ]}
                 >
                   {onBreak
-                    ? 'In Progress'
+                    ? `${activeBreaksList.length} Active`
                     : !hasConfiguredBreakRules
                     ? 'No Policy'
                     : canTakeBreak
@@ -1331,30 +1481,61 @@ export default function AttendanceScreen() {
               </View>
             )}
 
-            {onBreak ? (
-              /* Ongoing Break Timer + End Break Button */
-              <View style={styles.activeBreakBanner}>
-                <View style={styles.activeBreakTimerRow}>
-                  <View style={styles.pulsingDot} />
-                  <Text style={styles.activeBreakDigits}>{formatCountdown(breakElapsed)}</Text>
-                </View>
-                <Text style={styles.activeBreakSub}>
-                  {activeBreakType} break running
-                </Text>
+            {/* Active Breaks Section */}
+            {onBreak && (
+              <View style={styles.activeBreaksContainer}>
+                {activeBreaksList.length === 1 ? (
+                  /* Single Active Break Banner (Legacy & clean single-break UI) */
+                  <View style={styles.activeBreakBanner}>
+                    <View style={styles.activeBreakTimerRow}>
+                      <View style={styles.pulsingDot} />
+                      <Text style={styles.activeBreakDigits}>{formatCountdown(breakElapsed)}</Text>
+                    </View>
+                    <Text style={styles.activeBreakSub}>
+                      {activeBreakType === 'LUNCH' ? 'Lunch' : 'Short'} break running
+                    </Text>
 
-                <TouchableOpacity
-                  style={styles.endBreakBtn}
-                  onPress={handleEndBreak}
-                  disabled={actionLoading}
-                  activeOpacity={0.8}
-                >
-                  <CheckCircle2 size={18} color="#FFFFFF" />
-                  <Text style={styles.endBreakBtnText}>End Break</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.endBreakBtn}
+                      onPress={() => handleEndBreak(activeBreaksList[0]?.id)}
+                      disabled={actionLoading}
+                      activeOpacity={0.8}
+                    >
+                      <CheckCircle2 size={18} color="#FFFFFF" />
+                      <Text style={styles.endBreakBtnText}>End Break</Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  /* Multiple Active Breaks List */
+                  <View style={styles.multiBreaksList}>
+                    {activeBreaksList.map((b, idx) => (
+                      <ActiveBreakItemCard
+                        key={b.id || `active-break-${idx}`}
+                        activeBreak={b}
+                        onEndBreak={handleEndBreak}
+                        actionLoading={actionLoading}
+                      />
+                    ))}
+
+                    <TouchableOpacity
+                      style={styles.endAllBreaksBtn}
+                      onPress={handleEndAllBreaks}
+                      disabled={actionLoading}
+                      activeOpacity={0.8}
+                    >
+                      <CheckCircle2 size={16} color="#FFFFFF" />
+                      <Text style={styles.endAllBreaksBtnText}>
+                        End All Active Breaks ({activeBreaksList.length})
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
-            ) : hasConfiguredBreakRules ? (
+            )}
+
+            {/* Break Start Buttons (Visible whenever quota allows, even if onBreak) */}
+            {hasConfiguredBreakRules ? (
               canTakeBreak ? (
-                /* Break Start Buttons */
                 <View style={styles.breakActionButtonsRow}>
                   <TouchableOpacity
                     style={styles.startShortBreakBtn}
@@ -1368,7 +1549,7 @@ export default function AttendanceScreen() {
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
-                      Short Break {shortDurationMinutes > 0 ? `(${shortDurationMinutes}m)` : ''}
+                      {onBreak ? '+ Short Break' : 'Short Break'} {shortDurationMinutes > 0 ? `(${shortDurationMinutes}m)` : ''}
                     </Text>
                   </TouchableOpacity>
 
@@ -1384,7 +1565,7 @@ export default function AttendanceScreen() {
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
-                      Lunch Break {lunchDurationMinutes > 0 ? `(${lunchDurationMinutes}m)` : ''}
+                      {onBreak ? '+ Lunch Break' : 'Lunch Break'} {lunchDurationMinutes > 0 ? `(${lunchDurationMinutes}m)` : ''}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -2030,6 +2211,70 @@ const styles = StyleSheet.create({
     color: '#E11D48',
     textAlign: 'center',
     marginTop: 6,
+  },
+  activeBreaksContainer: {
+    marginBottom: 12,
+  },
+  multiBreaksList: {
+    gap: 8,
+  },
+  multiBreakItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFBEB',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  multiBreakItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  multiBreakType: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#B45309',
+  },
+  multiBreakDigits: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#92400E',
+    fontVariant: ['tabular-nums'],
+    marginTop: 1,
+  },
+  multiBreakEndBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#D97706',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  multiBreakEndBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 11,
+  },
+  endAllBreaksBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#E11D48',
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+  endAllBreaksBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
   },
   activeBreakBanner: {
     backgroundColor: '#FFFBEB',

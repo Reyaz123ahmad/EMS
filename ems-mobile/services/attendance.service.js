@@ -93,7 +93,7 @@ export const attendanceService = {
   },
 
   // POST /attendance/break-end
-  async endBreak({ mode, photo = null, location = null, remarks = '' } = {}) {
+  async endBreak({ breakId = null, mode, photo = null, location = null, remarks = '' } = {}) {
     const payload = {
       mode: mode || 'face',
       photo: photo || undefined,
@@ -108,7 +108,28 @@ export const attendanceService = {
       deviceInfo: buildDeviceInfo(location?.isMockLocation || location?.isMock || location?.mocked),
       remarks: remarks || undefined,
     };
+    if (breakId) payload.breakId = breakId;
     const res = await api.post('/attendance/break-end', payload);
+    return res.data?.data || res.data;
+  },
+
+  // POST /attendance/break-end-all
+  async endAllBreaks({ mode, photo = null, location = null, remarks = '' } = {}) {
+    const payload = {
+      mode: mode || 'face',
+      photo: photo || undefined,
+      location: location
+        ? {
+            lat: location.lat ?? location.latitude,
+            lng: location.lng ?? location.longitude,
+            accuracy: location.accuracy,
+            source: location.source || 'gps',
+          }
+        : undefined,
+      deviceInfo: buildDeviceInfo(location?.isMockLocation || location?.isMock || location?.mocked),
+      remarks: remarks || undefined,
+    };
+    const res = await api.post('/attendance/break-end-all', payload);
     return res.data?.data || res.data;
   },
 

@@ -58,6 +58,19 @@ export const breakStartSchema = Joi.object({
 });
 
 export const breakEndSchema = Joi.object({
+  breakId: Joi.string().uuid().optional().allow('', null),
+  mode: Joi.string()
+    .valid('face', 'card', 'finger', 'FACE', 'CARD', 'FINGER')
+    .default('face'),
+  photo: Joi.string().optional().allow('', null),
+  location: locationSchema.optional(),
+  deviceInfo: deviceInfoSchema.optional(),
+  cardNumber: Joi.string().optional().allow('', null),
+  livenessScore: Joi.number().min(0).max(1).optional(),
+  remarks: Joi.string().max(255).optional().allow('', null)
+});
+
+export const breakEndAllSchema = Joi.object({
   mode: Joi.string()
     .valid('face', 'card', 'finger', 'FACE', 'CARD', 'FINGER')
     .default('face'),
