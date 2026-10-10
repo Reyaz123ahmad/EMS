@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../hooks/useAuth';
 import { storage } from '../../utils/storage.js';
 import { employeeService } from '../../services/employee.service';
@@ -35,6 +36,7 @@ import {
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, setUser, refreshUser, logout, isLoading: authLoading } = useAuth();
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const userRoles = user?.roles || (user?.role ? [user.role] : ['EMPLOYEE']);
   const isEmployee =
@@ -181,6 +183,130 @@ export default function ProfileScreen() {
     }
   };
 
+  const processAndUploadPhoto = async (asset) => {
+    setIsUploadingPhoto(true);
+    try {
+      const mimeType = asset.mimeType || 'image/jpeg';
+      let payload;
+      if (asset.base64) {
+        payload = `data:${mimeType};base64,${asset.base64}`;
+      } else {
+        const formData = new FormData();
+        formData.append('photo', {
+          uri: asset.uri,
+          name: asset.fileName || 'profile.jpg',
+          type: mimeType,
+        });
+        payload = formData;
+      }
+
+      const uploadRes = await employeeService.uploadMyPhoto(payload);
+      const newPhotoUrl = uploadRes?.data?.photoUrl || uploadRes?.photoUrl || asset.uri;
+
+      setPhotoUrl(newPhotoUrl);
+
+      const updatedUser = {
+        ...user,
+        photoUrl: newPhotoUrl,
+        employee: {
+          ...(user?.employee || {}),
+          photoUrl: newPhotoUrl,
+        },
+      };
+
+      setUser(updatedUser);
+      await storage.setItem('user', updatedUser);
+      await refreshUser?.();
+
+      Alert.alert('Success', 'Profile photo updated successfully!');
+    } catch (err) {
+      console.warn('[PROFILE PHOTO] Upload error:', err.message);
+      Alert.alert(
+        'Upload Failed',
+        err.response?.data?.message || err.message || 'Failed to upload photo.'
+      );
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleTakePhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Camera access is required to take a new profile photo.'
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        await processAndUploadPhoto(result.assets[0]);
+      }
+    } catch (err) {
+      console.warn('[PROFILE PHOTO] Camera error:', err.message);
+      Alert.alert('Camera Error', err.message || 'Failed to capture photo');
+    }
+  };
+
+  const handlePickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'Photo library access is required to choose a profile photo.'
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        await processAndUploadPhoto(result.assets[0]);
+      }
+    } catch (err) {
+      console.warn('[PROFILE PHOTO] Gallery pick error:', err.message);
+      Alert.alert('Gallery Error', err.message || 'Failed to select photo');
+    }
+  };
+
+  const handleSelectPhotoSource = () => {
+    const options = [
+      { text: 'Take Photo', onPress: handleTakePhoto },
+      { text: 'Choose from Gallery', onPress: handlePickImage },
+    ];
+    if (photoUrl || user?.photoUrl || user?.employee?.photoUrl) {
+      options.push({
+        text: 'Remove Photo',
+        style: 'destructive',
+        onPress: handleRemovePhoto,
+      });
+    }
+    options.push({ text: 'Cancel', style: 'cancel' });
+
+    Alert.alert(
+      'Profile Photo',
+      'Choose an option to update your profile photo',
+      options,
+      { cancelable: true }
+    );
+  };
+
   const handleRemovePhoto = async () => {
     Alert.alert(
       'Remove Photo',
@@ -281,7 +407,12 @@ export default function ProfileScreen() {
         {/* User Hero & Photo Card */}
         <View style={styles.heroCard}>
           <View style={styles.heroLeft}>
-            <View style={styles.avatarWrapper}>
+            <TouchableOpacity
+              style={styles.avatarWrapper}
+              activeOpacity={0.8}
+              onPress={handleSelectPhotoSource}
+              disabled={isUploadingPhoto}
+            >
               {displayPhoto ? (
                 <Image
                   source={{ uri: displayPhoto }}
@@ -301,9 +432,13 @@ export default function ProfileScreen() {
                 </View>
               )}
               <View style={styles.cameraBadge}>
-                <Camera size={12} color="#FFFFFF" />
+                {isUploadingPhoto ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Camera size={12} color="#FFFFFF" />
+                )}
               </View>
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.heroDetails}>
               <View style={styles.nameRow}>

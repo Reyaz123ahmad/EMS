@@ -76,6 +76,12 @@ export default function AttendanceScreen() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    if (selectedMode === 'rfid') {
+      setSelectedMode('face');
+    }
+  }, [selectedMode]);
+
   // Fetch today's full attendance status (30s interval with 15s staleTime)
   const {
     data: todayData,
@@ -964,7 +970,6 @@ export default function AttendanceScreen() {
 
   const biometricModes = [
     { id: 'face', label: 'Face', icon: ScanFace },
-    { id: 'rfid', label: 'RFID', icon: CreditCard },
     { id: 'fingerprint', label: 'Fingerprint', isCustom: true },
   ];
 

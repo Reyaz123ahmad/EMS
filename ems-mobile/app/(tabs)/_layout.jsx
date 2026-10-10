@@ -50,14 +50,14 @@ export default function TabsLayout() {
           </TouchableOpacity>
         ),
         tabBarActiveTintColor: '#4F46E5',
-        tabBarInactiveTintColor: '#94A3B8',
+        tabBarInactiveTintColor: '#64748B',
         tabBarStyle: {
           backgroundColor: '#FFFFFF',
           borderTopColor: '#F1F5F9',
           borderTopWidth: 0.5,
           height: 60 + insets.bottom,
           paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
-          paddingTop: 8,
+          paddingTop: 6,
           shadowColor: '#000000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.04,
@@ -65,9 +65,10 @@ export default function TabsLayout() {
           elevation: 8,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
-          letterSpacing: 0.1,
+          fontSize: 10,
+          fontWeight: '400',
+          marginTop: 3,
+          letterSpacing: 0,
         },
       }}
     >
@@ -76,7 +77,9 @@ export default function TabsLayout() {
         options={{
           title: 'Home',
           headerTitle: 'EMS Dashboard',
-          tabBarIcon: ({ color, size }) => <Home size={size || 22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Home size={24} color={color} strokeWidth={focused ? 2.2 : 2.0} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -84,7 +87,9 @@ export default function TabsLayout() {
         options={{
           title: 'Attendance',
           headerTitle: 'Attendance & Clock-in',
-          tabBarIcon: ({ color, size }) => <Clock size={size || 22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Clock size={24} color={color} strokeWidth={focused ? 2.2 : 2.0} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -92,7 +97,9 @@ export default function TabsLayout() {
         options={{
           title: 'Leave',
           headerTitle: 'Leave Management',
-          tabBarIcon: ({ color, size }) => <Calendar size={size || 22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Calendar size={24} color={color} strokeWidth={focused ? 2.2 : 2.0} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -100,7 +107,9 @@ export default function TabsLayout() {
         options={{
           title: 'Payroll',
           headerTitle: 'Salary & Payslips',
-          tabBarIcon: ({ color, size }) => <Wallet size={size || 22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <Wallet size={24} color={color} strokeWidth={focused ? 2.2 : 2.0} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -108,7 +117,9 @@ export default function TabsLayout() {
         options={{
           title: 'Profile',
           headerTitle: 'My Profile',
-          tabBarIcon: ({ color, size }) => <User size={size || 22} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <User size={24} color={color} strokeWidth={focused ? 2.2 : 2.0} />
+          ),
         }}
       />
     </Tabs>

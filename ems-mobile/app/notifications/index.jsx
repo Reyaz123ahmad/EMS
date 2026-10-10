@@ -10,19 +10,20 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
-import api from '../../services/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { notificationService } from '../../services/notification.service';
 import { Bell, CheckCircle2, AlertCircle, Clock, Calendar } from 'lucide-react-native';
 
 export default function NotificationsScreen() {
   const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: notifData, isLoading, refetch } = useQuery({
     queryKey: ['myNotificationsList'],
     queryFn: async () => {
       try {
-        const res = await api.get('/notifications');
-        return res.data?.data || res.data || [];
+        const res = await notificationService.getNotifications();
+        return res?.notifications || (Array.isArray(res) ? res : res?.data || []);
       } catch {
         return [];
       }
@@ -31,18 +32,39 @@ export default function NotificationsScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await Promise.all([
+      refetch(),
+      queryClient.invalidateQueries({ queryKey: ['notificationsUnreadCount'] }),
+    ]);
     setRefreshing(false);
   };
 
-  const notifications = Array.isArray(notifData) ? notifData : notifData?.notifications || [];
+  const notifications = Array.isArray(notifData)
+    ? notifData
+    : Array.isArray(notifData?.notifications)
+    ? notifData.notifications
+    : [];
 
   const markAllRead = async () => {
     try {
-      await api.put('/notifications/read-all');
+      await notificationService.markAllAsRead();
+      queryClient.invalidateQueries({ queryKey: ['myNotificationsList'] });
+      queryClient.invalidateQueries({ queryKey: ['notificationsUnreadCount'] });
       await refetch();
     } catch (err) {
       console.warn('[NOTIF] Mark all read error:', err.message);
+    }
+  };
+
+  const handleMarkItemRead = async (item) => {
+    const isUnread = Boolean(item.unread ?? (item.isRead === false));
+    if (!isUnread || !item.id) return;
+    try {
+      await notificationService.markAsRead(item.id);
+      queryClient.invalidateQueries({ queryKey: ['myNotificationsList'] });
+      queryClient.invalidateQueries({ queryKey: ['notificationsUnreadCount'] });
+    } catch (err) {
+      console.warn('[NOTIF] Mark single read error:', err.message);
     }
   };
 
@@ -87,7 +109,12 @@ export default function NotificationsScreen() {
                 : 'Recent';
 
               return (
-                <View key={item.id || idx} style={[styles.itemCard, isUnread && styles.itemCardUnread]}>
+                <TouchableOpacity
+                  key={item.id || idx}
+                  activeOpacity={isUnread ? 0.7 : 1}
+                  onPress={() => handleMarkItemRead(item)}
+                  style={[styles.itemCard, isUnread && styles.itemCardUnread]}
+                >
                   <View style={styles.itemTop}>
                     <View style={styles.itemTitleRow}>
                       {isUnread && <View style={styles.unreadDot} />}
@@ -95,8 +122,8 @@ export default function NotificationsScreen() {
                     </View>
                     <Text style={styles.itemTime}>{timeStr}</Text>
                   </View>
-                  <Text style={styles.itemMessage}>{item.message || item.content || item.body || ''}</Text>
-                </View>
+                  <Text style={styles.itemMessage}>{item.body || item.message || item.content || ''}</Text>
+                </TouchableOpacity>
               );
             })}
           </View>

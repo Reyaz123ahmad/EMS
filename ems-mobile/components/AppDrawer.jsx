@@ -5,16 +5,18 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   Modal,
   StatusBar,
   Image,
   Dimensions,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, usePathname } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useDrawer } from '../context/DrawerContext';
+import { notificationService } from '../services/notification.service';
 import {
   LayoutDashboard,
   Clock,
@@ -45,6 +47,19 @@ export default function AppDrawer() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notificationsUnreadCount'],
+    queryFn: async () => {
+      try {
+        return await notificationService.getUnreadCount();
+      } catch {
+        return 0;
+      }
+    },
+    enabled: Boolean(user),
+    refetchInterval: 30000,
+  });
+
   const [expandedGroups, setExpandedGroups] = useState({
     attendance: true,
     leave: false,
@@ -73,9 +88,7 @@ export default function AppDrawer() {
   return (
     <Modal visible={isOpen} transparent animationType="fade" onRequestClose={closeDrawer}>
       <View style={styles.overlay}>
-        <TouchableWithoutFeedback onPress={closeDrawer}>
-          <View style={styles.backdrop} />
-        </TouchableWithoutFeedback>
+        <Pressable style={styles.backdrop} onPress={closeDrawer} />
 
         <View style={styles.drawerContainer}>
           <SafeAreaView style={styles.drawerInner}>
@@ -404,9 +417,11 @@ export default function AppDrawer() {
                     Notifications
                   </Text>
                 </View>
-                <View style={styles.badgePill}>
-                  <Text style={styles.badgePillText}>3</Text>
-                </View>
+                {unreadCount > 0 ? (
+                  <View style={styles.badgePill}>
+                    <Text style={styles.badgePillText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+                  </View>
+                ) : null}
               </TouchableOpacity>
 
               {/* 14. My Profile */}
@@ -460,21 +475,26 @@ export default function AppDrawer() {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    flexDirection: 'row',
+    backgroundColor: 'transparent',
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    zIndex: 1,
   },
   drawerContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
     width: DRAWER_WIDTH,
     backgroundColor: '#0F172A',
-    height: '100%',
+    zIndex: 10,
+    elevation: 16,
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 0 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
-    elevation: 16,
   },
   drawerInner: {
     flex: 1,
