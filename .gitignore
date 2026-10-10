@@ -9,3 +9,8 @@ build/
 .idea/
 coverage/
 .cache/
+
+# EAS build temporary folders
+.eas-build-standalone
+eas-inspect
+.expo/
