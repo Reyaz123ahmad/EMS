@@ -29,6 +29,7 @@
     "expo-router": "~57.0.25",
     "expo-secure-store": "~57.0.4",
     "expo-sharing": "^57.0.22",
+    "expo-splash-screen": "~57.0.9",
     "expo-status-bar": "~57.0.1",
     "lucide-react-native": "^1.54.0",
     "nativewind": "^4.1.23",
@@ -46,6 +47,13 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "tailwindcss": "^3.4.17"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "react"
+      ]
+    }
   },
   "private": true
 }
