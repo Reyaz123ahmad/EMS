@@ -48,13 +48,15 @@ export const attendanceService = {
   },
 
   // POST /attendance/check-out
-  async checkOut({ mode, location, remarks = '' } = {}) {
+  async checkOut({ mode, photo = null, location, remarks = '', cardNumber = null } = {}) {
     if (!location) {
       throw new Error('Location is required for check-out');
     }
 
     const payload = {
       mode: mode || 'face',
+      photo: photo || undefined,
+      cardNumber: cardNumber || undefined,
       location: {
         lat: location.lat ?? location.latitude,
         lng: location.lng ?? location.longitude,

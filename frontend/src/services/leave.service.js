@@ -94,6 +94,11 @@ export const leaveService = {
     return response.data;
   },
 
+  async cancelLeave(id, reason = '') {
+    const response = await api.post(`/leave/requests/${id}/cancel`, { reason });
+    return response.data?.data || response.data;
+  },
+
   async bulkApproveLeave(data) {
     const response = await api.post('/leave/requests/bulk-approve', data);
     return response.data;

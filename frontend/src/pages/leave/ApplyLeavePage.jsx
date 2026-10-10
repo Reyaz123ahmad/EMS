@@ -179,8 +179,19 @@ export default function ApplyLeavePage() {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button variant="ghost" type="button" onClick={() => setFormData({ leaveTypeId: '', startDate: '', endDate: '', reason: '' })}>
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => navigate('/leave/my')}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="ghost"
+              type="button"
+              onClick={() => setFormData({ leaveTypeId: '', startDate: '', endDate: '', reason: '' })}
+            >
               Reset
             </Button>
             <Button variant="primary" type="submit" loading={applyLeave.isPending}>

@@ -16,8 +16,54 @@ export const subscriptionsService = {
   },
 
   async createPlan(data) {
+    const name = data.name?.trim();
+    if (!name) {
+      const err = new Error('Plan name is required');
+      err.statusCode = 400;
+      throw err;
+    }
+
+    const existing = await prisma.subscriptionPlan.findFirst({
+      where: {
+        name: { equals: name, mode: 'insensitive' }
+      }
+    });
+    if (existing) {
+      const err = new Error(`A subscription plan with the name "${name}" already exists`);
+      err.statusCode = 409;
+      throw err;
+    }
+
+    const price = data.price !== undefined 
+      ? Number(data.price) 
+      : (data.priceMonthly !== undefined ? Number(data.priceMonthly) : 0);
+
+    const maxEmployees = (data.maxEmployees === 0 || data.maxEmployees === null || data.maxEmployees === '' || data.maxEmployees === -1)
+      ? -1
+      : (data.maxEmployees !== undefined ? Number(data.maxEmployees) : 50);
+
+    const maxBranches = (data.maxBranches === 0 || data.maxBranches === null || data.maxBranches === '' || data.maxBranches === -1)
+      ? -1
+      : (data.maxBranches !== undefined ? Number(data.maxBranches) : 1);
+
+    const maxDevices = (data.maxDevices === 0 || data.maxDevices === null || data.maxDevices === '' || data.maxDevices === -1)
+      ? -1
+      : (data.maxDevices !== undefined ? Number(data.maxDevices) : 1);
+
     return prisma.subscriptionPlan.create({
-      data,
+      data: {
+        name,
+        description: data.description || null,
+        price,
+        billingCycle: data.billingCycle || 'monthly',
+        features: data.features || {},
+        maxEmployees,
+        maxBranches,
+        maxDevices,
+        maxStorageGB: data.maxStorageGB ? Number(data.maxStorageGB) : 5,
+        securityLevel: data.securityLevel || 'basic',
+        isActive: data.isActive !== undefined ? Boolean(data.isActive) : true
+      }
     });
   },
 

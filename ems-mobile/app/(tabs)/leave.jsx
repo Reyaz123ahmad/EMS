@@ -142,6 +142,30 @@ export default function LeaveScreen() {
     }
   };
 
+  const handleCancelRequest = (requestId) => {
+    Alert.alert(
+      'Cancel Leave Request',
+      'Are you sure you want to cancel this pending leave request?',
+      [
+        { text: 'Keep', style: 'cancel' },
+        {
+          text: 'Cancel Request',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await leaveService.cancelLeave(requestId, 'Cancelled by employee');
+              Alert.alert('Success', 'Leave request has been cancelled.');
+              await Promise.all([refetchRequests(), refetchBalances()]);
+            } catch (err) {
+              const msg = err.response?.data?.message || err.message || 'Could not cancel leave.';
+              Alert.alert('Cancellation Error', msg);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const setDemoDates = (daysFromNow = 1) => {
     const d = new Date();
     d.setDate(d.getDate() + daysFromNow);
@@ -151,7 +175,7 @@ export default function LeaveScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={['left', 'right']} style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
 
       {/* Segmented Tab Navigation */}
@@ -285,12 +309,24 @@ export default function LeaveScreen() {
                       ) : null}
 
                       <View style={styles.requestFooter}>
-                        <Text style={styles.requestDaysCount}>
-                          Duration: {req.totalDays || 1} day{req.totalDays > 1 ? 's' : ''}
-                        </Text>
-                        {req.isHalfDay ? (
-                          <Text style={styles.halfDayBadge}>Half Day</Text>
-                        ) : null}
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={styles.requestDaysCount}>
+                            Duration: {req.totalDays || 1} day{req.totalDays > 1 ? 's' : ''}
+                          </Text>
+                          {req.isHalfDay ? (
+                            <Text style={styles.halfDayBadge}>Half Day</Text>
+                          ) : null}
+                        </View>
+
+                        {status === 'PENDING' && (
+                          <TouchableOpacity
+                            style={styles.cancelRequestBtn}
+                            onPress={() => handleCancelRequest(req.id)}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={styles.cancelRequestBtnText}>Cancel</Text>
+                          </TouchableOpacity>
+                        )}
                       </View>
                     </View>
                   );
@@ -381,22 +417,40 @@ export default function LeaveScreen() {
               numberOfLines={3}
             />
 
-            {/* Submit Button */}
-            <TouchableOpacity
-              style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]}
-              onPress={handleApplyLeave}
-              disabled={isSubmitting}
-              activeOpacity={0.8}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFFFFF" size="small" />
-              ) : (
-                <>
-                  <Send size={18} color="#FFFFFF" />
-                  <Text style={styles.submitBtnText}>Submit Leave Application</Text>
-                </>
-              )}
-            </TouchableOpacity>
+            {/* Form Actions Row */}
+            <View style={styles.formActionRow}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  setSelectedTypeId('');
+                  setStartDate('');
+                  setEndDate('');
+                  setReason('');
+                  setIsHalfDay(false);
+                  setActiveTab('my');
+                }}
+                disabled={isSubmitting}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]}
+                onPress={handleApplyLeave}
+                disabled={isSubmitting}
+                activeOpacity={0.8}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <>
+                    <Send size={18} color="#FFFFFF" />
+                    <Text style={styles.submitBtnText}>Submit</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         ) : null}
 
@@ -724,6 +778,19 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     fontWeight: '600',
   },
+  cancelRequestBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  cancelRequestBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
   applyFormCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -821,7 +888,28 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     marginBottom: 20,
   },
+  formActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    color: '#475569',
+    fontWeight: '700',
+    fontSize: 14,
+  },
   submitBtn: {
+    flex: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

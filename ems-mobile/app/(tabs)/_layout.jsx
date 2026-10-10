@@ -2,11 +2,13 @@ import React from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { Home, Clock, Calendar, Wallet, User, Menu, Bell } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDrawer } from '../../context/DrawerContext';
 
 export default function TabsLayout() {
   const { openDrawer } = useDrawer();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -53,8 +55,8 @@ export default function TabsLayout() {
           backgroundColor: '#FFFFFF',
           borderTopColor: '#F1F5F9',
           borderTopWidth: 0.5,
-          height: 64,
-          paddingBottom: 10,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           paddingTop: 8,
           shadowColor: '#000000',
           shadowOffset: { width: 0, height: -2 },

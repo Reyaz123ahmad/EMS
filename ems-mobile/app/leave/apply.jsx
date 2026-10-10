@@ -12,11 +12,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import leaveService from '../../services/leave.service';
 import { Send, ChevronDown, Check, X, Tag } from 'lucide-react-native';
 
 export default function ApplyLeaveScreen() {
+  const router = useRouter();
   const [selectedTypeId, setSelectedTypeId] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -117,21 +119,32 @@ export default function ApplyLeaveScreen() {
             onChangeText={setReason}
           />
 
-          <TouchableOpacity
-            style={[styles.submitBtn, (!selectedTypeId || isSubmitting) && styles.submitBtnDisabled]}
-            onPress={handleApply}
-            disabled={isSubmitting}
-            activeOpacity={0.8}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
-            ) : (
-              <>
-                <Send size={18} color="#FFFFFF" />
-                <Text style={styles.submitBtnText}>Submit Leave Application</Text>
-              </>
-            )}
-          </TouchableOpacity>
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => router.back()}
+              disabled={isSubmitting}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.cancelBtnText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.submitBtn, (!selectedTypeId || isSubmitting) && styles.submitBtnDisabled]}
+              onPress={handleApply}
+              disabled={isSubmitting}
+              activeOpacity={0.8}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Send size={18} color="#FFFFFF" />
+                  <Text style={styles.submitBtnText}>Submit Application</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Modal Dropdown Picker */}
@@ -266,11 +279,32 @@ const styles = StyleSheet.create({
     marginBottom: 22,
     fontWeight: '500',
   },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    color: '#475569',
+    fontWeight: '700',
+    fontSize: 14,
+  },
   submitBtn: {
+    flex: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: 8,
     backgroundColor: '#4F46E5',
     paddingVertical: 16,
     borderRadius: 16,

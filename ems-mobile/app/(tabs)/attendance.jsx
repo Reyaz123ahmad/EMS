@@ -735,6 +735,92 @@ export default function AttendanceScreen() {
     }
   };
 
+  // Face Check-Out from Camera
+  const handleFaceCheckOut = async ({ photo, location }) => {
+    setActionLoading(true);
+    try {
+      const loc = location || (await getCurrentLocation());
+      console.log('[ATTENDANCE] Submitting face check-out with GPS location:', loc);
+      await attendanceService.checkOut({
+        mode: 'face',
+        photo,
+        location: loc,
+        remarks: 'Mobile biometric face check-out',
+      });
+
+      Alert.alert(
+        'Check-Out Successful 🎉',
+        `Face verified and clocked out at ${new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}. Have a great evening!`
+      );
+      await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Face check-out failed.';
+      Alert.alert('Face Check-Out Error', errorMsg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Fingerprint verification for check-out
+  const handleFingerprintCheckOut = async () => {
+    try {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      if (!hasHardware) {
+        Alert.alert('Hardware Unavailable', 'Fingerprint/Biometric sensor is not available on this device.');
+        return;
+      }
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      if (!isEnrolled) {
+        Alert.alert('Not Enrolled', 'No biometric credentials registered in device settings.');
+        return;
+      }
+
+      const authResult = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Verify your fingerprint to check out',
+        cancelLabel: 'Cancel',
+        fallbackLabel: 'Use PIN',
+      });
+
+      if (authResult.success) {
+        setActionLoading(true);
+        console.log('[ATTENDANCE] Fingerprint verified for checkout, fetching GPS...');
+        const location = await getCurrentLocation();
+        console.log('[ATTENDANCE] Submitting fingerprint check-out with location:', location);
+        await attendanceService.checkOut({
+          mode: 'fingerprint',
+          location,
+          remarks: 'Biometric fingerprint verified check-out',
+        });
+        Alert.alert(
+          'Success 🎉',
+          `Fingerprint check-out confirmed at ${new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}.`
+        );
+        await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
+      } else {
+        Alert.alert('Verification Cancelled', 'Fingerprint authentication was not completed.');
+      }
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Fingerprint check-out failed.';
+      Alert.alert('Fingerprint Punch Error', errorMsg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Unified Camera Capture Router
   const handleCameraCapture = async ({ photo, location }) => {
     const { actionType, breakType } = cameraModalConfig;
@@ -742,6 +828,8 @@ export default function AttendanceScreen() {
 
     if (actionType === 'CHECK_IN') {
       await handleFaceCheckIn({ photo, location });
+    } else if (actionType === 'CHECK_OUT') {
+      await handleFaceCheckOut({ photo, location });
     } else if (actionType === 'BREAK_START') {
       await handleFaceBreakStart({ photo, location, breakType });
     } else if (actionType === 'BREAK_END') {
@@ -850,39 +938,19 @@ export default function AttendanceScreen() {
       return;
     }
 
-    Alert.alert(
-      'Confirm Check-Out',
-      'Are you sure you want to end your workday and clock out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Check Out',
-          style: 'destructive',
-          onPress: async () => {
-            setActionLoading(true);
-            try {
-              const location = await getCurrentLocation();
-              await attendanceService.checkOut({
-                mode: selectedMode,
-                location,
-                remarks: `Mobile ${selectedMode} check-out`,
-              });
-              Alert.alert('Checked Out', 'Your check-out timestamp has been recorded.');
-              await Promise.all([refetchToday(), refetchBreakStatus(), refetchCheckoutStatus(), refetchLogs()]);
-            } catch (err) {
-              const errorMsg =
-                err.response?.data?.message ||
-                err.response?.data?.error ||
-                err.message ||
-                'Check-out failed.';
-              Alert.alert('Check-Out Error', errorMsg);
-            } finally {
-              setActionLoading(false);
-            }
-          },
-        },
-      ]
-    );
+    // Window is open, execute selected biometric mode (matching check-in flow)
+    if (selectedMode === 'face') {
+      setCameraModalConfig({
+        visible: true,
+        actionType: 'CHECK_OUT',
+        actionTitle: 'Face Biometric Check-Out',
+        breakType: 'SHORT',
+      });
+    } else if (selectedMode === 'fingerprint') {
+      handleFingerprintCheckOut();
+    } else if (selectedMode === 'rfid') {
+      setShowRfidInput(true);
+    }
   };
 
   const timeString = currentTime.toLocaleTimeString([], {
@@ -901,7 +969,7 @@ export default function AttendanceScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={['left', 'right']} style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
 
       <ScrollView

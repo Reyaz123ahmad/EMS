@@ -4,7 +4,8 @@ import {
   updateLeaveTypeSchema,
   applyLeaveSchema,
   bulkAllocateLeavesSchema,
-  carryForwardSchema
+  carryForwardSchema,
+  cancelLeaveSchema
 } from './leave.validator.js';
 import { getAuthEmployeeId, getAuthEmployee, getManagerTeamIds } from '../../security/data-scope.js';
 
@@ -287,6 +288,33 @@ export const leaveController = {
     } catch (err) {
       next(err);
     }
+  },
+
+  async cancelRequest(req, res, next) {
+    try {
+      const { error, value } = cancelLeaveSchema.validate(req.body || {});
+      if (error) return res.status(400).json({ status: 'error', message: error.details[0].message });
+
+      const employeeId = await getAuthEmployeeId(req) || req.user.employeeId;
+      const result = await leaveService.cancelLeave({
+        requestId: req.params.id,
+        userId: req.user.id || req.user.userId,
+        employeeId,
+        companyId: req.user.companyId,
+        role: req.user.role,
+        reason: value?.reason || req.body?.reason
+      });
+      res.status(200).json({ status: 'ok', success: true, message: 'Leave request cancelled', data: result });
+    } catch (err) {
+      if (err.statusCode) {
+        return res.status(err.statusCode).json({ status: 'error', message: err.message });
+      }
+      next(err);
+    }
+  },
+
+  async cancelLeave(req, res, next) {
+    return this.cancelRequest(req, res, next);
   },
 
   async bulkApprove(req, res, next) {

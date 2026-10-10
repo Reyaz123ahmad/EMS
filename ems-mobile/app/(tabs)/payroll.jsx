@@ -139,7 +139,7 @@ export default function PayrollScreen() {
     : 'Current Year';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={['left', 'right']} style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
 
       <ScrollView

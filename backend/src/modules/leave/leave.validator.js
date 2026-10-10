@@ -50,3 +50,7 @@ export const carryForwardSchema = Joi.object({
   fromYear: Joi.number().integer().min(2020).max(2100).required(),
   toYear: Joi.number().integer().min(2020).max(2100).required()
 }).unknown(true);
+
+export const cancelLeaveSchema = Joi.object({
+  reason: Joi.string().trim().max(300).optional().allow('', null)
+}).unknown(true);

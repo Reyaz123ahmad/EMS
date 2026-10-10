@@ -1,4 +1,3 @@
-import '../global.css';
 import React, { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet, Text, StatusBar, Platform } from 'react-native';
@@ -39,22 +38,6 @@ function RootLayoutNav() {
       router.replace('/(tabs)');
     }
   }, [user, isLoading, segments]);
-
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <StatusBar barStyle="light-content" backgroundColor="#0F172A" />
-        <View style={styles.logoBadge}>
-          <Text style={styles.logoText}>E</Text>
-        </View>
-        <ActivityIndicator size="large" color="#6366F1" style={styles.spinner} />
-        <Text style={styles.loadingText}>Initializing EMS Workspace...</Text>
-        <Text style={styles.apiEndpointText}>
-          API: {API_BASE_URL.replace(/^https?:\/\//, '')}
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { subscriptionsController } from './subscriptions.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
+import { requireRole } from '../../middlewares/role.middleware.js';
 import { validate } from '../../middlewares/validate.middleware.js';
 import {
   createOrderSchema,
@@ -14,11 +15,17 @@ import { cacheResponse } from '../../middlewares/cache.middleware.js';
 
 const router = Router();
 
-// Public plan listing
+// Public / Authenticated plan listing
 router.get('/', cacheResponse('cache:plans', 300), subscriptionsController.getPlans);
 router.get('/plans', cacheResponse('cache:plans', 300), subscriptionsController.getPlans);
-router.post('/plans', validate(planSchema), subscriptionsController.createPlan);
-router.put('/plans/:id', validate(planSchema), subscriptionsController.updatePlan);
+
+// Super Admin plan management
+router.post('/', authenticate, requireRole('SUPER_ADMIN'), validate(planSchema), subscriptionsController.createPlan);
+router.post('/plans', authenticate, requireRole('SUPER_ADMIN'), validate(planSchema), subscriptionsController.createPlan);
+router.put('/:id', authenticate, requireRole('SUPER_ADMIN'), validate(planSchema), subscriptionsController.updatePlan);
+router.put('/plans/:id', authenticate, requireRole('SUPER_ADMIN'), validate(planSchema), subscriptionsController.updatePlan);
+router.delete('/:id', authenticate, requireRole('SUPER_ADMIN'), subscriptionsController.deletePlan);
+router.delete('/plans/:id', authenticate, requireRole('SUPER_ADMIN'), subscriptionsController.deletePlan);
 
 // Protected subscription routes
 router.use(authenticate);

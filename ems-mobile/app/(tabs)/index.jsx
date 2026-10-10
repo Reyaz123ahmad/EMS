@@ -228,7 +228,7 @@ export default function HomeScreen() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={['left', 'right']} style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F0F2FF" />
 
       <ScrollView

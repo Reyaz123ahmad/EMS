@@ -7,8 +7,23 @@ export const subscriptionService = {
   },
 
   async getPlans() {
-    const response = await api.get('/subscriptions/plans');
-    return response.data?.data || [];
+    const response = await api.get('/plans');
+    return response.data?.data || response.data || [];
+  },
+
+  async createPlan(data) {
+    const response = await api.post('/plans', data);
+    return response.data?.data || response.data;
+  },
+
+  async updatePlan(id, data) {
+    const response = await api.put(`/plans/${id}`, data);
+    return response.data?.data || response.data;
+  },
+
+  async deletePlan(id) {
+    const response = await api.delete(`/plans/${id}`);
+    return response.data?.data || response.data;
   },
 
   async createOrder({ planId, billingCycle = 'monthly' }) {

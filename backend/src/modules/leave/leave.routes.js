@@ -33,6 +33,8 @@ router.post('/requests/:id/approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMP
 router.put('/requests/:id/approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.approveRequest);
 router.post('/requests/:id/reject', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.rejectRequest);
 router.put('/requests/:id/reject', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.rejectRequest);
+router.post('/requests/:id/cancel', leaveController.cancelRequest);
+router.put('/requests/:id/cancel', leaveController.cancelRequest);
 router.post('/requests/bulk-approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.bulkApprove);
 router.put('/requests/bulk-approve', requireRole('HR_MANAGER', 'HR_ADMIN', 'COMPANY_ADMIN', 'SUPER_ADMIN', 'MANAGER'), leaveController.bulkApprove);
 

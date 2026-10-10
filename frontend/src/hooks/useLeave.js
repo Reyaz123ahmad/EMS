@@ -111,6 +111,23 @@ export function useRejectLeave() {
   });
 }
 
+export function useCancelLeave() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }) => leaveService.cancelLeave(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'requests'] });
+      queryClient.invalidateQueries({ queryKey: ['leave-balances'] });
+      queryClient.invalidateQueries({ queryKey: ['my-leave-balances'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'balances'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'history'] });
+      queryClient.invalidateQueries({ queryKey: ['leave', 'calendar'] });
+    }
+  });
+}
+
 export function useBulkApproveLeave() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -189,6 +206,7 @@ export default {
   useLeaveRequests,
   useApproveLeave,
   useRejectLeave,
+  useCancelLeave,
   useBulkApproveLeave,
   useLeaveCalendar,
   useLeaveBalanceReport,

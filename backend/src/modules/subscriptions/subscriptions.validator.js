@@ -27,14 +27,21 @@ export const cancelSubscriptionSchema = Joi.object({
 
 export const planSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
+  slug: Joi.string().lowercase().allow('', null).optional(),
   description: Joi.string().allow('', null).optional(),
-  price: Joi.number().min(0).required(),
+  price: Joi.number().min(0).optional(),
+  priceMonthly: Joi.number().min(0).optional(),
+  priceYearly: Joi.number().min(0).allow(null).optional(),
   billingCycle: Joi.string().valid('monthly', 'yearly').default('monthly'),
-  features: Joi.object().optional().default({}),
-  maxEmployees: Joi.number().integer().default(50),
-  maxBranches: Joi.number().integer().default(1),
-  maxDevices: Joi.number().integer().default(1),
-  maxStorageGB: Joi.number().integer().default(5),
+  features: Joi.alternatives().try(
+    Joi.array().items(Joi.string().max(200)),
+    Joi.object()
+  ).default([]),
+  maxEmployees: Joi.number().integer().allow(null).optional(),
+  maxBranches: Joi.number().integer().allow(null).optional(),
+  maxDevices: Joi.number().integer().allow(null).optional(),
+  maxStorageGB: Joi.number().integer().allow(null).optional(),
   securityLevel: Joi.string().valid('basic', 'standard', 'high').default('basic'),
   isActive: Joi.boolean().default(true),
+  displayOrder: Joi.number().integer().allow(null).optional(),
 }).unknown(true);

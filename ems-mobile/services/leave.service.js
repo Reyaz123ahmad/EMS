@@ -58,6 +58,12 @@ export const leaveService = {
     const res = await api.get('/leave/history', { params: { page, limit } });
     return res.data?.data || res.data;
   },
+
+  // POST /leave/requests/:id/cancel
+  async cancelLeave(id, reason = '') {
+    const res = await api.post(`/leave/requests/${id}/cancel`, { reason });
+    return res.data?.data || res.data;
+  },
 };
 
 export default leaveService;

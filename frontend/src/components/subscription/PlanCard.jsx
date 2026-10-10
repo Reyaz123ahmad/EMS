@@ -2,23 +2,32 @@ import React from 'react';
 import { Check, Zap } from 'lucide-react';
 
 export function PlanCard({ plan, isCurrent, isPopular, onSelect, actionText = 'Choose Plan', isSelected }) {
-  const features = typeof plan.features === 'object' && plan.features !== null
-    ? plan.features
-    : {};
+  let featureList = [];
+  if (Array.isArray(plan.features)) {
+    featureList = [
+      ...plan.features,
+      plan.maxEmployees === -1 ? 'Unlimited Employees' : `Up to ${plan.maxEmployees || 50} Employees`,
+      plan.maxBranches === -1 ? 'Unlimited Branches' : `Up to ${plan.maxBranches || 1} Branches`,
+    ];
+  } else {
+    const features = typeof plan.features === 'object' && plan.features !== null
+      ? plan.features
+      : {};
 
-  const featureList = [
-    features.attendance?.face && 'Face Recognition Attendance',
-    features.attendance?.card && 'Biometric Card & QR Scanning',
-    features.attendance?.finger && 'Fingerprint Biometric Device Sync',
-    features.attendance?.geoFencing && 'GPS Geo-fencing & Spoof Detection',
-    features.payroll && 'Automated Payroll & Payslip Generation',
-    features.leave && 'Leave Management & Approvals',
-    features.overtime && 'Overtime Tracking & Multipliers',
-    features.assets && 'Asset Management & Assignment',
-    features.audit_logs && 'Advanced Security & Audit Logs',
-    plan.maxEmployees === -1 ? 'Unlimited Employees' : `Up to ${plan.maxEmployees || 50} Employees`,
-    plan.maxBranches === -1 ? 'Unlimited Branches' : `Up to ${plan.maxBranches || 1} Branches`,
-  ].filter(Boolean);
+    featureList = [
+      features.attendance?.face && 'Face Recognition Attendance',
+      features.attendance?.card && 'Biometric Card & QR Scanning',
+      features.attendance?.finger && 'Fingerprint Biometric Device Sync',
+      features.attendance?.geoFencing && 'GPS Geo-fencing & Spoof Detection',
+      features.payroll && 'Automated Payroll & Payslip Generation',
+      features.leave && 'Leave Management & Approvals',
+      features.overtime && 'Overtime Tracking & Multipliers',
+      features.assets && 'Asset Management & Assignment',
+      features.audit_logs && 'Advanced Security & Audit Logs',
+      plan.maxEmployees === -1 ? 'Unlimited Employees' : `Up to ${plan.maxEmployees || 50} Employees`,
+      plan.maxBranches === -1 ? 'Unlimited Branches' : `Up to ${plan.maxBranches || 1} Branches`,
+    ].filter(Boolean);
+  }
 
   return (
     <div

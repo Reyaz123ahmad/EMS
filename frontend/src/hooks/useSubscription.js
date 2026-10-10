@@ -29,6 +29,17 @@ export function usePlans() {
   });
 }
 
+export function useCreatePlan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => subscriptionService.createPlan(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['plans'] });
+    },
+  });
+}
+
 export function useCreateOrder() {
   return useMutation({
     mutationFn: (data) => subscriptionService.createOrder(typeof data === 'string' ? { planId: data } : data),

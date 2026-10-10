@@ -130,7 +130,7 @@ export default function CameraModal({ visible, onClose, onCapture, actionTitle =
             <AlertCircle size={48} color="#F59E0B" style={styles.permissionIcon} />
             <Text style={styles.permissionTitle}>Camera Permission Required</Text>
             <Text style={styles.permissionSubtitle}>
-              Please grant camera access to capture your face for biometric attendance check-in.
+              Please grant camera access to capture your face for biometric attendance verification.
             </Text>
             <TouchableOpacity style={styles.grantButton} onPress={requestPermission} activeOpacity={0.8}>
               <Text style={styles.grantButtonText}>Grant Camera Access</Text>

@@ -230,5 +230,32 @@ export const subscriptionsController = {
     } catch (err) {
       next(err);
     }
+  },
+
+  async createPlan(req, res, next) {
+    try {
+      const plan = await subscriptionsService.createPlan(req.body);
+      return successResponse(res, plan, 'Subscription plan created successfully', 201);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async updatePlan(req, res, next) {
+    try {
+      const plan = await subscriptionsService.updatePlan(req.params.id, req.body);
+      return successResponse(res, plan, 'Subscription plan updated successfully', 200);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async deletePlan(req, res, next) {
+    try {
+      const plan = await subscriptionsService.deletePlan(req.params.id);
+      return successResponse(res, plan, 'Subscription plan deactivated successfully', 200);
+    } catch (err) {
+      next(err);
+    }
   }
 };

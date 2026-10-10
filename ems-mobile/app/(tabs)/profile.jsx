@@ -236,7 +236,7 @@ export default function ProfileScreen() {
   const displayPhoto = photoUrl || user?.photoUrl || user?.employee?.photoUrl || null;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView edges={['left', 'right']} style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
       <ScrollView
         contentContainerStyle={styles.scrollContent}

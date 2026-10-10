@@ -1,15 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Card from '../../components/ui/Card';
 import Table from '../../components/ui/Table';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
-import { useMyLeaveRequests } from '../../hooks/useLeave';
+import { useMyLeaveRequests, useCancelLeave } from '../../hooks/useLeave';
 import { formatDate } from '../../utils/formatters';
 import { Link } from 'react-router-dom';
 import { PlusCircle } from 'lucide-react';
 
 export default function MyLeavePage() {
   const { data: requestsData, isLoading, refetch } = useMyLeaveRequests();
+  const cancelLeaveMutation = useCancelLeave();
+
+  const [cancelModal, setCancelModal] = useState({
+    isOpen: false,
+    requestId: null,
+    reason: '',
+  });
+  const [toastMessage, setToastMessage] = useState('');
 
   const requests = Array.isArray(requestsData)
     ? requestsData
@@ -22,6 +30,21 @@ export default function MyLeavePage() {
     : Array.isArray(requestsData?.data)
     ? requestsData.data
     : [];
+
+  const handleConfirmCancel = async () => {
+    if (!cancelModal.requestId) return;
+    try {
+      await cancelLeaveMutation.mutateAsync({
+        id: cancelModal.requestId,
+        reason: cancelModal.reason,
+      });
+      setToastMessage('Leave request cancelled successfully.');
+      setCancelModal({ isOpen: false, requestId: null, reason: '' });
+      setTimeout(() => setToastMessage(''), 4000);
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || 'Failed to cancel leave request');
+    }
+  };
 
   const columns = [
     {
@@ -66,7 +89,7 @@ export default function MyLeavePage() {
       cell: (row) => (
         <Badge
           variant={
-            row.status === 'APPROVED' ? 'success' : row.status === 'REJECTED' ? 'danger' : 'warning'
+            row.status === 'APPROVED' ? 'success' : row.status === 'REJECTED' || row.status === 'CANCELLED' ? 'danger' : 'warning'
           }
         >
           {row.status}
@@ -82,10 +105,33 @@ export default function MyLeavePage() {
         </span>
       ),
     },
+    {
+      header: 'Actions',
+      accessor: 'actions',
+      cell: (row) => {
+        if (row.status === 'PENDING') {
+          return (
+            <button
+              onClick={() => setCancelModal({ isOpen: true, requestId: row.id, reason: '' })}
+              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 transition-colors"
+            >
+              Cancel
+            </button>
+          );
+        }
+        return <span className="text-xs text-slate-500">—</span>;
+      },
+    },
   ];
 
   return (
     <div className="space-y-6">
+      {toastMessage && (
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-medium">
+          ✓ {toastMessage}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">My Leave Requests</h1>
@@ -107,6 +153,48 @@ export default function MyLeavePage() {
       <Card className="p-4">
         <Table columns={columns} data={requests} isLoading={isLoading} />
       </Card>
+
+      {/* Cancel Confirmation Modal */}
+      {cancelModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <h3 className="text-lg font-bold text-white">Cancel Leave Request</h3>
+            <p className="text-sm text-slate-300">
+              Are you sure you want to cancel this leave request? This action cannot be undone.
+            </p>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-400 mb-1">
+                Reason for cancellation (optional)
+              </label>
+              <textarea
+                rows="3"
+                value={cancelModal.reason}
+                onChange={(e) => setCancelModal((prev) => ({ ...prev, reason: e.target.value }))}
+                placeholder="Why are you cancelling this request?"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button
+                variant="secondary"
+                disabled={cancelLeaveMutation.isPending}
+                onClick={() => setCancelModal({ isOpen: false, requestId: null, reason: '' })}
+              >
+                Keep Request
+              </Button>
+              <Button
+                variant="danger"
+                loading={cancelLeaveMutation.isPending}
+                onClick={handleConfirmCancel}
+              >
+                Cancel Request
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

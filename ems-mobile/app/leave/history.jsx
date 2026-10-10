@@ -7,6 +7,8 @@ import {
   StatusBar,
   RefreshControl,
   ActivityIndicator,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
@@ -25,6 +27,30 @@ export default function LeaveHistoryScreen() {
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
+  };
+
+  const handleCancelRequest = (requestId) => {
+    Alert.alert(
+      'Cancel Leave Request',
+      'Are you sure you want to cancel this pending leave request?',
+      [
+        { text: 'Keep', style: 'cancel' },
+        {
+          text: 'Cancel Request',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await leaveService.cancelLeave(requestId, 'Cancelled by employee');
+              Alert.alert('Success', 'Leave request has been cancelled.');
+              await refetch();
+            } catch (err) {
+              const msg = err.response?.data?.message || err.message || 'Could not cancel leave.';
+              Alert.alert('Error', msg);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const requestsList = historyData?.requests || historyData?.data || (Array.isArray(historyData) ? historyData : []);
@@ -55,9 +81,10 @@ export default function LeaveHistoryScreen() {
         ) : (
           <View style={styles.list}>
             {requestsList.map((item, idx) => {
-              const status = item.status || 'PENDING';
+              const status = (item.status || 'PENDING').toUpperCase();
               const isApproved = status === 'APPROVED';
               const isRejected = status === 'REJECTED';
+              const isCancelled = status === 'CANCELLED';
 
               return (
                 <View key={item.id || idx} style={styles.card}>
@@ -66,13 +93,21 @@ export default function LeaveHistoryScreen() {
                     <View
                       style={[
                         styles.badge,
-                        isApproved ? styles.badgeApproved : isRejected ? styles.badgeRejected : styles.badgePending,
+                        isApproved
+                          ? styles.badgeApproved
+                          : isRejected || isCancelled
+                          ? styles.badgeRejected
+                          : styles.badgePending,
                       ]}
                     >
                       <Text
                         style={[
                           styles.badgeText,
-                          isApproved ? styles.badgeTextApproved : isRejected ? styles.badgeTextRejected : styles.badgeTextPending,
+                          isApproved
+                            ? styles.badgeTextApproved
+                            : isRejected || isCancelled
+                            ? styles.badgeTextRejected
+                            : styles.badgeTextPending,
                         ]}
                       >
                         {status}
@@ -88,6 +123,18 @@ export default function LeaveHistoryScreen() {
                   </View>
 
                   {item.reason && <Text style={styles.reasonText}>"{item.reason}"</Text>}
+
+                  {status === 'PENDING' && (
+                    <View style={styles.cardFooter}>
+                      <TouchableOpacity
+                        style={styles.cancelBtn}
+                        onPress={() => handleCancelRequest(item.id)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.cancelBtnText}>Cancel Request</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               );
             })}
@@ -152,4 +199,24 @@ const styles = StyleSheet.create({
   dateRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginBottom: 10 },
   dateText: { fontSize: 13, color: '#475569', fontWeight: '600' },
   reasonText: { fontSize: 12, color: '#64748B', fontStyle: 'italic', fontWeight: '500' },
+  cardFooter: {
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: 10,
+    marginTop: 10,
+    alignItems: 'flex-end',
+  },
+  cancelBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  cancelBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
 });

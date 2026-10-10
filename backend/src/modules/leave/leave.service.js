@@ -617,6 +617,48 @@ export const leaveService = {
   },
 
   /**
+   * Cancel Leave Request (Pending only)
+   */
+  async cancelLeave({ requestId, userId, employeeId, companyId, role, reason }) {
+    const request = await prisma.leaveRequest.findUnique({
+      where: { id: requestId },
+      include: { employee: true }
+    });
+    if (!request) {
+      const error = new Error('Leave request not found');
+      error.statusCode = 404;
+      throw error;
+    }
+    if (companyId && request.employee.companyId !== companyId) {
+      const error = new Error('Forbidden');
+      error.statusCode = 403;
+      throw error;
+    }
+    if (request.status !== 'PENDING') {
+      const error = new Error('Only pending requests can be cancelled');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const isOwner = (employeeId && request.employeeId === employeeId) || (request.employee.userId === userId);
+    const isAdmin = ['COMPANY_ADMIN', 'HR_ADMIN', 'SUPER_ADMIN'].includes(role);
+    if (!isOwner && !isAdmin) {
+      const error = new Error('You can only cancel your own requests');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    return prisma.leaveRequest.update({
+      where: { id: requestId },
+      data: {
+        status: 'CANCELLED',
+        rejectionReason: reason || 'Cancelled by employee'
+      },
+      include: { leaveType: true, employee: true }
+    });
+  },
+
+  /**
    * Bulk Approve Leave
    */
   async bulkApproveLeave({ requestIds = [], approvedBy }) {
