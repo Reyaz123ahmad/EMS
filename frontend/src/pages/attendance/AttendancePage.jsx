@@ -524,6 +524,8 @@ export const AttendancePage = () => {
                     {/* Live Break Controls with Lunch / Short Quota */}
                     <BreakStatus
                       employeeId={user?.employeeId || user?.id}
+                      breakStatus={effectiveData?.breakStatus}
+                      breaks={effectiveData?.breaks}
                       onStartBreak={(type) => handleStartBreak(type)}
                       onEndBreak={(breakId, type) => handleEndBreak(breakId, type)}
                       onEndAllBreaks={() => handleEndAllBreaks()}

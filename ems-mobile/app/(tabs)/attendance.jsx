@@ -236,7 +236,13 @@ export default function AttendanceScreen() {
   const checkInBlockReason = todayData?.checkInBlockReason;
 
   // Derived Break States from breakData & todayData
-  const resolvedBreakData = breakData?.data || breakData || {};
+  const resolvedBreakData =
+    breakData?.data ||
+    breakData ||
+    todayData?.breakStatus?.data ||
+    todayData?.breakStatus ||
+    todayData?.data?.breakStatus ||
+    {};
   const {
     canTakeBreak = false,
     totalBreaks = 0,
@@ -256,15 +262,21 @@ export default function AttendanceScreen() {
   );
 
   const allTodayBreaks = useMemo(() => {
-    return todayData?.breaks || todayLog?.breaks || todayData?.attendance?.breaks || [];
-  }, [todayData?.breaks, todayLog?.breaks, todayData?.attendance?.breaks]);
+    return (
+      todayData?.breaks ||
+      todayLog?.breaks ||
+      todayData?.attendance?.breaks ||
+      resolvedBreakData?.breaks ||
+      []
+    );
+  }, [todayData?.breaks, todayLog?.breaks, todayData?.attendance?.breaks, resolvedBreakData?.breaks]);
 
   const activeBreakFromList = useMemo(() => {
     return allTodayBreaks.find((b) => !b.breakEndAt) || null;
   }, [allTodayBreaks]);
 
   const resolvedActiveBreak =
-    breakData?.activeBreak ||
+    resolvedBreakData?.activeBreak ||
     todayData?.breakStatus?.activeBreak ||
     todayData?.activeBreak ||
     activeBreakFromList ||
@@ -284,7 +296,7 @@ export default function AttendanceScreen() {
     return [];
   }, [resolvedBreakData?.activeBreaks, allTodayBreaks, resolvedActiveBreak]);
 
-  const onBreak = activeBreaksList.length > 0;
+  const onBreak = Boolean(activeBreaksList.length > 0 || resolvedActiveBreak || resolvedBreakData.hasActiveBreak);
 
   const primaryActiveBreak = activeBreaksList[0] || null;
 

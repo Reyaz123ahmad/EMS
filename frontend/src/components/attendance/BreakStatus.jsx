@@ -53,6 +53,8 @@ function ActiveBreakItem({ activeBreak, onEndBreak, isEnding = false }) {
 
 export function BreakStatus({
   employeeId,
+  breakStatus: propBreakStatus,
+  breaks: propBreaks = [],
   onStartBreak,
   onEndBreak,
   onEndAllBreaks,
@@ -61,7 +63,7 @@ export function BreakStatus({
 }) {
   const { data: statusData, isLoading } = useBreakStatus(employeeId ? { employeeId } : {});
 
-  const breakData = statusData?.data || statusData || {};
+  const breakData = statusData?.data || statusData || propBreakStatus?.data || propBreakStatus || {};
   const {
     canTakeBreak = false,
     totalBreaks = 0,
@@ -72,7 +74,7 @@ export function BreakStatus({
     maxBreakMinutes = 0,
     lunchDurationMinutes = 0,
     shortDurationMinutes = 0,
-    hasActiveBreak = false,
+    hasActiveBreak: rawHasActiveBreak = false,
     activeBreaks = [],
     reason = '',
     rules = []
@@ -80,7 +82,24 @@ export function BreakStatus({
 
   const [selectedType, setSelectedType] = useState('SHORT');
 
-  if (isLoading) {
+  // Derive active breaks list from hook data, propBreaks, or single activeBreak
+  const activeList = React.useMemo(() => {
+    if (Array.isArray(activeBreaks) && activeBreaks.length > 0) {
+      return activeBreaks;
+    }
+    if (Array.isArray(propBreaks) && propBreaks.length > 0) {
+      const ongoing = propBreaks.filter(b => !b.breakEndAt);
+      if (ongoing.length > 0) return ongoing;
+    }
+    if (breakData.activeBreak) {
+      return [breakData.activeBreak];
+    }
+    return [];
+  }, [activeBreaks, propBreaks, breakData.activeBreak]);
+
+  const hasActiveBreak = Boolean(rawHasActiveBreak || activeList.length > 0);
+
+  if (isLoading && !statusData && !propBreakStatus) {
     return (
       <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-xl animate-pulse">
         <div className="h-4 bg-slate-700 rounded w-1/3 mb-2"></div>
@@ -90,7 +109,6 @@ export function BreakStatus({
   }
 
   const hasConfiguredRules = maxBreaks > 0 || maxBreakMinutes > 0 || (rules && rules.length > 0);
-  const activeList = activeBreaks.length > 0 ? activeBreaks : (breakData.activeBreak ? [breakData.activeBreak] : []);
 
   return (
     <div className="p-5 bg-gradient-to-br from-slate-900/90 to-slate-950 border border-slate-800/80 rounded-2xl shadow-xl backdrop-blur-md space-y-4">
@@ -187,33 +205,54 @@ export function BreakStatus({
 
       {/* Break Type Selector */}
       {hasConfiguredRules && (
-        <div>
-          <label className="text-xs text-slate-400 font-medium block mb-1.5">
-            {hasActiveBreak ? 'Add Another Break (Combined / Concurrent):' : 'Select Break Type:'}
-          </label>
-          <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs text-slate-400 font-medium block">
+              {hasActiveBreak ? 'Add Another Break (Concurrent / Multi-Break):' : 'Select Break Option:'}
+            </label>
+            {remainingBreaks > 1 && !hasActiveBreak && (
+              <span className="text-[10px] text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full font-semibold">
+                Multi-Break Supported ({remainingBreaks} Breaks Left)
+              </span>
+            )}
+          </div>
+
+          <div className={`grid ${remainingBreaks > 1 ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
             <button
               type="button"
               onClick={() => setSelectedType('SHORT')}
-              className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all border ${
+              className={`py-2 px-2.5 rounded-xl text-xs font-semibold transition-all border ${
                 selectedType === 'SHORT'
-                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-sm'
+                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-sm ring-1 ring-amber-500/40'
                   : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-slate-200'
               }`}
             >
-              Short Break {shortDurationMinutes > 0 ? `(${shortDurationMinutes}m)` : ''}
+              {hasActiveBreak ? '+ ' : ''}Short Break ({shortDurationMinutes || 15}m)
             </button>
             <button
               type="button"
               onClick={() => setSelectedType('LUNCH')}
-              className={`py-2 px-3 rounded-xl text-xs font-semibold transition-all border ${
+              className={`py-2 px-2.5 rounded-xl text-xs font-semibold transition-all border ${
                 selectedType === 'LUNCH'
-                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-sm'
+                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 shadow-sm ring-1 ring-amber-500/40'
                   : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-slate-200'
               }`}
             >
-              Lunch Break {lunchDurationMinutes > 0 ? `(${lunchDurationMinutes}m)` : ''}
+              {hasActiveBreak ? '+ ' : ''}Lunch Break ({lunchDurationMinutes || 60}m)
             </button>
+            {remainingBreaks > 1 && (
+              <button
+                type="button"
+                onClick={() => setSelectedType('COMBINED')}
+                className={`py-2 px-2 rounded-xl text-xs font-semibold transition-all border ${
+                  selectedType === 'COMBINED'
+                    ? 'bg-gradient-to-r from-amber-500/30 to-orange-500/30 border-amber-500/60 text-amber-200 shadow-sm font-bold ring-1 ring-amber-500/40'
+                    : 'bg-slate-800/60 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                Combined ({remainingMinutes > 0 ? remainingMinutes : maxBreakMinutes}m)
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -222,11 +261,11 @@ export function BreakStatus({
       {onStartBreak && hasConfiguredRules && (
         <div>
           <button
-            onClick={() => onStartBreak(selectedType)}
+            onClick={() => onStartBreak(selectedType === 'COMBINED' ? 'LUNCH' : selectedType)}
             disabled={!canTakeBreak || isStartingBreak}
             className={`w-full py-2.5 px-4 rounded-xl font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg ${
               canTakeBreak
-                ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-amber-900/30 cursor-pointer active:scale-[0.99]'
+                ? 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white shadow-amber-900/30 cursor-pointer active:scale-[0.99]'
                 : 'bg-slate-800 text-slate-500 border border-slate-700/60 cursor-not-allowed'
             }`}
           >
@@ -235,7 +274,9 @@ export function BreakStatus({
               ? 'Starting Break...'
               : canTakeBreak
               ? hasActiveBreak
-                ? `Start Additional ${selectedType === 'LUNCH' ? 'Lunch' : 'Short'} Break`
+                ? `Start Additional ${selectedType === 'LUNCH' ? 'Lunch' : selectedType === 'COMBINED' ? 'Combined Multi-' : 'Short'} Break`
+                : selectedType === 'COMBINED'
+                ? `Start Combined Multi-Break (${remainingMinutes > 0 ? remainingMinutes : maxBreakMinutes} min)`
                 : `Start ${selectedType === 'LUNCH' ? 'Lunch' : 'Short'} Break`
               : 'Break Limit Reached'}
           </button>

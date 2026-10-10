@@ -62,11 +62,7 @@ export function useCheckIn() {
   return useMutation({
     mutationFn: (data) => attendanceService.checkIn(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'logs'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance'], refetchType: 'all' });
     }
   });
 }
@@ -76,11 +72,7 @@ export function useCheckOut() {
   return useMutation({
     mutationFn: (data) => attendanceService.checkOut(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'logs'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance'], refetchType: 'all' });
     }
   });
 }
@@ -95,9 +87,7 @@ export function useStartBreak() {
       } else {
         useAttendanceStore.setState({ isOnBreak: true });
       }
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance'], refetchType: 'all' });
     }
   });
 }
@@ -113,9 +103,7 @@ export function useEndBreak() {
       } else {
         useAttendanceStore.setState({ isOnBreak: false, activeBreak: null });
       }
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance'], refetchType: 'all' });
     }
   });
 }
@@ -126,9 +114,7 @@ export function useEndAllBreaks() {
     mutationFn: (data) => attendanceService.endAllBreaks(data),
     onSuccess: () => {
       useAttendanceStore.setState({ isOnBreak: false, activeBreak: null });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'today'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'checkout-status'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', 'break-status'] });
+      queryClient.invalidateQueries({ queryKey: ['attendance'], refetchType: 'all' });
     }
   });
 }
